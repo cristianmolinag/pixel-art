@@ -7,6 +7,15 @@ const gridCtx = gridCanvas.getContext("2d");
 const colorPicker = document.getElementById("color-picker");
 const pixelSizeInput = document.getElementById("pixel-size");
 
+// Ajuste del tamaño del lienzo
+const canvasContainer = document.getElementById('canvas-container');
+
+canvas.width = canvasContainer.offsetWidth;
+canvas.height = canvasContainer.offsetHeight;
+
+gridCanvas.width = canvasContainer.offsetWidth;
+gridCanvas.height = canvasContainer.offsetHeight;
+
 // Desactivar antialiasing
 ctx.imageSmoothingEnabled = false;
 gridCtx.imageSmoothingEnabled = false;
@@ -27,6 +36,7 @@ canvas.addEventListener("touchstart", startDrawingTouch);
 canvas.addEventListener("touchend", stopDrawingTouch);
 canvas.addEventListener("touchmove", drawPixelTouch);
 
+// evento para borrar pixel con click derecho
 canvas.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     toggleEraseMode();

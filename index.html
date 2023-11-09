@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <title>Dibujo de Pixel Art</title>
 </head>
+
 <body>
     <div id="color-container">
         <div id="color-palette">
@@ -24,37 +26,37 @@
         </div>
     </div>
     <div id="canvas-container" class="canvas-container">
-        <canvas id="pixel-canvas" height="400"></canvas>
-        <canvas id="grid-canvas" height="400"></canvas> 
-        <div class="tools-container">
-            <div class="tool">
-                <div id="size-container">
-                    <label for="pixel-size">Tamaño del Píxel:</label>
-                    <input type="range" id="pixel-size" min="15" max="100" value="15" onchange="changePixelSize()">
-                </div>
-            </div>
-        </div>
-        <div class="tools-container">
-            <div class="tool">
-                <label for="color-picker">Color:</label>
-                <input type="color" id="color-picker" value="#000000">
+        <canvas id="pixel-canvas" class="canvas"></canvas>
+        <canvas id="grid-canvas" class="canvas"></canvas> 
+    </div>
+    <div class="tools-container">
+        <div class="tool">
+            <div id="size-container">
+                <label for="pixel-size">Tamaño del Píxel:</label>
+                <input type="range" id="pixel-size" min="15" max="100" value="15" onchange="changePixelSize()">
             </div>
         </div>
     </div>
-        <div class="tools-container">
-            <div class="tool">
-                <button onclick="clearCanvas()"><i class="fa fa-eraser"></i> Borrar Todo</button>
-            </div>
-            <div class="tool">
-                <button onclick="undo()"><i class="fa fa-rotate-left"></i> Deshacer</button>
-            </div>
-            <div class="tool">
-                <button onclick="redo()"><i class="fa fa-rotate-right"></i> Rehacer</button>
-            </div>
-            <div class="tool">
-                <button onclick="exportCanvas()"><i class="fa fa-download"></i> Exportar</button>
-            </div>
+    <div class="tools-container">
+        <div class="tool">
+            <label for="color-picker">Color:</label>
+            <input type="color" id="color-picker" value="#000000">
         </div>
+    </div>
+    <div class="tools-container">
+        <div class="tool">
+            <button onclick="clearCanvas()"><i class="fa fa-eraser"></i> Borrar Todo</button>
+        </div>
+        <div class="tool">
+            <button onclick="undo()"><i class="fa fa-rotate-left"></i> Deshacer</button>
+        </div>
+        <div class="tool">
+            <button onclick="redo()"><i class="fa fa-rotate-right"></i> Rehacer</button>
+        </div>
+        <div class="tool">
+            <button onclick="exportCanvas()"><i class="fa fa-download"></i> Exportar</button>
+        </div>
+    </div>
     <script src="script.js"></script>
     <div id="footer-container">
         <span>
