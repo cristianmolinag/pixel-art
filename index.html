@@ -20,22 +20,24 @@
             <div onclick="selectColor('#00FFFF')" style="background-color: #00FFFF;"></div>
             <div onclick="selectColor('#800000')" style="background-color: #800000;"></div>
             <div onclick="selectColor('#008000')" style="background-color: #008000;"></div>
-            <div onclick="selectColor('#000080')" style="background-color: #000080;"></div>
+            <div onclick="selectColor('#000080')" style="background-color: #FFFFFF;"></div>
         </div>
     </div>
     <div id="canvas-container" class="canvas-container">
-        <canvas id="pixel-canvas" width="800" height="400"></canvas>
-        <canvas id="grid-canvas" width="800" height="400"></canvas> 
+        <canvas id="pixel-canvas" height="400"></canvas>
+        <canvas id="grid-canvas" height="400"></canvas> 
+        <div class="tools-container">
+            <div class="tool">
+                <div id="size-container">
+                    <label for="pixel-size">Tamaño del Píxel:</label>
+                    <input type="range" id="pixel-size" min="15" max="100" value="15" onchange="changePixelSize()">
+                </div>
+            </div>
+        </div>
         <div class="tools-container">
             <div class="tool">
                 <label for="color-picker">Color:</label>
                 <input type="color" id="color-picker" value="#000000">
-            </div>
-            <div class="tool">
-                <div id="size-container">
-                    <label for="pixel-size">Tamaño del Píxel:</label>
-                    <input type="range" id="pixel-size" min="1" max="50" value="10" onchange="changePixelSize()">
-                </div>
             </div>
         </div>
     </div>
@@ -54,10 +56,12 @@
             </div>
         </div>
     <script src="script.js"></script>
+    <div id="footer-container">
+        <span>
+            Hecho por Cristian, Valentina y Daniel Molina sólo por diversión.
+        </span>
+    </div>
 </body>
-<footer style="margin-top: 20px;">
-    <span style="font-size: x-small;">
-        Hecho por Cristian, Valentina y Daniel Molina sólo por diversión.
-    </span>
-</footer>
+
+
 </html>

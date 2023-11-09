@@ -30,7 +30,7 @@
 }
 
 #color-picker, #pixel-size {
-    width: 80px;
+    width: 100%;
 }
 
 button {
@@ -70,3 +70,9 @@ button:hover {
     cursor: pointer;
 }
 
+#footer-container {
+    text-align: center;
+    padding: 10px;
+    position: relative;
+    font-size: x-small;
+}
