@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <title>Dibujo de Pixel Art</title>
+</head>
+<body>
+    <div id="color-container">
+        <div id="color-palette">
+            <span>Colores Predeterminados:</span>
+            <div onclick="selectColor('#000000')" style="background-color: #000000;"></div>
+            <div onclick="selectColor('#FF0000')" style="background-color: #FF0000;"></div>
+            <div onclick="selectColor('#00FF00')" style="background-color: #00FF00;"></div>
+            <div onclick="selectColor('#0000FF')" style="background-color: #0000FF;"></div>
+            <div onclick="selectColor('#FFFF00')" style="background-color: #FFFF00;"></div>
+            <div onclick="selectColor('#FF00FF')" style="background-color: #FF00FF;"></div>
+            <div onclick="selectColor('#00FFFF')" style="background-color: #00FFFF;"></div>
+            <div onclick="selectColor('#800000')" style="background-color: #800000;"></div>
+            <div onclick="selectColor('#008000')" style="background-color: #008000;"></div>
+            <div onclick="selectColor('#000080')" style="background-color: #000080;"></div>
+        </div>
+    </div>
+    <div id="canvas-container" class="canvas-container">
+        <canvas id="pixel-canvas" width="800" height="400"></canvas>
+        <canvas id="grid-canvas" width="800" height="400"></canvas> 
+        <div class="tools-container">
+            <div class="tool">
+                <label for="color-picker">Color:</label>
+                <input type="color" id="color-picker" value="#000000">
+            </div>
+            <div class="tool">
+                <div id="size-container">
+                    <label for="pixel-size">Tamaño del Píxel:</label>
+                    <input type="range" id="pixel-size" min="1" max="50" value="10" onchange="changePixelSize()">
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="tools-container">
+            <div class="tool">
+                <button onclick="clearCanvas()"><i class="fa fa-eraser"></i> Borrar Todo</button>
+            </div>
+            <div class="tool">
+                <button onclick="undo()"><i class="fa fa-rotate-left"></i> Deshacer</button>
+            </div>
+            <div class="tool">
+                <button onclick="redo()"><i class="fa fa-rotate-right"></i> Rehacer</button>
+            </div>
+            <div class="tool">
+                <button onclick="exportCanvas()"><i class="fa fa-download"></i> Exportar</button>
+            </div>
+        </div>
+    <script src="script.js"></script>
+</body>
+<footer style="margin-top: 20px;">
+    <span style="font-size: x-small;">
+        Hecho por Cristian, Valentina y Daniel Molina sólo por diversión.
+    </span>
+</footer>
+</html>
