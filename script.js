@@ -23,10 +23,16 @@ let eraseMode = false;
 let undoStack = [];
 let redoStack = [];
 
+// eventos con mouse
 canvas.addEventListener("mousedown", startDrawing);
 canvas.addEventListener("mouseup", stopDrawing);
 canvas.addEventListener("mousemove", drawPixel);
 canvas.addEventListener("click", drawPixel);
+
+// eventos con pantallas tactiles
+canvas.addEventListener("touchstart", startDrawingTouch);
+canvas.addEventListener("touchend", stopDrawingTouch);
+canvas.addEventListener("touchmove", drawPixelTouch);
 
 canvas.addEventListener("contextmenu", (event) => {
     event.preventDefault();
@@ -72,6 +78,26 @@ function drawPixel(event) {
         saveState(); // Guarda el estado solo cuando se hace clic (no durante el movimiento)
         drawGrid(); // Vuelve a dibujar la cuadrícula después de cada cambio
     }
+}
+
+function startDrawingTouch(event) {
+    event.preventDefault(); // Evita el desplazamiento y el zoom en dispositivos táctiles
+    startDrawing(getTouchCoords(event));
+}
+
+function stopDrawingTouch(event) {
+    event.preventDefault();
+    stopDrawing();
+}
+
+function drawPixelTouch(event) {
+    event.preventDefault();
+    drawPixel(getTouchCoords(event));
+}
+
+function getTouchCoords(event) {
+    const touch = event.touches[0];
+    return { clientX: touch.clientX, clientY: touch.clientY };
 }
 
 function saveState() {
