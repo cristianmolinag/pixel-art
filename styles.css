@@ -1,12 +1,12 @@
 #canvas-container {
-    text-align: center;
-    padding: 0px;
-    position: relative;
-    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem 1.5rem;
+    width: auto;
     height: 18rem;
-}
-
-.canvas {
+    gap: 10px;
     border: 1px solid #000;
 }
 
