@@ -7,14 +7,6 @@ const gridCtx = gridCanvas.getContext("2d");
 const colorPicker = document.getElementById("color-picker");
 const pixelSizeInput = document.getElementById("pixel-size");
 
-// Ajuste del tamaño del lienzo
-const canvasContainer = document.getElementById('canvas-container');
-
-canvas.width = canvasContainer.offsetWidth;
-canvas.height = canvasContainer.offsetHeight;
-
-gridCanvas.width = canvasContainer.offsetWidth;
-gridCanvas.height = canvasContainer.offsetHeight;
 
 // Desactivar antialiasing
 ctx.imageSmoothingEnabled = false;

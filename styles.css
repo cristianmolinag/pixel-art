@@ -3,11 +3,9 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    margin: 1rem 1.5rem;
+    margin-top: 1rem;
     width: auto;
-    height: 18rem;
-    gap: 10px;
-    border: 1px solid #000;
+    height: auto;
 }
 
 #pixel-canvas {
@@ -18,6 +16,8 @@
 #grid-canvas {
     position: relative;
     z-index: 0;
+    border: 1px solid #000;
+
 }
 
 .tools-container {
