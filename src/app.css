@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #4caf50;
+  --color-brand-hover: #45a049;
+  --color-surface: #1a1a2e;
+  --color-surface-light: #16213e;
+  --color-surface-lighter: #0f3460;
+  --color-canvas-bg: #ffffff;
+  --color-grid: #cccccc;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-surface);
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+input[type="range"] {
+  height: 6px;
+}
+
+input[type="color"] {
+  border: none;
+  padding: 0;
+}
