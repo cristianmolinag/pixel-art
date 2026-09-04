@@ -54,6 +54,26 @@ export class Canvas {
     return { r, g, b, a };
   }
 
+  snapshot() {
+    const image = this.ctx.getImageData(0, 0, this.cols, this.rows);
+    return new Uint8ClampedArray(image.data);
+  }
+
+  restore(snapshot) {
+    const image = this.ctx.createImageData(this.cols, this.rows);
+    image.data.set(snapshot);
+    this.ctx.putImageData(image, 0, 0);
+  }
+
+  iguales(snapshot) {
+    const actual = this.ctx.getImageData(0, 0, this.cols, this.rows).data;
+    if (actual.length !== snapshot.length) return false;
+    for (let i = 0; i < actual.length; i++) {
+      if (actual[i] !== snapshot[i]) return false;
+    }
+    return true;
+  }
+
   setPixel(x, y, color) {
     if (x < 0 || y < 0 || x >= this.cols || y >= this.rows) return false;
     const { r, g, b, a } = hexToRgba(color);

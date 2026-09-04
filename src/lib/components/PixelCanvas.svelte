@@ -44,6 +44,7 @@
     const celda = celdaDeEvento(event);
     if (!celda) return;
     pintando = true;
+    editor.abrirAccion();
     switch (editor.herramienta) {
       case "borrador":
         editor.borrarPixel(celda.x, celda.y);
@@ -81,6 +82,7 @@
     if (editor.herramienta === "linea" && previsualizando && lineaInicio && lineaFin) {
       editor.dibujarLinea(lineaInicio.x, lineaInicio.y, lineaFin.x, lineaFin.y);
     }
+    editor.cerrarAccion();
     pintando = false;
     previsualizando = false;
     lineaInicio = null;

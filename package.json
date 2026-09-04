@@ -28,6 +28,7 @@
     "vitest": "^4.1.11"
   },
   "dependencies": {
+    "@lucide/svelte": "^1.40.0",
     "@tailwindcss/vite": "^4.0.0",
     "tailwindcss": "^4.0.0"
   }

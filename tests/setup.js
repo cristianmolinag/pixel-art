@@ -22,7 +22,20 @@ class MockOffscreenCanvas {
           }
         }
       },
-      putImageData: vi.fn(),
+      createImageData: (w, h) => ({
+        width: w,
+        height: h,
+        data: new Uint8ClampedArray(w * h * 4),
+      }),
+      putImageData: (image, x, y) => {
+        for (let j = 0; j < image.height; j++) {
+          for (let i = 0; i < image.width; i++) {
+            const src = (j * image.width + i) * 4;
+            const dst = pixelOffset(this.width, x + i, y + j);
+            for (let k = 0; k < 4; k++) this.data[dst + k] = image.data[src + k];
+          }
+        }
+      },
       beginPath: vi.fn(),
       moveTo: vi.fn(),
       lineTo: vi.fn(),

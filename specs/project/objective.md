@@ -72,5 +72,5 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Estado del proyecto
 
 - **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F03 Herramientas (#5) implementada y verificada — siguiente: F04 Undo/Redo (#13).
-  En el milestone **v1.0 MVP** quedan pendientes F04 (#13), F05 Galería (#6) y el color picker (#14).
+- **Fase actual**: F04 Undo/Redo (#13) implementada y verificada — siguiente: F05 Galería (#6).
+  En el milestone **v1.0 MVP** quedan pendientes F05 Galería (#6) y el color picker (#14).

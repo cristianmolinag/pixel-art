@@ -163,3 +163,41 @@ describe("lineaPuntos (F03)", () => {
     ]);
   });
 });
+
+describe("Canvas.snapshot/restore (F04/FR-002)", () => {
+  it("snapshot devuelve una copia aislada de los píxeles", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.setPixel(2, 3, "#ff0000");
+    const snap = canvas.snapshot();
+    canvas.setPixel(2, 3, "#00ff00");
+    expect(canvas.getPixel(2, 3).g).toBe(255);
+    expect(snap).not.toBe(canvas.ctx.getImageData(0, 0, 16, 16).data);
+  });
+
+  it("restore restaura los píxeles al estado de un snapshot", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.setPixel(2, 3, "#ff0000");
+    canvas.setPixel(5, 7, "#0000ff");
+    const snap = canvas.snapshot();
+    canvas.borrarPixel(2, 3);
+    canvas.restore(snap);
+    expect(canvas.getPixel(2, 3)).toEqual({ r: 255, g: 0, b: 0, a: 255 });
+    expect(canvas.getPixel(5, 7)).toEqual({ r: 0, g: 0, b: 255, a: 255 });
+  });
+
+  it("restore restaura también celdas que quedaron transparentes", () => {
+    const canvas = new Canvas(16, 16);
+    const snapVacio = canvas.snapshot();
+    canvas.setPixel(4, 4, "#ff0000");
+    canvas.restore(snapVacio);
+    expect(canvas.getPixel(4, 4)).toEqual({ r: 0, g: 0, b: 0, a: 0 });
+  });
+
+  it("iguales identifica si el estado actual coincide con un snapshot", () => {
+    const canvas = new Canvas(16, 16);
+    const snap = canvas.snapshot();
+    expect(canvas.iguales(snap)).toBe(true);
+    canvas.setPixel(0, 0, "#ff0000");
+    expect(canvas.iguales(snap)).toBe(false);
+  });
+});

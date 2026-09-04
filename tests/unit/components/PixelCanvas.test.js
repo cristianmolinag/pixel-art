@@ -9,6 +9,8 @@ beforeEach(() => {
   editor.colorActual = "#ff0000";
   editor.herramienta = "pincel";
   editor.version = 0;
+  editor.undoStack = [];
+  editor.redoStack = [];
   globalThis.HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
     fillStyle: null,
     strokeStyle: null,
@@ -153,5 +155,80 @@ describe("PixelCanvas — herramientas (F03)", () => {
     expect(editor.model.getPixel(0, 0).b).toBe(255);
     expect(editor.model.getPixel(3, 1).b).toBe(255);
     expect(editor.model.getPixel(4, 1).g).toBe(255);
+  });
+});
+
+describe("PixelCanvas — undo/redo (F04)", () => {
+  it("un arrastre de pincel es un solo paso de undo (US1/FR-004)", async () => {
+    const { container } = render(PixelCanvas);
+    const canvas = container.querySelector("canvas");
+    canvas.getBoundingClientRect = vi.fn(() => canvasRectMock());
+
+    await fireEvent.pointerDown(canvas, { clientX: 5, clientY: 5 });
+    await fireEvent.pointerMove(canvas, { clientX: 15, clientY: 5 });
+    await fireEvent.pointerMove(canvas, { clientX: 25, clientY: 5 });
+    await fireEvent.pointerUp(canvas);
+
+    expect(editor.undoStack.length).toBe(1);
+    editor.deshacer();
+    expect(editor.model.getPixel(0, 0).a).toBe(0);
+    expect(editor.model.getPixel(1, 0).a).toBe(0);
+    expect(editor.model.getPixel(2, 0).a).toBe(0);
+  });
+
+  it("un toque simple de pincel se deshace de una vez (US1/FR-002)", async () => {
+    const { container } = render(PixelCanvas);
+    const canvas = container.querySelector("canvas");
+    canvas.getBoundingClientRect = vi.fn(() => canvasRectMock());
+
+    await fireEvent.pointerDown(canvas, { clientX: 15, clientY: 15 });
+    await fireEvent.pointerUp(canvas);
+
+    editor.deshacer();
+    expect(editor.model.getPixel(1, 1).a).toBe(0);
+  });
+
+  it("una línea dibujada se deshace como una sola acción (US3)", async () => {
+    const { container } = render(PixelCanvas);
+    const canvas = container.querySelector("canvas");
+    canvas.getBoundingClientRect = vi.fn(() => canvasRectMock());
+    editor.seleccionarHerramienta("linea");
+
+    await fireEvent.pointerDown(canvas, { clientX: 5, clientY: 5 });
+    await fireEvent.pointerMove(canvas, { clientX: 85, clientY: 5 });
+    await fireEvent.pointerUp(canvas);
+
+    editor.deshacer();
+    expect(editor.model.getPixel(0, 0).a).toBe(0);
+    expect(editor.model.getPixel(4, 0).a).toBe(0);
+    expect(editor.model.getPixel(8, 0).a).toBe(0);
+  });
+
+  it("un relleno se deshace como una sola acción (US3)", async () => {
+    const { container } = render(PixelCanvas);
+    const canvas = container.querySelector("canvas");
+    canvas.getBoundingClientRect = vi.fn(() => canvasRectMock());
+    editor.seleccionarHerramienta("relleno");
+
+    await fireEvent.pointerDown(canvas, { clientX: 5, clientY: 5 });
+    await fireEvent.pointerUp(canvas);
+
+    editor.deshacer();
+    expect(editor.model.getPixel(0, 0).a).toBe(0);
+    editor.rehacer();
+    expect(editor.model.getPixel(0, 0).r).toBe(255);
+  });
+
+  it("al soltar el puntero se cierra el gesto y no se acumulan pasos durante el arrastre (FR-004)", async () => {
+    const { container } = render(PixelCanvas);
+    const canvas = container.querySelector("canvas");
+    canvas.getBoundingClientRect = vi.fn(() => canvasRectMock());
+
+    await fireEvent.pointerDown(canvas, { clientX: 5, clientY: 5 });
+    await fireEvent.pointerMove(canvas, { clientX: 15, clientY: 5 });
+    expect(editor.undoStack.length).toBe(0);
+
+    await fireEvent.pointerUp(canvas);
+    expect(editor.undoStack.length).toBe(1);
   });
 });
