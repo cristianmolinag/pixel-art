@@ -17,30 +17,13 @@ body {
   background-color: var(--color-surface);
   color: white;
   font-family: system-ui, -apple-system, sans-serif;
-  overflow: hidden;
-  overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 #app {
   height: 100dvh;
-  overflow: hidden;
 }
 
 * {
   box-sizing: border-box;
-}
-
-canvas {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}
-
-input[type="range"] {
-  height: 6px;
-}
-
-input[type="color"] {
-  border: none;
-  padding: 0;
 }
