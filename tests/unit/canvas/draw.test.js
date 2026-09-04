@@ -13,6 +13,7 @@ function makeCtx() {
     strokeStyle: null,
     lineWidth: null,
     fillRect: vi.fn(),
+    drawImage: vi.fn(),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
@@ -37,16 +38,21 @@ describe("drawGrid (FR-002)", () => {
     expect(ctx.lineTo).toHaveBeenCalledTimes(32);
     expect(ctx.stroke).toHaveBeenCalled();
   });
+
+  it("regresión: no vuelve a rellenar el fondo (no borra los píxeles pintados)", () => {
+    const ctx = makeCtx();
+    drawGrid(ctx, 16, 16);
+    expect(ctx.fillRect).not.toHaveBeenCalled();
+  });
 });
 
 describe("drawPixels", () => {
-  it("pinta cada píxel con contenido del modelo", () => {
+  it("vuelca el OffscreenCanvas del modelo al contexto (un solo blit)", () => {
     const ctx = makeCtx();
     const model = new Canvas(2, 2);
     model.setPixel(0, 0, "#ff0000");
     drawPixels(ctx, model);
-    expect(ctx.fillStyle).toBe("rgba(255, 0, 0, 1)");
-    expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 1, 1);
+    expect(ctx.drawImage).toHaveBeenCalledWith(model.offscreen, 0, 0);
   });
 });
 
@@ -57,5 +63,18 @@ describe("drawCanvas", () => {
     drawCanvas(ctx, model);
     expect(ctx.fillRect).toHaveBeenCalled();
     expect(ctx.stroke).toHaveBeenCalled();
+  });
+
+  it("regresión: pinta el fondo, vuelca los píxeles y traza la cuadrícula en orden", () => {
+    const ctx = makeCtx();
+    const model = new Canvas(2, 2);
+    model.setPixel(0, 0, "#ff0000");
+    drawCanvas(ctx, model);
+
+    const bg = ctx.fillRect.mock.invocationCallOrder[0];
+    const blit = ctx.drawImage.mock.invocationCallOrder[0];
+    const grid = ctx.stroke.mock.invocationCallOrder[0];
+    expect(bg).toBeLessThan(blit);
+    expect(blit).toBeLessThan(grid);
   });
 });

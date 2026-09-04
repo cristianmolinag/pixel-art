@@ -3,8 +3,7 @@ export function drawBackground(ctx, cols, rows, color = "#ffffff") {
   ctx.fillRect(0, 0, cols, rows);
 }
 
-export function drawGrid(ctx, cols, rows, { gridColor = "#cccccc", pixelBackground = "#ffffff" } = {}) {
-  drawBackground(ctx, cols, rows, pixelBackground);
+export function drawGrid(ctx, cols, rows, { gridColor = "#cccccc" } = {}) {
   ctx.beginPath();
   ctx.strokeStyle = gridColor;
   ctx.lineWidth = 0.1;
@@ -20,15 +19,7 @@ export function drawGrid(ctx, cols, rows, { gridColor = "#cccccc", pixelBackgrou
 }
 
 export function drawPixels(ctx, model) {
-  for (let y = 0; y < model.rows; y++) {
-    for (let x = 0; x < model.cols; x++) {
-      const px = model.getPixel(x, y);
-      if (px && px.a > 0) {
-        ctx.fillStyle = `rgba(${px.r}, ${px.g}, ${px.b}, ${px.a / 255})`;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-  }
+  ctx.drawImage(model.offscreen, 0, 0);
 }
 
 export function drawCanvas(ctx, model, { grid = true } = {}) {

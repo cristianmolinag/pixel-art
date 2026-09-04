@@ -118,5 +118,6 @@ Como usuario, quiero arrastrar el dedo/mouse sobre el lienzo para pintar de corr
   para pintar por toque y arrastre; convierte coordenadas de pantalla a celda del grid.
 - El modelo `Canvas` gana el método `setPixel(x, y, color)` para escribir píxeles
   (hoy solo tiene `getPixel`).
-- `draw.js` ya redibuja píxeles con `model.getPixel`; `setPixel` persiste en el
-  OffscreenCanvas y se vuelve a dibujar al canvas del DOM.
+- `draw.js` **vuelca el OffscreenCanvas del modelo al canvas del DOM con un solo
+  `drawImage`** (blit 1:1); así el redibujado por trazo es fluido sin lecturas
+  `getImageData` por celda. `setPixel` persiste en el OffscreenCanvas.
