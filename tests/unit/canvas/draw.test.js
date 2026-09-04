@@ -43,10 +43,9 @@ describe("drawPixels", () => {
   it("pinta cada píxel con contenido del modelo", () => {
     const ctx = makeCtx();
     const model = new Canvas(2, 2);
-    model.ctx.getImageData.mockReturnValue({
-      data: new Uint8ClampedArray([255, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-    });
+    model.setPixel(0, 0, "#ff0000");
     drawPixels(ctx, model);
+    expect(ctx.fillStyle).toBe("rgba(255, 0, 0, 1)");
     expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 1, 1);
   });
 });
