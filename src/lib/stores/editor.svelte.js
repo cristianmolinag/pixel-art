@@ -36,7 +36,7 @@ class EditorState {
   activeTool = $state("pen");
   activeColor = $state("#000000");
 
-  layers = $state([new Layer("Layer 1")]);
+  layers = $state([new Layer("Layer 1", 32, 32)]);
   activeLayerIndex = $state(0);
 
   frames = $state([new Frame()]);
@@ -50,6 +50,7 @@ class EditorState {
   pendingImageData = $state(null);
   pendingClear = $state(false);
   pendingExport = $state(false);
+  pendingComposite = $state(false);
 
   activeLayer = $derived(this.layers[this.activeLayerIndex]);
   activeFrame = $derived(this.frames[this.activeFrameIndex]);
@@ -75,8 +76,39 @@ class EditorState {
     this.exportHeight = h;
   }
 
+  composite(displayCtx, displayCanvas) {
+    if (!displayCtx || !displayCanvas) return;
+    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+    for (const layer of this.layers) {
+      if (!layer.visible) continue;
+      displayCtx.globalAlpha = layer.opacity;
+      displayCtx.drawImage(layer.offscreen, 0, 0);
+    }
+    displayCtx.globalAlpha = 1.0;
+  }
+
+  requestComposite() {
+    this.pendingComposite = true;
+    this.canvasVersion++;
+  }
+
+  initLayers(cols, rows) {
+    this.gridCols = cols;
+    this.gridRows = rows;
+    this.layers = [new Layer("Layer 1", cols, rows)];
+    this.activeLayerIndex = 0;
+  }
+
+  resizeAllLayers(cols, rows) {
+    this.gridCols = cols;
+    this.gridRows = rows;
+    for (const layer of this.layers) {
+      layer.resize(cols, rows);
+    }
+  }
+
   addLayer(name) {
-    const layer = new Layer(name ?? `Layer ${this.layers.length + 1}`);
+    const layer = new Layer(name ?? `Layer ${this.layers.length + 1}`, this.gridCols, this.gridRows);
     this.layers = [...this.layers, layer];
     this.activeLayerIndex = this.layers.length - 1;
   }
@@ -98,6 +130,13 @@ class EditorState {
     const layer = this.layers[index];
     if (layer) {
       layer.visible = !layer.visible;
+    }
+  }
+
+  clearActiveLayer() {
+    const layer = this.activeLayer;
+    if (layer && !layer.locked) {
+      layer.clear();
     }
   }
 

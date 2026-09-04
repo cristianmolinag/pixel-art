@@ -16,6 +16,8 @@
   let lastPanX = 0;
   let lastPanY = 0;
   let pinchDist = 0;
+  let lastGridCols = 0;
+  let lastGridRows = 0;
 
   let zoomedW = $derived(Math.floor(baseW * zoom));
   let zoomedH = $derived(Math.floor(baseH * zoom));
@@ -61,6 +63,13 @@
     gridEl.width = editor.gridCols;
     gridEl.height = editor.gridRows;
 
+    if (lastGridCols !== editor.gridCols || lastGridRows !== editor.gridRows) {
+      editor.resizeAllLayers(editor.gridCols, editor.gridRows);
+      lastGridCols = editor.gridCols;
+      lastGridRows = editor.gridRows;
+    }
+
+    editor.composite(ctx, canvasEl);
     drawGrid();
     saveState();
   }
@@ -79,6 +88,35 @@
   });
 
   $effect(() => {
+    const _ = editor.activeLayerIndex;
+    if (ctx && canvasEl) {
+      editor.composite(ctx, canvasEl);
+    }
+  });
+
+  $effect(() => {
+    const _ = editor.canvasVersion;
+    if (!ctx || !canvasEl) return;
+
+    if (editor.pendingImageData) {
+      ctx.putImageData(editor.pendingImageData, 0, 0);
+      editor.pendingImageData = null;
+    } else if (editor.pendingComposite) {
+      editor.composite(ctx, canvasEl);
+      editor.pendingComposite = false;
+    } else if (editor.pendingClear) {
+      editor.clearActiveLayer();
+      editor.composite(ctx, canvasEl);
+      const imageData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+      history.push(imageData);
+      editor.pendingClear = false;
+    } else if (editor.pendingExport) {
+      doExport();
+      editor.pendingExport = false;
+    }
+  });
+
+  $effect(() => {
     if (typeof window === "undefined") return;
     const handleResize = () => {
       const size = calcBaseSize();
@@ -89,24 +127,6 @@
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  });
-
-  $effect(() => {
-    const _ = editor.canvasVersion;
-    if (!ctx || !canvasEl) return;
-
-    if (editor.pendingImageData) {
-      ctx.putImageData(editor.pendingImageData, 0, 0);
-      editor.pendingImageData = null;
-    } else if (editor.pendingClear) {
-      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-      const imageData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
-      history.push(imageData);
-      editor.pendingClear = false;
-    } else if (editor.pendingExport) {
-      doExport();
-      editor.pendingExport = false;
-    }
   });
 
   function doExport() {
@@ -169,14 +189,17 @@
   }
 
   function drawPixel(px, py) {
-    if (!ctx) return;
+    const layer = editor.activeLayer;
+    if (!layer || layer.locked) return;
     if (px < 0 || px >= editor.gridCols || py < 0 || py >= editor.gridRows) return;
+
     if (editor.eraseMode) {
-      ctx.clearRect(px, py, 1, 1);
+      layer.ctx.clearRect(px, py, 1, 1);
     } else {
-      ctx.fillStyle = editor.activeColor;
-      ctx.fillRect(px, py, 1, 1);
+      layer.ctx.fillStyle = editor.activeColor;
+      layer.ctx.fillRect(px, py, 1, 1);
     }
+    editor.composite(ctx, canvasEl);
   }
 
   function clampPan() {
