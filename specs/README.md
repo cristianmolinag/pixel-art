@@ -1,47 +1,55 @@
 # Specs de Pixel Art Studio
 
-Este directorio es la **fuente de verdad** de los requisitos del proyecto, siguiendo
-**Spec-Driven Development (SDD)**.
+Este directorio es la **fuente de verdad** de requisitos y arquitectura del proyecto,
+siguiendo **Spec-Anchored Development**.
 
-## Qué es SDD en este proyecto
+## Qué es Spec-Anchored en este proyecto
 
-Cada feature se describe en un documento de especificación *antes* de escribir código.
-La spec responde **qué** debe hacer la feature y **cómo validar que funciona**, en
-lenguaje humano. El código y los tests se construyen después, contra esa spec.
+La spec se escribe *antes* del código y actúa como un **ancla**: orienta el desarrollo
+y sirve para **verificar** que el código no se desvía del *qué*. El código y la spec
+evolucionan en paralelo; cuando cambia el diseño, se actualiza la spec primero.
 
-## Flujo de trabajo (Spec → Código → Tests)
+### Conceptos que usamos (para aprenderlos en la práctica)
+
+- **¿Qué vs. cómo**: cada spec define el *qué* (sin tecnología); las decisiones
+  técnicas van en una sección "Decisiones" separada.
+- **User stories priorizadas**: cada feature se divide en slices independientes
+  (P1, P2, ...) que entregan valor por sí solos y pueden probarse aislados.
+- **Given/When/Then**: los criterios de aceptación se escriben como escenarios de
+  comportamiento verificables.
+- **No adivinar**: lo ambiguo se marca `[NEEDS CLARIFICATION]`, no se asume.
+
+> Nota: *Spec-Anchored* (spec como ancla/guía) es el enfoque que usamos para aprender.
+> *Spec-first* (spec que genera el código, típico de GitHub Spec Kit) se puede evaluar
+> más adelante, no es el proceso actual.
+
+## Flujo de trabajo
 
 Para cada feature:
 
-1. **Spec** — Escribir `features/NN-nombre.md` definiendo historia de usuario y
-   criterios de aceptación.
-2. **Código** — Implementar la feature hasta cumplir todos los criterios.
-3. **Tests** — Escribir tests que verifiquen los criterios de aceptación
-   (como refuerzo/verificación, no TDD estricto).
+1. **Spec** — Escribir `features/NN-nombre.md`: user stories priorizadas, escenarios
+   Given/When/Then, requisitos, success criteria, assumptions.
+2. **Código** — Implementar la feature contra la spec, anclando el código al *qué*.
+3. **Tests** — Verificar los escenarios Given/When/Then.
 4. **Verificación** — `pnpm check`, `pnpm test`, `pnpm build`.
-5. **Marcar la spec** — Tildar los criterios cumplidos y actualizar el estado.
+5. **Marcar la spec** — Tildar criterios cumplidos y actualizar estado/issue.
 
-## Cómo leer una spec
-
-Cada spec tiene:
-
-- **Estado**: 📋 Planeada · 🚧 En progreso · ✅ Implementada
-- **Historia de usuario**: el *para qué* desde la perspectiva del usuario.
-- **Criterios de aceptación**: lista verificable de "el usuario puede...".
-- **Decisiones técnicas**: qué elegimos y por qué (lecciones de aprendizaje).
-- **Tests**: qué archivos de test cubren la feature.
-
-## Estructura
+## Cómo leer este directorio
 
 ```
 specs/
 ├── README.md          # Este archivo
 ├── _template.md       # Plantilla a copiar para cada feature
+├── project/           # Objetivo y principios del proyecto (ancla global)
+│   └── objective.md   # Qué queremos y qué no (puerta de entrada)
 ├── architecture/      # Documentos de arquitectura y patrones
 └── features/          # Una spec por feature (NN-nombre.md)
 ```
 
-## Juntar con el roadmap
+## Relación con los issues de GitHub
 
-Las features se implementan una a la vez, en orden de complejidad creciente para
-aprender Svelte 5 y Tailwind CSS v4. El roadmap vive en `features/` ordenado por número.
+- Este directorio responde **qué** se quiere y **cómo** está pensado (estable).
+- Los **issues** de GitHub responden **en qué se trabaja** y **qué falta** (vivo).
+- Cada feature de `features/` se asocia a un issue (o grupo); se referencian en ambos.
+
+Empieza por `project/objective.md` para entender el proyecto completo.
