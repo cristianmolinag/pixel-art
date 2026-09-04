@@ -71,4 +71,4 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Estado del proyecto
 
 - **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F01 Canvas (#11) implementada y verificada — siguiente: F02 Colores (#12).
+- **Fase actual**: F02 Colores (#12) implementada y verificada — actual: F03 Herramientas (#5).

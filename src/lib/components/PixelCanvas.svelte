@@ -1,9 +1,13 @@
 <script>
   import { drawCanvas } from "../canvas/draw.js";
   import { editor } from "../stores/editor.svelte.js";
+  import { lineaPuntos } from "../models/Canvas.js";
 
   let canvasEl = $state();
   let pintando = $state(false);
+  let lineaInicio = $state(null);
+  let lineaFin = $state(null);
+  let previsualizando = $state(false);
 
   $effect(() => {
     const canvas = canvasEl;
@@ -12,6 +16,20 @@
     if (!ctx) return;
     drawCanvas(ctx, editor.model);
     void editor.version;
+    if (
+      editor.herramienta === "linea" &&
+      previsualizando &&
+      lineaInicio &&
+      lineaFin
+    ) {
+      ctx.fillStyle = editor.colorActual;
+      ctx.globalAlpha = 0.5;
+      for (const [x, y] of lineaPuntos(lineaInicio.x, lineaInicio.y, lineaFin.x, lineaFin.y)) {
+        if (x < 0 || y < 0 || x >= editor.model.cols || y >= editor.model.rows) continue;
+        ctx.fillRect(x, y, 1, 1);
+      }
+      ctx.globalAlpha = 1;
+    }
   });
 
   function celdaDeEvento(event) {
@@ -23,19 +41,50 @@
   }
 
   function onPointerDown(event) {
-    pintando = true;
     const celda = celdaDeEvento(event);
-    if (celda) editor.pintarPixel(celda.x, celda.y);
+    if (!celda) return;
+    pintando = true;
+    switch (editor.herramienta) {
+      case "borrador":
+        editor.borrarPixel(celda.x, celda.y);
+        break;
+      case "linea":
+        lineaInicio = celda;
+        lineaFin = celda;
+        previsualizando = true;
+        break;
+      case "relleno":
+        editor.rellenar(celda.x, celda.y);
+        break;
+      default:
+        editor.pintarPixel(celda.x, celda.y);
+    }
   }
 
   function onPointerMove(event) {
     if (!pintando) return;
     const celda = celdaDeEvento(event);
-    if (celda) editor.pintarPixel(celda.x, celda.y);
+    if (!celda) return;
+    switch (editor.herramienta) {
+      case "borrador":
+        editor.borrarPixel(celda.x, celda.y);
+        break;
+      case "linea":
+        lineaFin = celda;
+        break;
+      default:
+        editor.pintarPixel(celda.x, celda.y);
+    }
   }
 
   function onPointerUp() {
+    if (editor.herramienta === "linea" && previsualizando && lineaInicio && lineaFin) {
+      editor.dibujarLinea(lineaInicio.x, lineaInicio.y, lineaFin.x, lineaFin.y);
+    }
     pintando = false;
+    previsualizando = false;
+    lineaInicio = null;
+    lineaFin = null;
   }
 </script>
 

@@ -11,7 +11,17 @@ class MockOffscreenCanvas {
       lineWidth: 1,
       globalAlpha: 1,
       drawImage: vi.fn(),
-      clearRect: vi.fn(),
+      clearRect: (x, y, w, h) => {
+        for (let j = y; j < y + h; j++) {
+          for (let i = x; i < x + w; i++) {
+            const o = pixelOffset(this.width, i, j);
+            this.data[o] = 0;
+            this.data[o + 1] = 0;
+            this.data[o + 2] = 0;
+            this.data[o + 3] = 0;
+          }
+        }
+      },
       putImageData: vi.fn(),
       beginPath: vi.fn(),
       moveTo: vi.fn(),

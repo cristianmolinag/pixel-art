@@ -1,6 +1,6 @@
 # Feature 001: Canvas
 
-**Estado:** 🚧 En progreso
+**Estado:** ✅ Implementada
 **Spec escrita:** 2026-09-04
 **Objetivo:** `specs/project/objective.md`
 **Issue asociado:** [#11](https://github.com/cristianmolinag/pixel-art/issues/11)
