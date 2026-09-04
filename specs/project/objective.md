@@ -22,11 +22,13 @@ producto real**, feature por feature.
 No partimos de un editor completo. Construimos **una feature a la vez**, en orden de
 complejidad creciente, verificando antes de avanzar:
 
-1. **Canvas** — ver un lienzo de píxeles cuadriculado (base de todo lo demás).
-2. **Colores** — elegir color y pintar sobre píxeles.
-3. **Herramientas** — borrar, línea, relleno, etc.
-4. **Undo/redo** — deshacer y rehacer acciones.
-5. **Galería** — guardar y listar dibujos.
+1. **Canvas** — ver un lienzo de píxeles cuadriculado (base de todo lo demás) → **#11**.
+2. **Colores** — elegir color y pintar sobre píxeles → **#12**.
+3. **Herramientas** — borrar, línea, relleno, etc. → **#5**.
+4. **Undo/redo** — deshacer y rehacer acciones → **#13**.
+5. **Galería** — guardar y listar dibujos → **#6**.
+
+Cada feature se traza a un issue de GitHub (y su spec en `specs/features/`).
 
 ## No-objetivos (fuera del alcance actual)
 
@@ -35,7 +37,10 @@ Para mantener el aprendizaje enfocado, **queda fuera del alcance inicial**:
 - Capas múltiples (se mencionan como visión futura, no se implementan al inicio).
 - Animación / timeline / GIF animado / spritesheet.
 - Colaboración en tiempo real.
-- Estas features pueden entrar en una fase posterior (ver roadmap en issues y milestones).
+
+> Los issues abiertos correspondientes a estos no-objetivos (#3, #4, #7, #9) fueron
+> cerrados para trazar solo el alcance actual. El milestone v1.1/v2.0 se eliminó;
+> el roadmap de trabajo vive en el milestone **v1.0 MVP** + backlog sin milestone.
 
 ## Principios
 
@@ -60,11 +65,10 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Dónde está el trabajo (cómo saber qué falta)
 
 - **Qué queremos / cómo está pensado** → este documento + `specs/architecture/` + `specs/features/`.
-- **En qué se está trabajando / qué falta** → *issues abiertos* de GitHub (v1.0 MVP, v1.1, v2.0).
-- Cada feature de `specs/features/` se asocia a un issue (o grupo de issues). Ver el
-  estado en la cabecera de cada spec.
+- **En qué se está trabajando / qué falta** → *issues abiertos* de GitHub (milestone **v1.0 MVP** + backlog sin milestone: #1, #8, #10).
+- Cada feature de `specs/features/` se asocia a un issue. Ver el estado en la cabecera de cada spec.
 
 ## Estado del proyecto
 
-- **Rama activa**: `develop` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: construcción de la feature 001 (Canvas) — ver `specs/features/01-canvas.md`.
+- **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
+- **Fase actual**: F01 Canvas (#11) implementada y verificada — siguiente: F02 Colores (#12).

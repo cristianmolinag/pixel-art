@@ -12,14 +12,15 @@
 - Vite 6
 - Tailwind CSS v4
 - vite-plugin-pwa
-- Node >= 22 (usar `nvm use` antes de cualquier comando)
+- Node >= 22 (usar `mise exec --` antes de cualquier comando)
 
 ## Desarrollo
 ```bash
-nvm use          # siempre primero
-npm install      # si no hay node_modules
-npm run dev      # para desarrollo
-npm run build    # verificar antes de commit
+mise exec -- pnpm install   # si no hay node_modules
+mise exec -- pnpm dev       # para desarrollo
+mise exec -- pnpm build     # verificar antes de commit
+mise exec -- pnpm test      # correr tests
+mise exec -- pnpm check     # typecheck (svelte-check)
 ```
 
 ## Arquitectura
@@ -29,8 +30,11 @@ npm run build    # verificar antes de commit
 - No usar `document.querySelector` para acceder al canvas — usar el patrón de acciones pendientes
 
 ## Issues
-- El plan de desarrollo está en los milestones de GitHub:
-  - v1.0 MVP: issues #1-3, #5, #8, #10
-  - v1.1 Animación y Galería: issues #4, #6, #9
-  - v2.0 Colaboración: issue #7
+- El plan de desarrollo es **simple e incremental**, alineado a `specs/project/objective.md`:
+  - F01 Canvas → **#11** (implementada; spec en `specs/features/01-canvas.md`)
+  - F02 Colores y pintar píxeles → **#12**
+  - F03 Herramientas de dibujo (borrador, línea, relleno) → **#5**
+  - F04 Undo/Redo (deshacer/rehacer) → **#13**
+  - F05 Galería y persistencia (IndexedDB) → **#6**
+  - Backlog cross-cutting (sin milestone): **#1** Iconos PWA, **#8** Mejoras mobile/UX, **#10** Atajos de teclado
 - Cualquier sesión debe consultar los issues abiertos antes de implementar algo nuevo
