@@ -27,6 +27,7 @@ complejidad creciente, verificando antes de avanzar:
 3. **Herramientas** — borrar, línea, relleno, etc. → **#5**.
 4. **Undo/redo** — deshacer y rehacer acciones → **#13**.
 5. **Galería** — guardar y listar dibujos → **#6**.
+6. **Color picker** — selector de color libre decente y colores recientes → **#14**.
 
 Cada feature se traza a un issue de GitHub (y su spec en `specs/features/`).
 
@@ -71,4 +72,5 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Estado del proyecto
 
 - **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F02 Colores (#12) implementada y verificada — actual: F03 Herramientas (#5).
+- **Fase actual**: F03 Herramientas (#5) implementada y verificada — siguiente: F04 Undo/Redo (#13).
+  En el milestone **v1.0 MVP** quedan pendientes F04 (#13), F05 Galería (#6) y el color picker (#14).
