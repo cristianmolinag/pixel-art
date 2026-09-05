@@ -28,6 +28,10 @@ complejidad creciente, verificando antes de avanzar:
 4. **Undo/redo** — deshacer y rehacer acciones → **#13**.
 5. **Galería** — guardar y listar dibujos → **#6**.
 6. **Color picker** — selector de color libre decente y colores recientes → **#14**.
+7. **Layout del menú** — agrupar iconos sin saltos de línea → **#15**.
+8. **Toggle de cuadrícula** — mostrar/ocultar la cuadrícula del lienzo → **#16**.
+9. **Matriz del lienzo** — menú para cambiar dimensiones (presets/custom) → **#17**.
+10. **Zoom** — acercar/alejar la vista del lienzo → **#18**.
 
 Cada feature se traza a un issue de GitHub (y su spec en `specs/features/`).
 
@@ -72,5 +76,6 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Estado del proyecto
 
 - **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F06 Color picker (#14) implementada y verificada. Con esto el milestone
-  **v1.0 MVP** está completo; queda solo backlog sin milestone: #1, #8, #10.
+- **Fase actual**: F06 Color picker (#14) implementada y verificada. Quedan pendientes en el
+  milestone **v1.0 MVP**: F07 Layout del menú (#15), F08 Toggle de cuadrícula (#16), F09 Matriz del
+  lienzo (#17) y F10 Zoom (#18); y backlog sin milestone: #1, #8, #10.
