@@ -1,171 +1,215 @@
-import { Layer } from "../models/Layer.js";
-import { Frame } from "../models/Frame.js";
+import { Canvas } from "../models/Canvas.js";
+import {
+  loadRecentColors,
+  saveRecentColors,
+  normalizeHex,
+  RECENT_LIMIT,
+} from "../services/colors.js";
 
-export const GRID_PRESETS = [
-  { label: "8x8", cols: 8, rows: 8 },
-  { label: "16x16", cols: 16, rows: 16 },
-  { label: "32x32", cols: 32, rows: 32 },
-  { label: "48x48", cols: 48, rows: 48 },
-  { label: "64x64", cols: 64, rows: 64 },
-  { label: "128x128", cols: 128, rows: 128 },
-];
+const GRID_STORAGE_KEY = "pixel-art-studio:show-grid";
 
-export const RATIO_PRESETS = [
-  { label: "1:1", cols: 32, rows: 32 },
-  { label: "16:9 HD", cols: 32, rows: 18 },
-  { label: "9:16", cols: 18, rows: 32 },
-  { label: "4:3", cols: 32, rows: 24 },
-  { label: "3:2", cols: 36, rows: 24 },
-];
-
-export const PAPER_PRESETS = [
-  { label: "A4 vert", exportW: 2480, exportH: 3508, aspect: 210 / 297 },
-  { label: "A4 horiz", exportW: 3508, exportH: 2480, aspect: 297 / 210 },
-  { label: "Oficio vert", exportW: 2550, exportH: 3300, aspect: 215.9 / 279.4 },
-  { label: "Oficio horiz", exportW: 3300, exportH: 2550, aspect: 279.4 / 215.9 },
-  { label: "A3 vert", exportW: 3508, exportH: 4961, aspect: 297 / 420 },
-  { label: "A3 horiz", exportW: 4961, exportH: 3508, aspect: 420 / 297 },
-];
-
-class EditorState {
-  gridCols = $state(32);
-  gridRows = $state(32);
-  exportWidth = $state(0);
-  exportHeight = $state(0);
-
-  activeTool = $state("pen");
-  activeColor = $state("#000000");
-
-  layers = $state([new Layer("Layer 1", 32, 32)]);
-  activeLayerIndex = $state(0);
-
-  frames = $state([new Frame()]);
-  activeFrameIndex = $state(0);
-
-  isDrawing = $state(false);
-  showGrid = $state(true);
-  eraseMode = $state(false);
-
-  canvasVersion = $state(0);
-  pendingImageData = $state(null);
-  pendingClear = $state(false);
-  pendingExport = $state(false);
-  pendingComposite = $state(false);
-
-  activeLayer = $derived(this.layers[this.activeLayerIndex]);
-  activeFrame = $derived(this.frames[this.activeFrameIndex]);
-  layerCount = $derived(this.layers.length);
-  frameCount = $derived(this.frames.length);
-
-  setTool(tool) {
-    this.activeTool = tool;
-    this.eraseMode = tool === "eraser";
-  }
-
-  setColor(color) {
-    this.activeColor = color;
-  }
-
-  setCanvasSize(cols, rows) {
-    this.gridCols = cols;
-    this.gridRows = rows;
-  }
-
-  setPaperExport(w, h) {
-    this.exportWidth = w;
-    this.exportHeight = h;
-  }
-
-  composite(displayCtx, displayCanvas) {
-    if (!displayCtx || !displayCanvas) return;
-    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
-    for (const layer of this.layers) {
-      if (!layer.visible) continue;
-      displayCtx.globalAlpha = layer.opacity;
-      displayCtx.drawImage(layer.offscreen, 0, 0);
-    }
-    displayCtx.globalAlpha = 1.0;
-  }
-
-  requestComposite() {
-    this.pendingComposite = true;
-    this.canvasVersion++;
-  }
-
-  initLayers(cols, rows) {
-    this.gridCols = cols;
-    this.gridRows = rows;
-    this.layers = [new Layer("Layer 1", cols, rows)];
-    this.activeLayerIndex = 0;
-  }
-
-  resizeAllLayers(cols, rows) {
-    this.gridCols = cols;
-    this.gridRows = rows;
-    for (const layer of this.layers) {
-      layer.resize(cols, rows);
-    }
-  }
-
-  addLayer(name) {
-    const layer = new Layer(name ?? `Layer ${this.layers.length + 1}`, this.gridCols, this.gridRows);
-    this.layers = [...this.layers, layer];
-    this.activeLayerIndex = this.layers.length - 1;
-  }
-
-  removeLayer(index) {
-    if (this.layers.length <= 1) return;
-    this.layers = this.layers.filter((_, i) => i !== index);
-    this.activeLayerIndex = Math.min(
-      this.activeLayerIndex,
-      this.layers.length - 1,
-    );
-  }
-
-  setActiveLayer(index) {
-    this.activeLayerIndex = index;
-  }
-
-  toggleLayerVisibility(index) {
-    const layer = this.layers[index];
-    if (layer) {
-      layer.visible = !layer.visible;
-    }
-  }
-
-  clearActiveLayer() {
-    const layer = this.activeLayer;
-    if (layer && !layer.locked) {
-      layer.clear();
-    }
-  }
-
-  addFrame() {
-    const frame = new Frame();
-    this.frames = [...this.frames, frame];
-    this.activeFrameIndex = this.frames.length - 1;
-  }
-
-  removeFrame(index) {
-    if (this.frames.length <= 1) return;
-    this.frames = this.frames.filter((_, i) => i !== index);
-    this.activeFrameIndex = Math.min(
-      this.activeFrameIndex,
-      this.frames.length - 1,
-    );
-  }
-
-  setActiveFrame(index) {
-    this.activeFrameIndex = index;
-  }
-
-  duplicateFrame(index) {
-    const clone = this.frames[index].clone();
-    const newFrames = [...this.frames];
-    newFrames.splice(index + 1, 0, clone);
-    this.frames = newFrames;
-    this.activeFrameIndex = index + 1;
+function loadGridVisibility() {
+  try {
+    return localStorage.getItem(GRID_STORAGE_KEY) !== "false";
+  } catch {
+    return true;
   }
 }
 
-export const editor = new EditorState();
+function saveGridVisibility(valor) {
+  try {
+    localStorage.setItem(GRID_STORAGE_KEY, String(valor));
+  } catch {
+    // sin storage (SSR/pruebas) se ignora
+  }
+}
+
+export const MATRIX_PRESETS = [16, 32, 48, 64];
+export const MIN_MATRIX_SIZE = 4;
+export const MAX_MATRIX_SIZE = 128;
+
+export const MIN_ZOOM = 1;
+export const MAX_ZOOM = 4;
+export const ZOOM_STEP = 0.5;
+
+export const PALETA = [
+  "#000000",
+  "#ffffff",
+  "#ff0000",
+  "#ff8700",
+  "#ffd300",
+  "#deff0a",
+  "#a1ff0a",
+  "#0aff99",
+  "#0aefff",
+  "#147df5",
+  "#580aff",
+  "#be0aff",
+  "#ff13c3",
+  "#ff006a",
+  "#606060",
+  "#9e9e9e",
+  "#ffc0cb",
+  "#c0c0c0",
+  "#808080",
+  "#404040",
+  "#800000",
+  "#8b4513",
+  "#a0522d",
+  "#d2691e",
+  "#ff8c00",
+  "#b22222",
+  "#dc143c",
+  "#ff1493",
+  "#4b0082",
+  "#8a2be2",
+  "#00ced1",
+  "#2e8b57",
+];
+
+class EditorStore {
+  model = $state(new Canvas(16, 16));
+  currentColor = $state("#000000");
+  tool = $state("brush");
+  version = $state(0);
+  recentColors = $state(loadRecentColors());
+  showGrid = $state(loadGridVisibility());
+  zoom = $state(1);
+  panX = $state(0);
+  panY = $state(0);
+
+  selectColor(color) {
+    const norm = normalizeHex(color);
+    if (!norm) return;
+    this.currentColor = norm;
+  }
+
+  trackColorUsage(color) {
+    const norm = normalizeHex(color);
+    if (!norm) return;
+    const lista = this.recentColors.filter((c) => c !== norm);
+    lista.unshift(norm);
+    this.recentColors = lista.slice(0, RECENT_LIMIT);
+    saveRecentColors(this.recentColors);
+  }
+
+  undoStack = $state([]);
+  redoStack = $state([]);
+  canUndo = $derived(this.undoStack.length > 0);
+  canRedo = $derived(this.redoStack.length > 0);
+
+  _actionChanges = 0;
+  _actionSnapshot = null;
+
+  beginAction() {
+    this._actionSnapshot = this.model.snapshot();
+    this._actionChanges = 0;
+  }
+
+  endAction() {
+    if (this._actionChanges > 0 && this._actionSnapshot && !this.model.equals(this._actionSnapshot)) {
+      this.undoStack.push(this._actionSnapshot);
+      this.redoStack.length = 0;
+    }
+    this._actionSnapshot = null;
+    this._actionChanges = 0;
+  }
+
+  undo() {
+    while (this.undoStack.length > 0) {
+      const snapshot = this.undoStack.pop();
+      if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
+      this.redoStack.push(this.model.snapshot());
+      this.model.restore(snapshot);
+      this.version += 1;
+      return;
+    }
+  }
+
+  redo() {
+    while (this.redoStack.length > 0) {
+      const snapshot = this.redoStack.pop();
+      if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
+      this.undoStack.push(this.model.snapshot());
+      this.model.restore(snapshot);
+      this.version += 1;
+      return;
+    }
+  }
+
+  selectTool(tool) {
+    this.tool = tool;
+  }
+
+  toggleGrid() {
+    this.showGrid = !this.showGrid;
+    saveGridVisibility(this.showGrid);
+  }
+
+  roundZoom(valor) {
+    return Math.round(valor / ZOOM_STEP) * ZOOM_STEP;
+  }
+
+  zoomIn() {
+    this.zoom = Math.min(MAX_ZOOM, this.roundZoom(this.zoom + ZOOM_STEP));
+  }
+
+  zoomOut() {
+    this.zoom = Math.max(MIN_ZOOM, this.roundZoom(this.zoom - ZOOM_STEP));
+  }
+
+  setZoom(valor) {
+    this.zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, valor));
+  }
+
+  resetZoom() {
+    this.zoom = 1;
+    this.panX = 0;
+    this.panY = 0;
+  }
+
+  panBy(dx, dy, maxX = Infinity, maxY = Infinity) {
+    this.panX = Math.min(maxX, Math.max(-maxX, this.panX + dx));
+    this.panY = Math.min(maxY, Math.max(-maxY, this.panY + dy));
+  }
+
+  setMatrix(cols, rows) {
+    const c = Math.floor(Number(cols));
+    const r = Math.floor(Number(rows));
+    if (!Number.isFinite(c) || !Number.isFinite(r)) return false;
+    if (c < MIN_MATRIX_SIZE || c > MAX_MATRIX_SIZE || r < MIN_MATRIX_SIZE || r > MAX_MATRIX_SIZE) return false;
+    this.model = new Canvas(c, r);
+    this.version += 1;
+    return true;
+  }
+
+  paintPixel(x, y) {
+    if (!this.model.setPixel(x, y, this.currentColor)) return;
+    this.trackColorUsage(this.currentColor);
+    this._actionChanges += 1;
+    this.version += 1;
+  }
+
+  erasePixel(x, y) {
+    if (!this.model.erasePixel(x, y)) return;
+    this._actionChanges += 1;
+    this.version += 1;
+  }
+
+  drawLine(x0, y0, x1, y1) {
+    if (!this.model.drawLine(x0, y0, x1, y1, this.currentColor)) return;
+    this.trackColorUsage(this.currentColor);
+    this._actionChanges += 1;
+    this.version += 1;
+  }
+
+  floodFill(x, y) {
+    const painted = this.model.floodFill(x, y, this.currentColor);
+    if (painted <= 0) return;
+    this.trackColorUsage(this.currentColor);
+    this._actionChanges += 1;
+    this.version += 1;
+  }
+}
+
+export const editor = new EditorStore();

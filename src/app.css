@@ -7,7 +7,6 @@
   --color-surface-light: #16213e;
   --color-surface-lighter: #0f3460;
   --color-canvas-bg: #ffffff;
-  --color-grid: #cccccc;
 }
 
 html,
@@ -17,18 +16,8 @@ body {
   background-color: var(--color-surface);
   color: white;
   font-family: system-ui, -apple-system, sans-serif;
-  overflow: hidden;
-  overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
-}
-
-#app {
-  height: 100dvh;
-  overflow: hidden;
-}
-
-* {
-  box-sizing: border-box;
+  overscroll-behavior: none;
 }
 
 canvas {
@@ -36,11 +25,38 @@ canvas {
   image-rendering: crisp-edges;
 }
 
-input[type="range"] {
-  height: 6px;
+.scrollbar-invisible {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-input[type="color"] {
-  border: none;
-  padding: 0;
+.scrollbar-invisible::-webkit-scrollbar {
+  display: none;
+}
+
+.tam-icono {
+  width: clamp(28px, 9vw, 40px);
+  height: clamp(28px, 9vw, 40px);
+}
+
+.tam-icono-ancho {
+  width: clamp(28px, 9vw, 40px);
+}
+
+.tam-icono > svg,
+.tam-icono-ancho > svg {
+  width: 60%;
+  height: 60%;
+}
+
+.toolbar-fila {
+  gap: clamp(2px, 0.8vw, 4px);
+}
+
+#app {
+  height: 100dvh;
+}
+
+* {
+  box-sizing: border-box;
 }

@@ -1,68 +1,41 @@
 <script>
-  import "./app.css";
-  import ToolBar from "./lib/toolbar/ToolBar.svelte";
-  import PixelCanvas from "./lib/canvas/PixelCanvas.svelte";
-  import ColorPalette from "./lib/panels/ColorPalette.svelte";
-  import LayerPanel from "./lib/panels/LayerPanel.svelte";
-  import PropertiesPanel from "./lib/panels/PropertiesPanel.svelte";
-  import Timeline from "./lib/timeline/Timeline.svelte";
-  import Gallery from "./lib/gallery/Gallery.svelte";
-  import { editor } from "./lib/stores/editor.svelte.js";
-
-  let showGallery = $state(false);
-  let showPanels = $state(false);
+  import PixelCanvas from "./lib/components/PixelCanvas.svelte";
+  import Palette from "./lib/components/Palette.svelte";
+  import Toolbar from "./lib/components/Toolbar.svelte";
+  import FileActions from "./lib/components/FileActions.svelte";
+  import Gallery from "./lib/components/Gallery.svelte";
 </script>
 
-<div class="h-[100dvh] flex flex-col overflow-hidden relative">
-  <header class="bg-surface-light border-b border-surface-lighter px-3 py-2 flex items-center justify-between shrink-0 z-50">
-    <h1 class="text-base sm:text-lg font-bold tracking-tight">Pixel Art Studio</h1>
-    <div class="flex gap-2">
-      <button
-        onclick={() => (showPanels = !showPanels)}
-        class="lg:hidden px-2.5 py-1.5 rounded-lg bg-surface-lighter hover:bg-brand text-sm font-medium transition-colors cursor-pointer z-50"
-      >
-        {showPanels ? "✕" : "☰"}
-      </button>
-      <button
-        onclick={() => { showGallery = !showGallery; showPanels = false; }}
-        class="px-2.5 py-1.5 rounded-lg bg-surface-lighter hover:bg-brand text-sm font-medium transition-colors cursor-pointer"
-      >
-        {showGallery ? "Editor" : "Galeria"}
-      </button>
+<div class="flex h-screen flex-col bg-surface">
+  <header class="flex items-center gap-3 bg-surface-light px-4 py-3 shadow-md">
+    <img
+      src={`${import.meta.env.BASE_URL}icon.svg`}
+      alt=""
+      width="32"
+      height="32"
+      class="h-8 w-8 rounded-lg"
+    />
+    <h1 class="text-xl font-bold text-white">Pixel Art Studio</h1>
+    <div class="ml-auto flex items-center gap-1">
+      <FileActions />
     </div>
   </header>
 
-  {#if showGallery}
-    <Gallery />
-  {:else}
-    <div class="flex flex-1 min-h-0">
-      <aside class="hidden lg:flex w-56 bg-surface-light border-r border-surface-lighter p-3 flex-col gap-3 overflow-y-auto shrink-0">
-        <ColorPalette />
-        <PropertiesPanel />
-        <LayerPanel />
-      </aside>
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+    <aside
+      class="flex items-center justify-center bg-surface-light p-2 lg:w-auto lg:shrink-0 lg:items-start lg:overflow-y-auto lg:p-3"
+    >
+      <Toolbar />
+    </aside>
 
-      <main class="flex-1 flex flex-col items-center justify-start p-2 sm:p-4 overflow-auto min-w-0">
-        <ToolBar />
-        <PixelCanvas />
-        <Timeline />
-      </main>
-    </div>
-  {/if}
+    <main class="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-4">
+      <PixelCanvas />
+    </main>
+  </div>
 
-  {#if showPanels && !showGallery}
-    <div class="fixed inset-0 z-40 lg:hidden flex" style="position: fixed;">
-      <button class="flex-1 bg-black/50 cursor-default" onclick={() => (showPanels = false)} aria-label="Cerrar panel"></button>
-      <div class="w-64 max-w-[80vw] bg-surface-light border-l border-surface-lighter p-3 flex flex-col gap-3 overflow-y-auto">
-        <span class="text-xs text-gray-400 font-medium mb-1">Panel</span>
-        <ColorPalette />
-        <PropertiesPanel />
-        <LayerPanel />
-      </div>
-    </div>
-  {/if}
-
-  <footer class="text-center text-[10px] sm:text-xs text-gray-500 py-1.5 border-t border-surface-lighter shrink-0 z-50">
-    Hecho por Cristian, Valentina y Daniel Molina solo por diversion.
+  <footer class="bg-surface-light px-4 py-3 shadow-[0_-4px_6px_rgba(0,0,0,0.25)]">
+    <Palette />
   </footer>
 </div>
+
+<Gallery />
