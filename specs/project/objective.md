@@ -76,6 +76,6 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Estado del proyecto
 
 - **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F09 Matriz del lienzo (#17) implementada y verificada. Quedan pendientes en el
-  milestone **v1.0 MVP**: F07 Layout del menú (#15) y F10 Zoom (#18);
+- **Fase actual**: F10 Zoom del lienzo (#18) implementada y verificada. Queda pendiente en el
+  milestone **v1.0 MVP**: F07 Layout del menú (#15);
   y backlog sin milestone: #1, #8, #10.

@@ -332,3 +332,63 @@ describe("editor store (F09 matriz)", () => {
     expect(editor.undoStack.length).toBe(0);
   });
 });
+
+describe("editor store (F10 zoom)", () => {
+  beforeEach(() => {
+    editor.zoom = 1;
+    editor.panX = 0;
+    editor.panY = 0;
+  });
+
+  it("acercar sube el zoom en pasos de 0.5", () => {
+    editor.zoom = 1;
+    editor.acercar();
+    expect(editor.zoom).toBe(1.5);
+    editor.acercar();
+    expect(editor.zoom).toBe(2);
+  });
+
+  it("acercar nunca supera el máximo 4×", () => {
+    editor.zoom = 4;
+    editor.acercar();
+    expect(editor.zoom).toBe(4);
+  });
+
+  it("alejar baja el zoom en pasos de 0.5 sin pasar del mínimo 1× (100%)", () => {
+    editor.zoom = 1.5;
+    editor.alejar();
+    expect(editor.zoom).toBe(1);
+    editor.alejar();
+    expect(editor.zoom).toBe(1);
+  });
+
+  it("establecerZoom (pellizco) fija el zoom dentro del rango 1–4", () => {
+    editor.establecerZoom(2.3);
+    expect(editor.zoom).toBe(2.3);
+    editor.establecerZoom(8);
+    expect(editor.zoom).toBe(4);
+    editor.establecerZoom(0.1);
+    expect(editor.zoom).toBe(1);
+  });
+
+  it("reiniciarZoom vuelve a 1× y centra (limpia el pan)", () => {
+    editor.zoom = 3.5;
+    editor.desplazarPan(40, -25);
+    editor.reiniciarZoom();
+    expect(editor.zoom).toBe(1);
+    expect(editor.panX).toBe(0);
+    expect(editor.panY).toBe(0);
+  });
+
+  it("desplazarPan suma desplazamiento y respeta límites", () => {
+    editor.desplazarPan(30, 20, 50, 50);
+    expect(editor.panX).toBe(30);
+    expect(editor.panY).toBe(20);
+    editor.desplazarPan(40, 40, 50, 50);
+    expect(editor.panX).toBe(50);
+    expect(editor.panY).toBe(50);
+    editor.desplazarPan(-200, -200, 50, 50);
+    expect(editor.panX).toBe(-50);
+    expect(editor.panY).toBe(-50);
+  });
+});

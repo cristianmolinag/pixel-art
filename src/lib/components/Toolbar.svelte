@@ -11,6 +11,9 @@
   import Save from "@lucide/svelte/icons/save";
   import Images from "@lucide/svelte/icons/images";
   import Grid3x3 from "@lucide/svelte/icons/grid-3x3";
+  import Minus from "@lucide/svelte/icons/minus";
+  import Plus from "@lucide/svelte/icons/plus";
+  import Maximize from "@lucide/svelte/icons/maximize";
   import Matriz from "./Matriz.svelte";
 
   const HERRAMIENTAS = [
@@ -69,6 +72,39 @@
   </button>
 
   <Matriz />
+
+  <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
+
+  <button
+    type="button"
+    aria-label="Alejar (zoom)"
+    title="Alejar vista (zoom −)"
+    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
+    onclick={() => editor.alejar()}
+  >
+    <Minus size={20} />
+  </button>
+  <span class="w-10 text-center text-xs text-white/70" aria-live="polite">
+    {Math.round(editor.zoom * 100)}%
+  </span>
+  <button
+    type="button"
+    aria-label="Acercar (zoom)"
+    title="Acercar vista (zoom +)"
+    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
+    onclick={() => editor.acercar()}
+  >
+    <Plus size={20} />
+  </button>
+  <button
+    type="button"
+    aria-label="Restablecer zoom al 100%"
+    title="Restablecer zoom y centrado"
+    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
+    onclick={() => editor.reiniciarZoom()}
+  >
+    <Maximize size={20} />
+  </button>
 
   <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
 

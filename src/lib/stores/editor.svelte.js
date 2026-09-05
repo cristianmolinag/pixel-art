@@ -28,6 +28,10 @@ export const MATRICES = [16, 32, 48, 64];
 export const MIN_MATRIZ = 4;
 export const MAX_MATRIZ = 128;
 
+export const MIN_ZOOM = 1;
+export const MAX_ZOOM = 4;
+export const PASO_ZOOM = 0.5;
+
 export const PALETA = [
   "#000000",
   "#ffffff",
@@ -54,6 +58,9 @@ class EditorStore {
   version = $state(0);
   coloresRecientes = $state(cargarRecientes());
   mostrarCuadricula = $state(cargarMostrarCuadricula());
+  zoom = $state(1);
+  panX = $state(0);
+  panY = $state(0);
 
   seleccionarColor(color) {
     const norm = normalizarHex(color);
@@ -121,6 +128,33 @@ class EditorStore {
   alternarCuadricula() {
     this.mostrarCuadricula = !this.mostrarCuadricula;
     guardarMostrarCuadricula(this.mostrarCuadricula);
+  }
+
+  redondearZoom(valor) {
+    return Math.round(valor / PASO_ZOOM) * PASO_ZOOM;
+  }
+
+  acercar() {
+    this.zoom = Math.min(MAX_ZOOM, this.redondearZoom(this.zoom + PASO_ZOOM));
+  }
+
+  alejar() {
+    this.zoom = Math.max(MIN_ZOOM, this.redondearZoom(this.zoom - PASO_ZOOM));
+  }
+
+  establecerZoom(valor) {
+    this.zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, valor));
+  }
+
+  reiniciarZoom() {
+    this.zoom = 1;
+    this.panX = 0;
+    this.panY = 0;
+  }
+
+  desplazarPan(dx, dy, maxX = Infinity, maxY = Infinity) {
+    this.panX = Math.min(maxX, Math.max(-maxX, this.panX + dx));
+    this.panY = Math.min(maxY, Math.max(-maxY, this.panY + dy));
   }
 
   establecerMatriz(cols, rows) {

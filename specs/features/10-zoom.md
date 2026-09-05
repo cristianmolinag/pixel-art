@@ -1,6 +1,6 @@
 # Feature 010: Zoom del lienzo
 
-**Estado:** 🚧 En revisión (ajustes de UX acordados con el usuario el 2026-09-04, pendientes de implementar)
+**Estado:** ✅ Implementada (revisión UX del 2026-09-04 integrada)
 **Spec escrita:** 2026-09-04
 **Objetivo:** `specs/project/objective.md`
 **Issue asociado:** [#18](https://github.com/cristianmolinag/pixel-art/issues/18)
@@ -35,7 +35,7 @@ de gestos táctiles.
 **Acceptance Scenarios (Given/When/Then):**
 
 1. **Given** el editor, **When** toco "+", **Then** la vista del lienzo se amplía en un paso.
-2. **Given** el editor, **When** toco "−", **Then** la vista se reduce en un paso (mínimo 0.5×).
+2. **Given** el editor, **When** toco "−", **Then** la vista se reduce en un paso (mínimo 1×/100%).
 3. **Given** un zoom cualquiera (y/o pan), **When** toco "100%", **Then** la vista vuelve al
    tamaño base y al centrado original (sin pan).
 4. **Given** zoom activo, **When** pinto, **Then** la conversión de coordenadas sigue siendo exacta
@@ -69,7 +69,7 @@ ampliar. Depende de US1 (estado y render compartidos).
 **Acceptance Scenarios (Given/When/Then):**
 
 1. **Given** el lienzo, **When** separo dos dedos, **Then** la vista se amplía según la distancia.
-2. **Given** el lienzo, **When** junto dos dedos, **Then** la vista se reduce (mínimo 0.5×).
+2. **Given** el lienzo, **When** junto dos dedos, **Then** la vista se reduce (mínimo 1×/100%).
 3. **Given** dos dedos sobre el lienzo, **Then** no se pinta ni se dispara el gesto de zoom/scroll
    del navegador (`touch-action: none` intacto).
 4. **Given** un solo dedo, **Then** se pinta normalmente (sin interferencias del cambio de zoom).
@@ -96,9 +96,10 @@ ampliar. Depende de US1 (estado y render compartidos).
 ### Resueltas (decidido con el usuario)
 
 - **Mecanismo y rango**: zoom con **CSS `transform: scale`** sobre el contenido del lienzo (los
-  píxeles no se alteran; se mantiene `image-rendering: pixelated`), entre **0.5× y 4×**
-  (`MIN_ZOOM=0.5`, `MAX_ZOOM=4`). Los botones `−`/`+` avanzan en pasos de **0.5**
-  (`PASO_ZOOM=0.5`); el pellizco ajusta el zoom de forma continua dentro del rango.
+  píxeles no se alteran; se mantiene `image-rendering: pixelated`), entre **1× y 4×**
+  (`MIN_ZOOM=1`, `MAX_ZOOM=4`). El mínimo es **100%** para que el canvas siempre llene el marco
+  fijo y el contenedor no se vea redimensionado/encogido. Los botones `−`/`+` avanzan en pasos de
+  **0.5** (`PASO_ZOOM=0.5`); el pellizco ajusta el zoom de forma continua dentro del rango.
 - **Dibujo y cuadrícula juntos**: al hacer zoom **el dibujo y la cuadrícula se redimensionan
   juntos**, manteniendo las guías alineadas a los píxeles (precisión al pintar).
 - **Contenedor fijo**: el marco del canvas mantiene siempre su tamaño; el contenido ampliado se
@@ -119,7 +120,7 @@ ampliar. Depende de US1 (estado y render compartidos).
 
 ## Tests
 
-- `tests/unit/stores/editor.test.js`: estado de zoom (pasos 0.5), límites 0.5×–4×, reseteo a 1×
+- `tests/unit/stores/editor.test.js`: estado de zoom (pasos 0.5), límites 1×–4×, reseteo a 1×
   (también del pan) y clamping de `desplazarPan`.
 - `tests/unit/components/Toolbar.test.js`: botones `−`/`+`/reset-icon, indicador único de
   porcentaje, US1.

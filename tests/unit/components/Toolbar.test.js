@@ -41,13 +41,16 @@ describe("Toolbar (F03)", () => {
       "Relleno",
       "Ocultar cuadrícula",
       "Cambiar matriz del lienzo",
+      "Alejar (zoom)",
+      "Acercar (zoom)",
+      "Restablecer zoom al 100%",
       "Deshacer",
       "Rehacer",
       "Nuevo dibujo",
       "Guardar",
       "Galería",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(11);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(13);
   });
 
   it("seleccionar una herramienta la activa y queda marcada (US1/FR-002)", async () => {
@@ -120,6 +123,34 @@ describe("Toolbar — toggle de cuadrícula (F08)", () => {
     const { container } = render(Toolbar);
     await fireEvent.click(botonPorLabel(container, "Mostrar cuadrícula"));
     expect(editor.mostrarCuadricula).toBe(true);
+  });
+});
+
+describe("Toolbar — zoom (F10)", () => {
+  beforeEach(() => {
+    editor.zoom = 1;
+  });
+
+  it("el indicador muestra 100% por defecto", () => {
+    const { container } = render(Toolbar);
+    expect(container.textContent).toContain("100%");
+  });
+
+  it("+ acerca el zoom y − lo aleja en pasos de 0.5 (US1)", async () => {
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Acercar (zoom)"));
+    expect(editor.zoom).toBe(1.5);
+    await fireEvent.click(botonPorLabel(container, "Alejar (zoom)"));
+    expect(editor.zoom).toBe(1);
+  });
+
+  it("100% restablece el zoom al tamaño base (US1)", async () => {
+    const { container } = render(Toolbar);
+    editor.acercar();
+    editor.acercar();
+    expect(editor.zoom).toBe(2);
+    await fireEvent.click(botonPorLabel(container, "Restablecer zoom al 100%"));
+    expect(editor.zoom).toBe(1);
   });
 });
 
