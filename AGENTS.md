@@ -9,6 +9,9 @@
 - Never push directly to `develop` or `main`; all changes to protected branches must be merged through a pull request.
 - Every code change must belong to a defined feature and have a corresponding GitHub issue.
 - Every feature implementation must update the relevant context files, including `AGENTS.md` and the applicable files under `specs/`.
+- Every issue/feature must use a dedicated Orca-managed worktree and branch.
+- Plan mode is mandatory before implementation, spec edits, sub-issue creation, or code changes.
+- All feature changes must be delivered through a pull request targeting `develop`.
 - Before committing, run `mise exec -- pnpm build` and verify that it succeeds.
 - If tests are configured, run them before committing.
 - Do not make design or implementation assumptions without asking the user first.
@@ -54,4 +57,5 @@ mise exec -- pnpm check
   - Cross-cutting backlog: **#1** PWA icons, **#8** mobile/UX improvements, **#10** keyboard shortcuts
   - v1.0 MVP item: **#19** grid guide overlay
   - F12 UX and release workflow polish -> **#24** (implemented; spec: `specs/features/12-ux-and-release-workflow.md`)
+  - F13 Issue-driven agent workflow -> **#26** (implemented; spec: `specs/features/13-issue-driven-agent-workflow.md`)
 - Review open issues before implementing new work.

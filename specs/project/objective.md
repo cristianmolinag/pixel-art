@@ -32,6 +32,7 @@ in complexity and verifying each feature before moving on:
 10. **Zoom** - zoom the canvas view in and out -> **#18**.
 11. **Grid guide** - a reference overlay decoupled from canvas data -> **#19**.
 12. **UX and release workflow polish** - pointer-centered desktop zoom, iOS safe-area support, and protected deployment workflow -> **#24**.
+13. **Issue-driven agent workflow** - plan, spec, sub-issues, Orca worktree, and PR delivery -> **#26**.
 
 Each feature maps to a GitHub issue and a spec in `specs/features/`.
 
