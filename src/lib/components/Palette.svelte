@@ -30,7 +30,6 @@
   let scrollMoved = $state(false);
   let recentOpen = $state(false);
   let recentRef = $state(undefined);
-  let scrollState = $state({ left: false, right: false });
 
   function syncPicker() {
     const hsv = hexToHsv(editor.currentColor);
@@ -189,7 +188,7 @@
   }
 
   function onPaletaPointerDown(e) {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
     scrollDragging = true;
     scrollStartX = e.clientX;
     scrollStartLeft = paletteScroll ? paletteScroll.scrollLeft : 0;
@@ -197,24 +196,11 @@
     scrollMoved = false;
   }
 
-  function updateArrows() {
+  function onPaletteWheel(e) {
     if (!paletteScroll) return;
-    const { scrollLeft, scrollWidth, clientWidth } = paletteScroll;
-    scrollState = {
-      left: scrollLeft > 0,
-      right: scrollWidth - clientWidth - scrollLeft > 1,
-    };
+    e.preventDefault();
+    paletteScroll.scrollLeft += e.deltaY + (e.deltaX || 0);
   }
-
-  function paletteMask() {
-    const left = scrollState.left ? "transparent 0, black 6%" : "black 0";
-    const right = scrollState.right ? ", black 94%, transparent 100%" : ", black 100%";
-    return `linear-gradient(to right, ${left}${right})`;
-  }
-
-  $effect(() => {
-    if (paletteScroll) updateArrows();
-  });
 
   function onHueWheel(e) {
     e.preventDefault();
@@ -275,17 +261,16 @@
         bind:this={paletteScroll}
         role="region"
         aria-label="Color palette"
-        class="scrollbar-invisible w-full cursor-grab touch-pan-y select-none items-center gap-2 overflow-x-auto overflow-y-hidden active:cursor-grabbing flex px-2"
-        style:mask-image={paletteMask()}
-        style:-webkit-mask-image={paletteMask()}
-        onscroll={updateArrows}
+        class="scrollbar-invisible palette-mask w-full cursor-grab touch-pan-x select-none snap-x snap-proximity items-center gap-2 overflow-x-auto overflow-y-hidden active:cursor-grabbing flex px-2"
+        style="-webkit-overflow-scrolling: touch; scroll-padding-inline: 0.5rem"
         onpointerdown={onPaletaPointerDown}
+        use:nonPassiveWheel={onPaletteWheel}
       >
         {#each PALETA as color}
           <button
             type="button"
             aria-label="Color {color}"
-            class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:scale-105"
+            class="flex h-8 w-8 shrink-0 cursor-pointer snap-start items-center justify-center rounded-md transition hover:scale-105"
             style:background-color={color}
             onclick={() => {
               if (scrollMoved) return;
@@ -459,5 +444,4 @@
       recentOpen = false;
     }
   }}
-  onresize={updateArrows}
 />

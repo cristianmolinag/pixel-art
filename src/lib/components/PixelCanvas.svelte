@@ -10,7 +10,13 @@
   let lineEnd = $state(null);
   let previewing = $state(false);
   let touchStartCell = $state(null);
+  let touchStartTime = $state(0);
+  let touchStartPos = $state(null);
+  let touchDelayTimer;
   const pointers = new Map();
+
+  const TOUCH_GRACE_MS = 120;
+  const TOUCH_SLOP_PX = 6;
   let pinch = null;
   let panActive = false;
   let lastPan = null;
@@ -171,12 +177,47 @@ function applyToolToCell(cell) {
   }
 }
 
+function clearTouchDelay() {
+  clearTimeout(touchDelayTimer);
+  touchDelayTimer = undefined;
+}
+
+function startTouchAction() {
+  if (!touchStartCell) return;
+  painting = true;
+  editor.beginAction();
+  if (editor.tool === "line") {
+    lineStart = touchStartCell;
+    lineEnd = touchStartCell;
+    previewing = true;
+  } else {
+    applyToolToCell(touchStartCell);
+  }
+  touchStartCell = null;
+  touchStartTime = 0;
+  touchStartPos = null;
+}
+
+function scheduleTouchAction() {
+  clearTouchDelay();
+  touchDelayTimer = setTimeout(() => {
+    startTouchAction();
+  }, TOUCH_GRACE_MS);
+}
+
 function applyPinch() {
   const [a, b] = [...pointers.values()];
   if (!a || !b) return;
   const dist = Math.hypot(b.x - a.x, b.y - a.y);
   if (dist === 0 || !pinch) return;
   editor.setZoom(pinch.initialZoom * (dist / pinch.initialDistance));
+
+  const midX = (a.x + b.x) / 2;
+  const midY = (a.y + b.y) / 2;
+  const { maxX, maxY } = panLimits();
+  editor.panBy(midX - pinch.initialMidX, midY - pinch.initialMidY, maxX, maxY);
+  pinch.initialMidX = midX;
+  pinch.initialMidY = midY;
 }
 
 function onPointerDown(event) {
@@ -203,11 +244,18 @@ function onPointerDown(event) {
       lineStart = null;
       lineEnd = null;
     }
+    clearTouchDelay();
     touchStartCell = null;
+    touchStartTime = 0;
+    touchStartPos = null;
     const [a, b] = [...pointers.values()];
+    const midX = (a.x + b.x) / 2;
+    const midY = (a.y + b.y) / 2;
     pinch = {
       initialDistance: Math.hypot(b.x - a.x, b.y - a.y),
       initialZoom: editor.zoom,
+      initialMidX: midX,
+      initialMidY: midY,
     };
     return;
   }
@@ -217,6 +265,9 @@ function onPointerDown(event) {
 
   if (event.pointerType === "touch") {
     touchStartCell = cell;
+    touchStartTime = Date.now();
+    touchStartPos = { x: event.clientX, y: event.clientY };
+    scheduleTouchAction();
     return;
   }
 
@@ -247,16 +298,14 @@ function onPointerMove(event) {
   }
 
   if (touchStartCell) {
-    painting = true;
-    editor.beginAction();
-    if (editor.tool === "line") {
-      lineStart = touchStartCell;
-      lineEnd = touchStartCell;
-      previewing = true;
-    } else {
-      applyToolToCell(touchStartCell);
+    if (touchStartPos) {
+      const dx = event.clientX - touchStartPos.x;
+      const dy = event.clientY - touchStartPos.y;
+      if (Math.hypot(dx, dy) > TOUCH_SLOP_PX) {
+        clearTouchDelay();
+        startTouchAction();
+      }
     }
-    touchStartCell = null;
   }
 
   if (!painting) return;
@@ -296,11 +345,15 @@ function onPointerUp(event) {
       lineStart = null;
       lineEnd = null;
       touchStartCell = null;
+      touchStartTime = 0;
+      touchStartPos = null;
+      clearTouchDelay();
     }
     return;
   }
 
   if (touchStartCell) {
+    clearTouchDelay();
     editor.beginAction();
     if (editor.tool === "line") {
       editor.drawLine(touchStartCell.x, touchStartCell.y, touchStartCell.x, touchStartCell.y);
@@ -309,6 +362,8 @@ function onPointerUp(event) {
     }
     editor.endAction();
     touchStartCell = null;
+    touchStartTime = 0;
+    touchStartPos = null;
     return;
   }
 
@@ -345,6 +400,6 @@ function onPointerUp(event) {
     class="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-neutral-900/85 px-3 py-1.5 text-center text-xs text-white shadow transition-opacity duration-300
       {hintVisible ? 'opacity-100' : 'opacity-0'}"
   >
-    {isTouch ? "Move with two fingers · Pinch to zoom" : "Move with Ctrl + drag · Zoom with + / −"}
+    {isTouch ? "Pan with two fingers · Pinch to zoom" : "Move with Ctrl + drag · Zoom with + / −"}
   </div>
 </div>

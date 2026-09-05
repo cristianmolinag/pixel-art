@@ -218,6 +218,35 @@ describe("PixelCanvas (F10 zoom/pan in the draw)", () => {
     expect(editor.model.getPixel(9, 8).a).toBeGreaterThan(0);
   });
 
+  it("panning with two fingers moves the canvas (US2)", async () => {
+    editor.zoom = 2;
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 100, clientY: 100, pointerType: "touch" });
+    await fireEvent.pointerDown(c, { pointerId: 2, clientX: 200, clientY: 100, pointerType: "touch" });
+    await fireEvent.pointerMove(c, { pointerId: 1, clientX: 150, clientY: 100, pointerType: "touch" });
+    await fireEvent.pointerMove(c, { pointerId: 2, clientX: 250, clientY: 100, pointerType: "touch" });
+    await tick();
+    expect(editor.panX).toBe(50);
+    expect(editor.panY).toBe(0);
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    await fireEvent.pointerUp(c, { pointerId: 2 });
+  });
+
+  it("a touch held still paints after the grace period", async () => {
+    vi.useFakeTimers();
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160, pointerType: "touch" });
+    expect(editor.model.getPixel(8, 8).a).toBe(0);
+    vi.advanceTimersByTime(150);
+    await tick();
+    expect(editor.model.getPixel(8, 8).a).toBeGreaterThan(0);
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    vi.useRealTimers();
+  });
+
   it("painting with zoom paints the correct cell (mapping inverts zoom)", async () => {
     editor.zoom = 2;
     installCanvas();
