@@ -185,6 +185,39 @@ describe("PixelCanvas (F10 zoom/pan in the draw)", () => {
     await fireEvent.pointerUp(c, { pointerId: 2 });
   });
 
+  it("a two-finger touch pinch does not paint a pixel", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 100, clientY: 100, pointerType: "touch" });
+    await fireEvent.pointerDown(c, { pointerId: 2, clientX: 200, clientY: 100, pointerType: "touch" });
+    await fireEvent.pointerMove(c, { pointerId: 2, clientX: 300, clientY: 100, pointerType: "touch" });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    await fireEvent.pointerUp(c, { pointerId: 2 });
+    const anyPainted = editor.model.snapshot().some((v, i) => v !== 0 && i % 4 === 3);
+    expect(anyPainted).toBe(false);
+  });
+
+  it("a touch tap paints a single pixel", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160, pointerType: "touch" });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.model.getPixel(8, 8).a).toBeGreaterThan(0);
+  });
+
+  it("a touch drag paints the dragged cells", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160, pointerType: "touch" });
+    await fireEvent.pointerMove(c, { pointerId: 1, clientX: 180, clientY: 160, pointerType: "touch" });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.model.getPixel(8, 8).a).toBeGreaterThan(0);
+    expect(editor.model.getPixel(9, 8).a).toBeGreaterThan(0);
+  });
+
   it("painting with zoom paints the correct cell (mapping inverts zoom)", async () => {
     editor.zoom = 2;
     installCanvas();
