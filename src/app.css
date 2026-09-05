@@ -34,22 +34,22 @@ canvas {
   display: none;
 }
 
-.tam-icono {
+.toolbar-icon {
   width: clamp(28px, 9vw, 40px);
   height: clamp(28px, 9vw, 40px);
 }
 
-.tam-icono-ancho {
+.toolbar-icon-width {
   width: clamp(28px, 9vw, 40px);
 }
 
-.tam-icono > svg,
-.tam-icono-ancho > svg {
+.toolbar-icon > svg,
+.toolbar-icon-width > svg {
   width: 60%;
   height: 60%;
 }
 
-.toolbar-fila {
+.toolbar-row {
   gap: clamp(2px, 0.8vw, 4px);
 }
 

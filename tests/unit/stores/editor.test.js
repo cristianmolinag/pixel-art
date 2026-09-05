@@ -292,7 +292,7 @@ describe("editor store (F08 grid)", () => {
   });
 });
 
-describe("editor store (F09 matriz)", () => {
+describe("editor store (F09 matrix)", () => {
   beforeEach(() => {
     localStorage.clear();
     editor.model = new Canvas(16, 16);

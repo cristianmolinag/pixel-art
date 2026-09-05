@@ -60,7 +60,7 @@
     title="Change canvas matrix"
     aria-expanded={visible}
     aria-haspopup="dialog"
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
       {visible ? 'bg-white/15' : 'hover:bg-white/10'}"
     onclick={() => (visible ? close() : open())}
   >

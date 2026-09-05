@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: "Pixel Art Studio",
         short_name: "PixelArt",
-        description: "Editor de pixel art simple e incremental",
+        description: "A simple, incremental pixel art editor",
         theme_color: "#1a1a2e",
         background_color: "#1a1a2e",
         display: "standalone",

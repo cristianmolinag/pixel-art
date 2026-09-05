@@ -31,7 +31,7 @@ mise exec -- pnpm check
 - The canvas is redrawn at device resolution (DPR). Each cell is one model pixel; zoom and pan are applied during drawing with device-pixel integer rounding, without CSS transforms.
 - Toolbar actions communicate through pending-action flags in the store (`pendingImageData`, `pendingClear`, `pendingExport`).
 - Do not use `document.querySelector` to access the canvas. Use the pending-action pattern.
-- The responsive toolbar uses fluid icon and gap sizes through `clamp()` (`.tam-icono`, `.toolbar-fila` in `src/app.css`). On mobile, zoom is contained in its own expander; grid and matrix controls remain visible.
+- The responsive toolbar uses fluid icon and gap sizes through `clamp()` (`.toolbar-icon`, `.toolbar-row` in `src/app.css`). On mobile, zoom is contained in its own expander; grid and matrix controls remain visible.
 - Use custom confirmation modals (the `Matrix.svelte` pattern). Do not use `window.confirm` or `alert`.
 
 ## Issues

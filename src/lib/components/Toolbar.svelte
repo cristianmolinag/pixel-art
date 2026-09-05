@@ -40,12 +40,12 @@
     aria-label="Zoom out"
     title="Zoom out (zoom −)"
     disabled={editor.zoom <= MIN_ZOOM}
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.zoomOut()}
   >
     <Minus size={20} />
   </button>
-  <span class="tam-icono-width flex items-center justify-center text-center text-xs text-white/70" aria-live="polite">
+  <span class="toolbar-icon-width flex items-center justify-center text-center text-xs text-white/70" aria-live="polite">
     {Math.round(editor.zoom * 100)}%
   </span>
   <button
@@ -53,7 +53,7 @@
     aria-label="Zoom in"
     title="Zoom in (zoom +)"
     disabled={editor.zoom >= MAX_ZOOM}
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.zoomIn()}
   >
     <Plus size={20} />
@@ -62,7 +62,7 @@
     type="button"
     aria-label="Reset zoom to 100%"
     title="Reset zoom and pan"
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
     onclick={() => editor.resetZoom()}
   >
     <Maximize size={20} />
@@ -74,7 +74,7 @@
 <div
   role="group"
   use:closePanelOnSelect
-  class="toolbar-fila flex flex-wrap items-center justify-center lg:items-center lg:justify-start lg:flex-col lg:gap-0"
+  class="toolbar-row flex flex-wrap items-center justify-center lg:items-center lg:justify-start lg:flex-col lg:gap-0"
 >
   {#each TOOLS as { id, label, icon } (id)}
     {@const Icone = icon}
@@ -83,7 +83,7 @@
       aria-label={label}
       title={label}
       aria-pressed={editor.tool === id}
-      class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition
+      class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
         {editor.tool === id
           ? 'bg-white text-black shadow'
           : 'text-white hover:bg-white/10'}"
@@ -98,7 +98,7 @@
     aria-label={editor.showGrid ? "Hide grid" : "Show grid"}
     title={editor.showGrid ? "Hide grid" : "Show grid"}
     aria-pressed={editor.showGrid}
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
       {editor.showGrid
         ? 'bg-white text-black shadow'
         : 'text-white hover:bg-white/10'}"
@@ -118,7 +118,7 @@
     aria-label="Undo"
     title="Undo"
     disabled={!editor.canUndo}
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
       hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.undo()}
   >
@@ -129,7 +129,7 @@
     aria-label="Redo"
     title="Redo"
     disabled={!editor.canRedo}
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
       hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.redo()}
   >
@@ -141,7 +141,7 @@
     aria-label="Zoom"
     title="Zoom"
     aria-expanded={zoomOpen}
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition lg:hidden
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition lg:hidden
       {zoomOpen ? 'bg-white text-black shadow' : 'text-white hover:bg-white/10'}"
     onclick={(e) => {
       e.stopPropagation();
@@ -152,7 +152,7 @@
   </button>
 
   {#if zoomOpen}
-    <div data-zoom-panel class="toolbar-fila flex w-full flex-wrap items-center lg:hidden">
+    <div data-zoom-panel class="toolbar-row flex w-full flex-wrap items-center lg:hidden">
       {@render zoomGroup()}
     </div>
   {/if}
