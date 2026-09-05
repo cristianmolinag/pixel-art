@@ -53,6 +53,13 @@ canvas {
   gap: clamp(2px, 0.8vw, 4px);
 }
 
+.palette-mask {
+  mask-image: linear-gradient(to right, transparent 0, black 8px, black calc(100% - 8px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 8px, black calc(100% - 8px), transparent 100%);
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+}
+
 #app {
   height: 100dvh;
 }

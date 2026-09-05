@@ -141,6 +141,70 @@ describe("Palette (F06 color picker)", () => {
   });
 });
 
+describe("Palette scroll interactions", () => {
+  function getPalette(container) {
+    return container.querySelector('[role="region"][aria-label="Color palette"]');
+  }
+
+  function pointerMoveWindow(opts) {
+    const event = new PointerEvent("pointermove", { bubbles: true, ...opts });
+    window.dispatchEvent(event);
+  }
+
+  function pointerUpWindow(opts) {
+    const event = new PointerEvent("pointerup", { bubbles: true, ...opts });
+    window.dispatchEvent(event);
+  }
+
+  it("mouse wheel over the palette scrolls horizontally", async () => {
+    const { container } = render(Palette);
+    const palette = getPalette(container);
+    palette.scrollLeft = 0;
+    await fireEvent.wheel(palette, { deltaY: 50 });
+    expect(palette.scrollLeft).toBe(50);
+  });
+
+  it("dragging the palette scrolls horizontally", async () => {
+    const { container } = render(Palette);
+    const palette = getPalette(container);
+    palette.scrollLeft = 100;
+    await fireEvent.pointerDown(palette, {
+      clientX: 100,
+      pointerId: 1,
+      pointerType: "mouse",
+      button: 0,
+    });
+    pointerMoveWindow({ clientX: 80, pointerId: 1 });
+    pointerUpWindow({ pointerId: 1 });
+    expect(palette.scrollLeft).toBe(120);
+  });
+
+  it("a swatch click is ignored after a drag", async () => {
+    editor.currentColor = "#000000";
+    const { container } = render(Palette);
+    const palette = getPalette(container);
+    const green = container.querySelector("button[aria-label='Color #0aff99']");
+    await fireEvent.pointerDown(palette, {
+      clientX: 100,
+      pointerId: 2,
+      pointerType: "mouse",
+      button: 0,
+    });
+    pointerMoveWindow({ clientX: 80, pointerId: 2 });
+    pointerUpWindow({ pointerId: 2 });
+    await fireEvent.click(green);
+    expect(editor.currentColor).toBe("#000000");
+  });
+
+  it("a swatch click without dragging still selects the color", async () => {
+    editor.currentColor = "#000000";
+    const { container } = render(Palette);
+    const green = container.querySelector("button[aria-label='Color #0aff99']");
+    await fireEvent.click(green);
+    expect(editor.currentColor).toBe("#0AFF99");
+  });
+});
+
 describe("Palette (F06 picker custom in-app)", () => {
   it("clicking the custom color button opens the picker", async () => {
     const { container } = render(Palette);
