@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { drawPixels, drawCanvas, GRID_COLOR } from "../../../src/lib/canvas/draw.js";
+import { drawPixels, drawCanvas, GRID_COLOR, GRID_ALPHA } from "../../../src/lib/canvas/draw.js";
 import { Canvas } from "../../../src/lib/models/Canvas.js";
 
 function makeCtx() {
@@ -51,7 +51,8 @@ describe("drawCanvas", () => {
     expect(ctx.beginPath).not.toHaveBeenCalled();
   });
 
-  it("exporta el color de cuadrícula compartido con el overlay", () => {
+  it("exporta el color y la opacidad de cuadrícula compartidos con el overlay", () => {
     expect(GRID_COLOR).toBe("#cccccc");
+    expect(GRID_ALPHA).toBe(0.5);
   });
 });

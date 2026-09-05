@@ -64,12 +64,14 @@ de estado + render).
   rectángulo × DPR, ctx en identidad). Cada celda del modelo se dibuja en el rect
   `[round(frontera_i × dpr), round(frontera_{i+1} × dpr))` calculado con `frontera = (base −
   base·zoom)/2 + pan`; el zoom/pan se aplican **en el draw** (sin `transform` CSS). La cuadrícula se
-  dibuja en el **mismo canvas**, después de los píxeles, con el **mismo redondeo** (`aX`/`aY`) y
-  líneas de **1px de dispositivo** — por eso queda siempre alineada y nunca se pierde en mobile con
-  zoom/pan. Solo se trazan los tramos adyacentes a **celdas vacías** (alfa de la snapshot del
-  modelo), de modo que las líneas sirven de guía en celdas vacías y los píxeles pintados quedan
-  **sin borde** (decidido con el usuario). El color lo comparte `GRID_COLOR` (`#cccccc`) en
-  `src/lib/canvas/draw.js`. Se repinta al alternar `mostrarCuadricula`, al cambiar zoom/pan y al
+dibuja en el **mismo canvas**, después de los píxeles, con el **mismo redondeo** (`aX`/`aY`) y
+   líneas de **grosor mínimo 1px CSS** (`Math.max(1, Math.round(dpr))`) — por eso queda siempre
+   alineada y visible en mobile con cualquier zoom/pan/DPR. Tras #19 la guía dibuja **todas las
+   fronteras, también sobre píxeles pintados** (grid completo y uniforme; el criterio previo "solo
+   celdas vacías" se descartó porque se veía roto). Color y opacidad compartidos por `GRID_COLOR`
+   (`#cccccc`) y `GRID_ALPHA` (`0.5`) en `src/lib/canvas/draw.js`; las horizontales se parten por
+   celda para no apilar alfa en las intersecciones. Se repinta al
+   alternar `mostrarCuadricula`, al cambiar zoom/pan y al
   redimensionar el contenedor (ResizeObserver). Fundamentos de los intentos previos:
   `lineWidth 0.1` en canvas de 16×16 quedaba sub-píxel e invisible al escalar; dibujar líneas a 1px
   interno las volvía bloques completos al escalar por CSS; un overlay con líneas redondeadas se

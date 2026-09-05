@@ -4,7 +4,7 @@ import { tick } from "svelte";
 import PixelCanvas from "../../../src/lib/components/PixelCanvas.svelte";
 import { editor } from "../../../src/lib/stores/editor.svelte.js";
 import { Canvas } from "../../../src/lib/models/Canvas.js";
-import { GRID_COLOR } from "../../../src/lib/canvas/draw.js";
+import { GRID_COLOR, GRID_ALPHA } from "../../../src/lib/canvas/draw.js";
 
 const RECT = {
   width: 320,
@@ -35,9 +35,17 @@ afterEach(() => {
 
 function instalarCanvas() {
   const operaciones = [];
+  const alphas = [];
   const ctx = {
+    _alpha: 1,
+    get globalAlpha() {
+      return this._alpha;
+    },
+    set globalAlpha(v) {
+      this._alpha = v;
+      alphas.push(v);
+    },
     fillStyle: null,
-    globalAlpha: 1,
     setTransform: vi.fn((...a) => operaciones.push(["setTransform", a])),
     clearRect: vi.fn((...a) => operaciones.push(["clearRect", a])),
     fillRect: vi.fn((...a) => operaciones.push(["fillRect", a])),
@@ -45,7 +53,7 @@ function instalarCanvas() {
   };
   vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue(RECT);
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx);
-  return { ctx, operaciones };
+  return { ctx, operaciones, alphas };
 }
 
 function canvas(container) {
@@ -53,7 +61,7 @@ function canvas(container) {
 }
 
 describe("PixelCanvas (F08 cuadrícula en canvas a resolución de dispositivo)", () => {
-  it("dibuja una línea de 1px device por frontera de celda en celdas vacías", async () => {
+  it("dibuja las líneas de la cuadrícula completas en todas las fronteras", async () => {
     const { operaciones } = instalarCanvas();
     const { container } = render(PixelCanvas);
     await tick();
@@ -63,15 +71,25 @@ describe("PixelCanvas (F08 cuadrícula en canvas a resolución de dispositivo)",
     expect(c.height).toBe(320);
 
     const grid = operaciones.filter(([op]) => op === "fillRect");
-    // 320px / 16 = 20px por celda (dpr 1): 17x16 verticales + 17x16 horizontales
-    expect(grid).toHaveLength(544);
-    expect(grid[0]).toEqual(["fillRect", [0, 0, 1, 20]]);
+    // 17 verticales (borde completo) + 17 filas x 16 segmentos horizontales = 289
+    expect(grid).toHaveLength(289);
+    expect(grid[0]).toEqual(["fillRect", [0, 0, 1, 320]]);
     expect(grid).toEqual(
       expect.arrayContaining([
-        ["fillRect", [320, 0, 1, 20]],
-        ["fillRect", [0, 320, 20, 1]],
+        ["fillRect", [320, 0, 1, 320]],
+        ["fillRect", [1, 320, 19, 1]],
+        ["fillRect", [1, 0, 19, 1]],
       ]),
     );
+  });
+
+  it("dibuja la guía con la opacidad sutil GRID_ALPHA y restaura el alfa", async () => {
+    const { operaciones, alphas } = instalarCanvas();
+    render(PixelCanvas);
+    await tick();
+
+    expect(alphas).toEqual(expect.arrayContaining([GRID_ALPHA, 1]));
+    expect(operaciones.some(([op]) => op === "fillRect")).toBe(true);
   });
 
   it("no dibuja la cuadrícula cuando mostrarCuadricula es false", async () => {
@@ -81,6 +99,7 @@ describe("PixelCanvas (F08 cuadrícula en canvas a resolución de dispositivo)",
     await tick();
 
     expect(operaciones.some(([op]) => op === "fillRect")).toBe(false);
+    expect(editor.mostrarCuadricula).toBe(false);
   });
 
   it("el fondo mantiene el color blanco base", () => {
@@ -90,6 +109,39 @@ describe("PixelCanvas (F08 cuadrícula en canvas a resolución de dispositivo)",
 });
 
 describe("PixelCanvas (F10 zoom/pan en el draw)", () => {
+  it("dibuja la guía con grosor Math.round(dpr) para que sea visible en móvil", async () => {
+    window.devicePixelRatio = 2;
+    const { operaciones } = instalarCanvas();
+    render(PixelCanvas);
+    await tick();
+
+    const grid = operaciones.filter(([op]) => op === "fillRect");
+    expect(grid).toEqual(expect.arrayContaining([["fillRect", [0, 0, 2, 640]]]));
+    window.devicePixelRatio = 1;
+  });
+
+  it("alinea la cuadrícula con celdas de distinto tamaño por eje (matrices no cuadradas)", async () => {
+    editor.model = new Canvas(16, 32);
+    const { operaciones } = instalarCanvas();
+    render(PixelCanvas);
+    await tick();
+
+    const grid = operaciones.filter(([op]) => op === "fillRect");
+    expect(grid[0]).toEqual(["fillRect", [0, 0, 1, 320]]);
+    expect(grid).toEqual(expect.arrayContaining([["fillRect", [1, 10, 19, 1]]]));
+  });
+
+  it("vuelve a pintar un píxel dibujado después del render (versión)", async () => {
+    const { operaciones } = instalarCanvas();
+    const { container } = render(PixelCanvas);
+    await tick();
+
+    editor.pintarPixel(0, 0);
+    await tick();
+
+    expect(operaciones).toEqual(expect.arrayContaining([["fillRect", [0, 0, 20, 20]]]));
+  });
+
   it("renderiza a resolución de dispositivo y aplica zoom/pan en el draw", async () => {
     editor.model.setPixel(0, 0, "#ff0000");
     const { operaciones } = instalarCanvas();
@@ -131,5 +183,50 @@ describe("PixelCanvas (F10 zoom/pan en el draw)", () => {
     expect(editor.zoom).toBeCloseTo(2, 5);
     await fireEvent.pointerUp(c, { pointerId: 1 });
     await fireEvent.pointerUp(c, { pointerId: 2 });
+  });
+
+  it("pintar con zoom pinta la celda correcta (la celda se mapea invirtiendo zoom)", async () => {
+    editor.zoom = 2;
+    instalarCanvas();
+    const { container } = render(PixelCanvas);
+    const c = canvas(container);
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 240, clientY: 320 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    // contenido 640, izq=(320-640)/2=-160; (240/320→12 con el mapeo viejo)
+    expect(editor.model.getPixel(10, 12).a).toBeGreaterThan(0);
+    expect(editor.model.getPixel(12, 12).a).toBe(0);
+  });
+
+  it("pintar con zoom + pan pinta la celda correcta (se invierte el desplazamiento)", async () => {
+    editor.zoom = 2;
+    editor.panX = 10;
+    editor.panY = -5;
+    instalarCanvas();
+    const { container } = render(PixelCanvas);
+    const c = canvas(container);
+    // izq=(320-640)/2+10=-150, arriba=(320-640)/2-5=-165, celda 40px
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: -30, clientY: -5 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.model.getPixel(3, 4).a).toBeGreaterThan(0);
+    expect(editor.model.getPixel(0, 0).a).toBe(0);
+  });
+
+  it("muestra una ayuda breve de cómo moverse al entrar en zoom y la oculta a los 3s", async () => {
+    vi.useFakeTimers();
+    instalarCanvas();
+    const { container } = render(PixelCanvas);
+    await tick();
+    expect(container.querySelector("[data-ayuda-pan]").getAttribute("aria-hidden")).toBe("true");
+
+    editor.zoom = 2;
+    await tick();
+    const ayuda = container.querySelector("[data-ayuda-pan]");
+    expect(ayuda.getAttribute("aria-hidden")).toBe("false");
+    expect(ayuda.textContent).toContain("Mueve");
+
+    vi.advanceTimersByTime(3001);
+    await tick();
+    expect(ayuda.getAttribute("aria-hidden")).toBe("true");
+    vi.useRealTimers();
   });
 });

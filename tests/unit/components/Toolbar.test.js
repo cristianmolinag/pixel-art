@@ -150,4 +150,44 @@ describe("Toolbar — zoom (F10)", () => {
     await fireEvent.click(botonPorLabel(container, "Restablecer zoom al 100%"));
     expect(editor.zoom).toBe(1);
   });
+
+  it("los controles del panel de zoom no cierran el panel al usarlos (UX mobile)", async () => {
+    const { container } = render(Toolbar);
+    const panel = () => container.querySelector("[data-zoom-panel]");
+    await fireEvent.click(botonPorLabel(container, "Zoom"));
+    expect(panel()).toBeTruthy();
+    const enPanel = (label) =>
+      panel().querySelector(`[aria-label="${label}"]`);
+    await fireEvent.click(enPanel("Acercar (zoom)"));
+    expect(editor.zoom).toBe(1.5);
+    expect(panel()).toBeTruthy();
+    await fireEvent.click(enPanel("Alejar (zoom)"));
+    expect(editor.zoom).toBe(1);
+    expect(panel()).toBeTruthy();
+    await fireEvent.click(enPanel("Restablecer zoom al 100%"));
+    expect(editor.zoom).toBe(1);
+    expect(panel()).toBeTruthy();
+  });
+
+  it("− queda deshabilitado en el zoom mínimo (límites F10)", () => {
+  editor.zoom = 1;
+  const { container } = render(Toolbar);
+  expect(botonPorLabel(container, "Alejar (zoom)").disabled).toBe(true);
+  expect(botonPorLabel(container, "Acercar (zoom)").disabled).toBe(false);
+});
+
+it("+ queda deshabilitado en el zoom máximo (límites F10)", () => {
+  editor.zoom = 4;
+  const { container } = render(Toolbar);
+  expect(botonPorLabel(container, "Alejar (zoom)").disabled).toBe(false);
+  expect(botonPorLabel(container, "Acercar (zoom)").disabled).toBe(true);
+});
+
+  it("elegir otra herramienta sí cierra el panel de zoom", async () => {
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Zoom"));
+    expect(container.querySelector("[data-zoom-panel]")).toBeTruthy();
+    await fireEvent.click(botonPorLabel(container, "Borrador"));
+    expect(container.querySelector("[data-zoom-panel]")).toBeNull();
+  });
 });

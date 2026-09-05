@@ -119,25 +119,27 @@ describe("Galeria (F05/FR-003)", () => {
   it("eliminar con confirmación quita el dibujo de la lista (US5/FR-006)", async () => {
     galeria.visible = true;
     galeria.dibujos = [dibujoEjemplo];
-    vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const { container } = render(Galeria);
     await fireEvent.click(botonPorLabel(container, "Eliminar Gatito"));
+    expect(botonPorLabel(container, "Confirmar eliminación")).not.toBeNull();
+    await fireEvent.click(botonPorLabel(container, "Confirmar eliminación"));
 
     await waitFor(() => expect(galeria.dibujos).toHaveLength(0));
     expect(galeria.visible).toBe(true);
   });
 
-  it("eliminar sin confirmar conserva el dibujo (US5)", async () => {
+  it("cancelar la eliminación conserva el dibujo y cierra el modal (US5)", async () => {
     galeria.visible = true;
     galeria.dibujos = [dibujoEjemplo];
-    vi.spyOn(window, "confirm").mockReturnValue(false);
 
     const { container } = render(Galeria);
     await fireEvent.click(botonPorLabel(container, "Eliminar Gatito"));
+    expect(container.textContent).toContain('¿Eliminar "Gatito"');
+    await fireEvent.click(botonPorLabel(container, "Cancelar"));
 
-    await waitFor(() => expect(window.confirm).toHaveBeenCalled());
     expect(galeria.dibujos).toHaveLength(1);
+    expect(botonPorLabel(container, "Confirmar eliminación")).toBeUndefined();
   });
 
   it("el botón cerrar oculta el modal (US2)", async () => {

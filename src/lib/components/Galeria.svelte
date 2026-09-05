@@ -7,6 +7,7 @@
 
   let nombre = $state("");
   let inputNombre = $state(null);
+  let confirmando = $state(null);
 
   $effect(() => {
     if (galeria.visible) {
@@ -27,8 +28,21 @@
   }
 
   function confirmarEliminar(dibujo) {
-    if (window.confirm(`¿Eliminar "${dibujo.nombre}"?`)) {
-      galeria.eliminar(dibujo.id);
+    confirmando = dibujo;
+  }
+
+  function eliminarConfirmado() {
+    if (confirmando) {
+      galeria.eliminar(confirmando.id);
+      confirmando = null;
+    }
+  }
+
+  function manejarEscape() {
+    if (confirmando) {
+      confirmando = null;
+    } else {
+      galeria.cerrar();
     }
   }
 
@@ -47,11 +61,15 @@
       if (e.target === e.currentTarget) galeria.cerrar();
     }}
     onkeydown={(e) => {
-      if (e.key === "Escape" || e.key === "Enter" || e.key === " ") galeria.cerrar();
+      if (e.key === "Escape") {
+        manejarEscape();
+      } else if ((e.key === "Enter" || e.key === " ") && !confirmando) {
+        galeria.cerrar();
+      }
     }}
   >
     <div
-      class="max-h-[85dvh] w-full max-w-md overflow-y-auto rounded-2xl bg-surface-light p-4 shadow-xl"
+      class="flex max-h-[85dvh] w-full max-w-md flex-col rounded-2xl bg-surface-light p-4 shadow-xl"
       role="dialog"
       aria-modal="true"
       tabindex="-1"
@@ -93,15 +111,16 @@
         {/if}
       </section>
 
-      <div class="mb-2 flex items-center justify-between">
+      <div class="mb-2 flex shrink-0 items-center justify-between">
         <h3 class="text-sm font-semibold text-white">Mis dibujos</h3>
         <span class="text-xs text-white/50">{galeria.dibujos.length} guardados</span>
       </div>
 
-      {#if galeria.dibujos.length === 0}
-        <p class="py-8 text-center text-sm text-white/60">Aún no has guardado dibujos.</p>
-      {:else}
-        <ul class="grid grid-cols-2 gap-3">
+      <div class="min-h-0 flex-1 overflow-y-auto">
+        {#if galeria.dibujos.length === 0}
+          <p class="py-8 text-center text-sm text-white/60">Aún no has guardado dibujos.</p>
+        {:else}
+          <ul class="grid grid-cols-2 gap-3">
           {#each galeria.dibujos as dibujo (dibujo.id)}
             <li class="relative">
               <button
@@ -142,4 +161,49 @@
       {/if}
     </div>
   </div>
+  </div>
 {/if}
+
+{#if confirmando}
+  <div
+    role="button"
+    tabindex="-1"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
+    onclick={(e) => {
+      if (e.target === e.currentTarget) confirmando = null;
+    }}
+    onkeydown={(e) => {
+      if (e.key === "Escape") confirmando = null;
+    }}
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Confirmar eliminación"
+      class="w-full max-w-xs rounded-2xl bg-surface-light p-4 shadow-xl"
+    >
+      <h2 class="mb-3 text-lg font-bold text-white">Eliminar dibujo</h2>
+      <p class="text-sm text-white/70">{`¿Eliminar "${confirmando.nombre}"? Esta acción no se puede deshacer.`}</p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button
+          type="button"
+          aria-label="Cancelar"
+          class="h-9 cursor-pointer rounded-md px-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          onclick={() => (confirmando = null)}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          aria-label="Confirmar eliminación"
+          class="h-9 cursor-pointer rounded-md bg-red-600 px-3 text-sm font-semibold text-white transition hover:bg-red-700"
+          onclick={eliminarConfirmado}
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<svelte:window onkeydown={(e) => e.key === "Escape" && manejarEscape()} />

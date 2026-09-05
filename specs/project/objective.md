@@ -32,6 +32,7 @@ complejidad creciente, verificando antes de avanzar:
 8. **Toggle de cuadrícula** — mostrar/ocultar la cuadrícula del lienzo → **#16**.
 9. **Matriz del lienzo** — menú para cambiar dimensiones (presets/custom) → **#17**.
 10. **Zoom** — acercar/alejar la vista del lienzo → **#18**.
+11. **Cuadrícula como capa-guía** — overlay de referencia, desacoplado de los datos → **#19**.
 
 Cada feature se traza a un issue de GitHub (y su spec en `specs/features/`).
 

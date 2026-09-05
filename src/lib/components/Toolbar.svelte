@@ -1,5 +1,5 @@
 <script>
-  import { editor } from "../stores/editor.svelte.js";
+  import { editor, MIN_ZOOM, MAX_ZOOM } from "../stores/editor.svelte.js";
   import Brush from "@lucide/svelte/icons/brush";
   import Eraser from "@lucide/svelte/icons/eraser";
   import Slash from "@lucide/svelte/icons/slash";
@@ -26,6 +26,7 @@
     const zoomButton = node.querySelector('[aria-label="Zoom"]');
     node.addEventListener("click", (e) => {
       if (zoomButton && zoomButton.contains(e.target)) return;
+      if (e.target.closest("[data-zoom-panel]")) return;
       if (zoomAbierto) zoomAbierto = false;
     });
   }
@@ -38,7 +39,8 @@
     type="button"
     aria-label="Alejar (zoom)"
     title="Alejar vista (zoom −)"
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
+    disabled={editor.zoom <= MIN_ZOOM}
+    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.alejar()}
   >
     <Minus size={20} />
@@ -50,7 +52,8 @@
     type="button"
     aria-label="Acercar (zoom)"
     title="Acercar vista (zoom +)"
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
+    disabled={editor.zoom >= MAX_ZOOM}
+    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.acercar()}
   >
     <Plus size={20} />
@@ -138,8 +141,8 @@
     aria-label="Zoom"
     title="Zoom"
     aria-expanded={zoomAbierto}
-    class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition text-white hover:bg-white/10 lg:hidden
-      {zoomAbierto ? 'bg-white text-black shadow' : ''}"
+    class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition lg:hidden
+      {zoomAbierto ? 'bg-white text-black shadow' : 'text-white hover:bg-white/10'}"
     onclick={(e) => {
       e.stopPropagation();
       zoomAbierto = !zoomAbierto;
@@ -149,7 +152,7 @@
   </button>
 
   {#if zoomAbierto}
-    <div class="toolbar-fila flex w-full flex-wrap items-center lg:hidden">
+    <div data-zoom-panel class="toolbar-fila flex w-full flex-wrap items-center lg:hidden">
       {@render zoomGrupo()}
     </div>
   {/if}

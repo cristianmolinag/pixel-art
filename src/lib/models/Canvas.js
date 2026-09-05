@@ -44,7 +44,7 @@ export class Canvas {
     this.cols = cols;
     this.rows = rows;
     this.offscreen = new OffscreenCanvas(cols, rows);
-    this.ctx = this.offscreen.getContext("2d");
+    this.ctx = this.offscreen.getContext("2d", { willReadFrequently: true });
   }
 
   getPixel(x, y) {

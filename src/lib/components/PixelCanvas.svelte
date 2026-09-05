@@ -1,5 +1,5 @@
 <script>
-  import { GRID_COLOR } from "../canvas/draw.js";
+  import { GRID_COLOR, GRID_ALPHA } from "../canvas/draw.js";
   import { editor } from "../stores/editor.svelte.js";
   import { lineaPuntos } from "../models/Canvas.js";
 
@@ -13,8 +13,14 @@
   let pellizco = null;
   let panActivo = false;
   let panUltimo = null;
+  let ayudaVisible = $state(false);
+  let ayudaTimer;
+  let nivelZoomPrev = null;
+  const esTactil =
+    typeof window !== "undefined" && !!window.matchMedia?.("(pointer: coarse)").matches;
 
   function dibujar() {
+    void editor.version;
     const canvas = canvasEl;
     if (!canvas || !contenedor) return;
     const rect = contenedor.getBoundingClientRect();
@@ -33,13 +39,15 @@
     ctx.clearRect(0, 0, ancho, alto);
 
     const { cols, rows } = editor.model;
-    const contenido = rect.width * editor.zoom;
-    const izq = (rect.width - contenido) / 2 + editor.panX;
-    const arriba = (rect.height - contenido) / 2 + editor.panY;
-    const pasoCss = contenido / cols;
+    const contenidoX = rect.width * editor.zoom;
+    const contenidoY = rect.height * editor.zoom;
+    const izq = (rect.width - contenidoX) / 2 + editor.panX;
+    const arriba = (rect.height - contenidoY) / 2 + editor.panY;
+    const pasoCssX = contenidoX / cols;
+    const pasoCssY = contenidoY / rows;
     const datos = editor.model.snapshot();
-    const aX = (i) => Math.round((izq + i * pasoCss) * dpr);
-    const aY = (j) => Math.round((arriba + j * pasoCss) * dpr);
+    const aX = (i) => Math.round((izq + i * pasoCssX) * dpr);
+    const aY = (j) => Math.round((arriba + j * pasoCssY) * dpr);
     const vacio = (i, j) => datos[(j * cols + i) * 4 + 3] === 0;
 
     for (let j = 0; j < rows; j++) {
@@ -60,25 +68,24 @@
     }
 
     if (editor.mostrarCuadricula) {
+      ctx.globalAlpha = GRID_ALPHA;
       ctx.fillStyle = GRID_COLOR;
+      const grueso = Math.max(1, Math.round(dpr));
+      const y0 = aY(0);
+      const y1 = aY(rows);
       for (let i = 0; i <= cols; i++) {
-        const bx = aX(i);
-        for (let j = 0; j < rows; j++) {
-          const conDer = i < cols && vacio(i, j);
-          const conIzq = i > 0 && vacio(i - 1, j);
-          if (!conDer && !conIzq) continue;
-          ctx.fillRect(bx, aY(j), 1, Math.max(1, aY(j + 1) - aY(j)));
-        }
+        ctx.fillRect(aX(i), y0, grueso, y1 - y0);
       }
       for (let j = 0; j <= rows; j++) {
         const by = aY(j);
         for (let i = 0; i < cols; i++) {
-          const conAbajo = j < rows && vacio(i, j);
-          const conArriba = j > 0 && vacio(i, j - 1);
-          if (!conAbajo && !conArriba) continue;
-          ctx.fillRect(aX(i), by, Math.max(1, aX(i + 1) - aX(i)), 1);
+          const sx = aX(i) + grueso;
+          const ex = aX(i + 1);
+          if (ex <= sx) continue;
+          ctx.fillRect(sx, by, ex - sx, grueso);
         }
       }
+      ctx.globalAlpha = 1;
     }
 
     if (
@@ -114,10 +121,31 @@
     return () => obs.disconnect();
   });
 
+  $effect(() => {
+    const nivel = editor.zoom > 1 ? 1 : 0;
+    if (nivel === nivelZoomPrev) return;
+    nivelZoomPrev = nivel;
+    clearTimeout(ayudaTimer);
+    if (nivel === 1) {
+      ayudaVisible = true;
+      ayudaTimer = setTimeout(() => {
+        ayudaVisible = false;
+      }, 3000);
+    } else {
+      ayudaVisible = false;
+    }
+  });
+
+  $effect(() => () => clearTimeout(ayudaTimer));
+
   function celdaDeEvento(event) {
     const rect = canvasEl.getBoundingClientRect();
-    const x = Math.floor(((event.clientX - rect.left) / rect.width) * editor.model.cols);
-    const y = Math.floor(((event.clientY - rect.top) / rect.height) * editor.model.rows);
+    const contenidoX = rect.width * editor.zoom;
+    const contenidoY = rect.height * editor.zoom;
+    const izq = (rect.width - contenidoX) / 2 + editor.panX;
+    const arriba = (rect.height - contenidoY) / 2 + editor.panY;
+    const x = Math.floor(((event.clientX - rect.left - izq) / contenidoX) * editor.model.cols);
+    const y = Math.floor(((event.clientY - rect.top - arriba) / contenidoY) * editor.model.rows);
     if (x < 0 || y < 0 || x >= editor.model.cols || y >= editor.model.rows) return null;
     return { x, y };
   }
@@ -273,4 +301,12 @@ function onPointerUp(event) {
     onpointercancel={onPointerUp}
     onpointerleave={onPointerUp}
   ></canvas>
+  <div
+    data-ayuda-pan
+    aria-hidden={!ayudaVisible}
+    class="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-neutral-900/85 px-3 py-1.5 text-center text-xs text-white shadow transition-opacity duration-300
+      {ayudaVisible ? 'opacity-100' : 'opacity-0'}"
+  >
+    {esTactil ? "Mueve con dos dedos · Ajusta el zoom con pellizco" : "Mueve con Ctrl + arrastrar · Ajusta el zoom con + / −"}
+  </div>
 </div>
