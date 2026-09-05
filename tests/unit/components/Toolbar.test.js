@@ -17,6 +17,7 @@ beforeEach(() => {
   editor.model = new Canvas(16, 16);
   editor.undoStack = [];
   editor.redoStack = [];
+  editor.mostrarCuadricula = true;
   galeria.visible = false;
   galeria.enfocarGuardar = false;
   galeria.dibujos = [];
@@ -38,13 +39,14 @@ describe("Toolbar (F03)", () => {
       "Borrador",
       "Línea",
       "Relleno",
+      "Ocultar cuadrícula",
       "Deshacer",
       "Rehacer",
       "Nuevo dibujo",
       "Guardar",
       "Galería",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(9);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(10);
   });
 
   it("seleccionar una herramienta la activa y queda marcada (US1/FR-002)", async () => {
@@ -93,6 +95,30 @@ describe("Toolbar — undo/redo (F04/FR-001)", () => {
     await fireEvent.click(botonPorLabel(container, "Rehacer"));
     expect(editor.model.getPixel(3, 3).r).toBe(255);
     expect(editor.canRedo).toBe(false);
+  });
+});
+
+describe("Toolbar — toggle de cuadrícula (F08)", () => {
+  it("muestra el toggle marcado por defecto (cuadrícula visible)", () => {
+    const { container } = render(Toolbar);
+    const boton = botonPorLabel(container, "Ocultar cuadrícula");
+    expect(boton).toBeTruthy();
+    expect(boton.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("alterna el estado y cambia el aria-label al ocultar (US1)", async () => {
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Ocultar cuadrícula"));
+    expect(editor.mostrarCuadricula).toBe(false);
+    expect(botonPorLabel(container, "Mostrar cuadrícula").getAttribute("aria-pressed")).toBe("false");
+    expect(botonPorLabel(container, "Ocultar cuadrícula")).toBeUndefined();
+  });
+
+  it("volver a pulsar muestra de nuevo la cuadrícula", async () => {
+    editor.mostrarCuadricula = false;
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Mostrar cuadrícula"));
+    expect(editor.mostrarCuadricula).toBe(true);
   });
 });
 

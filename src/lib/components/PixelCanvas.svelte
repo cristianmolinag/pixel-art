@@ -101,6 +101,13 @@
     height={editor.model.rows}
     class="block h-full w-full select-none [image-rendering:pixelated]"
     style:touch-action="none"
+    style:background-color="#ffffff"
+    style:background-image={editor.mostrarCuadricula
+      ? "linear-gradient(to right, var(--color-grid) 1px, transparent 1px), linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px)"
+      : "none"}
+    style:background-size={editor.mostrarCuadricula
+      ? `${100 / editor.model.cols}% ${100 / editor.model.rows}%`
+      : "auto"}
     onpointerdown={onPointerDown}
     onpointermove={onPointerMove}
     onpointerup={onPointerUp}

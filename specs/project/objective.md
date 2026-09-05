@@ -76,6 +76,6 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Estado del proyecto
 
 - **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F06 Color picker (#14) implementada y verificada. Quedan pendientes en el
-  milestone **v1.0 MVP**: F07 Layout del menú (#15), F08 Toggle de cuadrícula (#16), F09 Matriz del
-  lienzo (#17) y F10 Zoom (#18); y backlog sin milestone: #1, #8, #10.
+- **Fase actual**: F08 Toggle de cuadrícula (#16) implementada y verificada. Quedan pendientes en el
+  milestone **v1.0 MVP**: F07 Layout del menú (#15), F09 Matriz del lienzo (#17) y F10 Zoom (#18);
+  y backlog sin milestone: #1, #8, #10.

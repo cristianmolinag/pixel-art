@@ -1,7 +1,9 @@
 # Feature 008: Toggle de cuadrícula en el lienzo
 
-**Estado:** 📋 Pendiente
+**Estado:** ✅ Implementada
 **Spec escrita:** 2026-09-04
+**Tests:** `tests/unit/canvas/draw.test.js`, `tests/unit/stores/editor.test.js`,
+`tests/unit/components/Toolbar.test.js`
 **Objetivo:** `specs/project/objective.md`
 **Issue asociado:** [#16](https://github.com/cristianmolinag/pixel-art/issues/16)
 **Depende de:** F01 Canvas (#11, implementada)
@@ -51,18 +53,29 @@ de estado + render).
 
 ## Decisiones
 
-### Pendientes (si no están resueltas al implementar)
+### Resueltas (decidido con el usuario)
 
-- ¿El estado del toggle persiste entre sesiones (localStorage) o solo durante la sesión?
-- Icono a usar (se propone `Grid2x2`/`Grid3x3` de lucide) y posición en el toolbar (ver F07).
-- ¿Aplicar también a la previsualización de la galería o solo al lienzo de edición?
+- **Persistencia**: el estado del toggle persiste en localStorage
+  (clave `pixel-art-studio:mostrar-cuadricula`, ausente → `true`); arranca mostrando la cuadrícula.
+- **Alcance**: el toggle aplica **solo al lienzo de edición**; las miniaturas de la galería no cambian.
+- **Ubicación**: botón **junto a las herramientas** en el toolbar (icono `Grid3x3` de lucide, con
+  `aria-pressed`). F07 (layout) reorganizará grupos más adelante sin cambiar esta lógica.
+- La cuadrícula es **fondo CSS del canvas** en `PixelCanvas.svelte` (`background-color` blanco +
+  dos `linear-gradient` de 1px con `background-size` = `100/cols % 100/rows %`). Al estar
+  **detrás de los píxeles**, las líneas sirven solo de **guía** en celdas vacías y los píxeles
+  pintados quedan **sin borde** (decidido con el usuario). El canvas se limpia (`clearRect`) y
+  vuelca los píxeles en cada redibujo para no dejar "fantasmas". Las líneas del antiguo enfoque
+  (`lineWidth 0.1` en canvas de 16×16) quedaban sub-píxel e invisibles al escalar.
+- El estado vive en el store de editor (`mostrarCuadricula` + `alternarCuadricula`).
+- El tamaño de la cuadrícula se escala con la matriz del lienzo (preparado para F09).
 
 ## Tests
 
-- `tests/unit/canvas/draw.test.js`: `drawCanvas` con `grid: false` no llama a `stroke` del grid
-  (ya existe cobertura parcial del orden fondo → píxeles → grid).
-- `tests/unit/stores/editor.test.js` y `tests/unit/components/Toolbar.test.js`: toggle de estado,
-  `aria-pressed`, redibujo.
+- `tests/unit/canvas/draw.test.js`: `drawCanvas` limpia y vuelca píxeles; no dibuja cuadrícula.
+- `tests/unit/components/PixelCanvas.test.js`: la cuadrícula (fondo CSS) presente/ausente según el
+  estado y `background-size` proporcional a la matriz.
+- `tests/unit/stores/editor.test.js`: estado por defecto, alternar, persistencia en localStorage.
+- `tests/unit/components/Toolbar.test.js`: toggle con `aria-pressed`, cambio de `aria-label` e icono.
 
 ## Relacionado con
 

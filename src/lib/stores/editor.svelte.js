@@ -6,6 +6,24 @@ import {
   LIMITE_RECIENTES,
 } from "../services/colores.js";
 
+const CLAVE_CUADRICULA = "pixel-art-studio:mostrar-cuadricula";
+
+function cargarMostrarCuadricula() {
+  try {
+    return localStorage.getItem(CLAVE_CUADRICULA) !== "false";
+  } catch {
+    return true;
+  }
+}
+
+function guardarMostrarCuadricula(valor) {
+  try {
+    localStorage.setItem(CLAVE_CUADRICULA, String(valor));
+  } catch {
+    // sin storage (SSR/pruebas) se ignora
+  }
+}
+
 export const PALETA = [
   "#000000",
   "#ffffff",
@@ -31,6 +49,7 @@ class EditorStore {
   herramienta = $state("pincel");
   version = $state(0);
   coloresRecientes = $state(cargarRecientes());
+  mostrarCuadricula = $state(cargarMostrarCuadricula());
 
   seleccionarColor(color) {
     const norm = normalizarHex(color);
@@ -85,6 +104,11 @@ class EditorStore {
 
   seleccionarHerramienta(herramienta) {
     this.herramienta = herramienta;
+  }
+
+  alternarCuadricula() {
+    this.mostrarCuadricula = !this.mostrarCuadricula;
+    guardarMostrarCuadricula(this.mostrarCuadricula);
   }
 
   pintarPixel(x, y) {

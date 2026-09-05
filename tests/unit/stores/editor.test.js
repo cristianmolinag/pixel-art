@@ -266,3 +266,28 @@ describe("editor store (F06 colores recientes)", () => {
     expect(editor.coloresRecientes).toEqual([]);
   });
 });
+
+describe("editor store (F08 cuadrícula)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    editor.mostrarCuadricula = true;
+  });
+
+  it("muestra la cuadrícula por defecto", () => {
+    expect(editor.mostrarCuadricula).toBe(true);
+  });
+
+  it("alternarCuadricula oculta y vuelve a mostrar", () => {
+    editor.alternarCuadricula();
+    expect(editor.mostrarCuadricula).toBe(false);
+    editor.alternarCuadricula();
+    expect(editor.mostrarCuadricula).toBe(true);
+  });
+
+  it("alternarCuadricula persiste la preferencia en localStorage", () => {
+    editor.alternarCuadricula();
+    expect(localStorage.getItem("pixel-art-studio:mostrar-cuadricula")).toBe("false");
+    editor.alternarCuadricula();
+    expect(localStorage.getItem("pixel-art-studio:mostrar-cuadricula")).toBe("true");
+  });
+});

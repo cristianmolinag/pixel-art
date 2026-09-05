@@ -98,7 +98,8 @@ que el lienzo sigue siendo cuadrado y no desborda.
   `image-rendering: pixelated`.
 - El modelo `Canvas` es una clase pura (fáciles de testear con el mock de
   `OffscreenCanvas` en `tests/setup.js`).
-- Cuadrícula dibujada como líneas sobre el canvas para distinguir celdas.
+- Cuadrícula como **overlay CSS** sobre el canvas (desde F08), para líneas nítidas a
+  cualquier escala; antes eran líneas `stroke` de `lineWidth 0.1` que quedaban invisibles.
 
 > **Decisión tomada**: el tamaño de celda visible / zoom de edición **queda fuera de
 > esta feature** y se resolverá en la feature 02 (colores / pintar). Aquí el display

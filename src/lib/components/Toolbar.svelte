@@ -10,6 +10,7 @@
   import FilePlus2 from "@lucide/svelte/icons/file-plus-2";
   import Save from "@lucide/svelte/icons/save";
   import Images from "@lucide/svelte/icons/images";
+  import Grid3x3 from "@lucide/svelte/icons/grid-3x3";
 
   const HERRAMIENTAS = [
     { id: "pincel", label: "Pincel", icon: Brush },
@@ -51,6 +52,20 @@
       <Icone size={20} />
     </button>
   {/each}
+
+  <button
+    type="button"
+    aria-label={editor.mostrarCuadricula ? "Ocultar cuadrícula" : "Mostrar cuadrícula"}
+    title={editor.mostrarCuadricula ? "Ocultar cuadrícula" : "Mostrar cuadrícula"}
+    aria-pressed={editor.mostrarCuadricula}
+    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition
+      {editor.mostrarCuadricula
+        ? 'bg-white text-black shadow'
+        : 'text-white hover:bg-white/10'}"
+    onclick={() => editor.alternarCuadricula()}
+  >
+    <Grid3x3 size={20} />
+  </button>
 
   <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
 
