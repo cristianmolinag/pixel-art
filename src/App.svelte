@@ -2,6 +2,7 @@
   import PixelCanvas from "./lib/components/PixelCanvas.svelte";
   import Palette from "./lib/components/Palette.svelte";
   import Toolbar from "./lib/components/Toolbar.svelte";
+  import Galeria from "./lib/components/Galeria.svelte";
 </script>
 
 <main class="flex h-screen flex-col items-center justify-center gap-4 p-4">
@@ -9,4 +10,5 @@
   <Toolbar />
   <PixelCanvas />
   <Palette />
+  <Galeria />
 </main>

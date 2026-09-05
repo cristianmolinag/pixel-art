@@ -1,4 +1,7 @@
+import "fake-indexeddb/auto";
 import { vi } from "vitest";
+
+HTMLCanvasElement.prototype.getContext = () => null;
 
 class MockOffscreenCanvas {
   constructor(width = 32, height = 32) {

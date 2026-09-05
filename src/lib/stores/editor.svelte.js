@@ -1,4 +1,10 @@
 import { Canvas } from "../models/Canvas.js";
+import {
+  cargarRecientes,
+  guardarRecientes,
+  normalizarHex,
+  LIMITE_RECIENTES,
+} from "../services/colores.js";
 
 export const PALETA = [
   "#000000",
@@ -24,6 +30,22 @@ class EditorStore {
   colorActual = $state("#000000");
   herramienta = $state("pincel");
   version = $state(0);
+  coloresRecientes = $state(cargarRecientes());
+
+  seleccionarColor(color) {
+    const norm = normalizarHex(color);
+    if (!norm) return;
+    this.colorActual = norm;
+  }
+
+  registrarColorUsado(color) {
+    const norm = normalizarHex(color);
+    if (!norm) return;
+    const lista = this.coloresRecientes.filter((c) => c !== norm);
+    lista.unshift(norm);
+    this.coloresRecientes = lista.slice(0, LIMITE_RECIENTES);
+    guardarRecientes(this.coloresRecientes);
+  }
 
   undoStack = $state([]);
   redoStack = $state([]);
@@ -67,6 +89,7 @@ class EditorStore {
 
   pintarPixel(x, y) {
     if (!this.model.setPixel(x, y, this.colorActual)) return;
+    this.registrarColorUsado(this.colorActual);
     this._cambiosEnAccion += 1;
     this.version += 1;
   }
@@ -79,6 +102,7 @@ class EditorStore {
 
   dibujarLinea(x0, y0, x1, y1) {
     if (!this.model.drawLine(x0, y0, x1, y1, this.colorActual)) return;
+    this.registrarColorUsado(this.colorActual);
     this._cambiosEnAccion += 1;
     this.version += 1;
   }
@@ -86,6 +110,7 @@ class EditorStore {
   rellenar(x, y) {
     const pintados = this.model.floodFill(x, y, this.colorActual);
     if (pintados <= 0) return;
+    this.registrarColorUsado(this.colorActual);
     this._cambiosEnAccion += 1;
     this.version += 1;
   }

@@ -185,3 +185,84 @@ describe("editor store (F04/FR-007)", () => {
     expect(editor.version).toBe(before);
   });
 });
+
+describe("editor store (F06 colores recientes)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    editor.model = new Canvas(16, 16);
+    editor.colorActual = "#ff0000";
+    editor.version = 0;
+    editor.coloresRecientes = [];
+  });
+
+  it("registrarColorUsado agrega el color primero y normaliza", () => {
+    editor.registrarColorUsado("#00ff00");
+    expect(editor.coloresRecientes).toEqual(["#00FF00"]);
+    expect(localStorage.getItem("pixel-art-studio:colores-recientes")).toBe(
+      JSON.stringify(["#00FF00"])
+    );
+  });
+
+  it("registrarColorUsado mueve al frente sin duplicar (LRU)", () => {
+    editor.registrarColorUsado("#111111");
+    editor.registrarColorUsado("#222222");
+    editor.registrarColorUsado("#111111");
+    expect(editor.coloresRecientes).toEqual(["#111111", "#222222"]);
+  });
+
+  it("registrarColorUsado limita a 6 recientes", () => {
+    for (let i = 1; i <= 8; i++) {
+      const hex = `#0${i}0${i}0${i}`;
+      editor.registrarColorUsado(hex);
+    }
+    expect(editor.coloresRecientes.length).toBe(6);
+    expect(editor.coloresRecientes[0]).toBe("#080808");
+  });
+
+  it("registrarColorUsado ignora colores inválidos", () => {
+    editor.registrarColorUsado("rojo");
+    expect(editor.coloresRecientes).toEqual([]);
+  });
+
+  it("pintarPixel registra el color usado (F06)", () => {
+    editor.colorActual = "#147df5";
+    editor.pintarPixel(2, 2);
+    expect(editor.coloresRecientes).toContain("#147DF5");
+  });
+
+  it("dibujarLinea y rellenar registran el color usado (F06)", () => {
+    editor.colorActual = "#ffd300";
+    editor.dibujarLinea(0, 0, 4, 0);
+    expect(editor.coloresRecientes).toContain("#FFD300");
+
+    editor.colorActual = "#580aff";
+    editor.rellenar(8, 8);
+    expect(editor.coloresRecientes).toContain("#580AFF");
+  });
+
+  it("acciones sin cambio no registran color (F06)", () => {
+    editor.colorActual = "#147df5";
+    editor.pintarPixel(16, 16);
+    editor.dibujarLinea(-1, -1, -2, -2);
+    editor.rellenar(16, 16);
+    expect(editor.coloresRecientes).toEqual([]);
+  });
+
+  it("seleccionarColor setea colorActual y normaliza", () => {
+    editor.seleccionarColor("#abc");
+    expect(editor.colorActual).toBe("#AABBCC");
+  });
+
+  it("seleccionarColor no reordena los recientes", () => {
+    editor.registrarColorUsado("#111111");
+    editor.registrarColorUsado("#222222");
+    editor.seleccionarColor("#111111");
+    expect(editor.colorActual).toBe("#111111");
+    expect(editor.coloresRecientes).toEqual(["#222222", "#111111"]);
+  });
+
+  it("seleccionarColor con color nuevo no lo agrega a recientes (solo pintando)", () => {
+    editor.seleccionarColor("#123456");
+    expect(editor.coloresRecientes).toEqual([]);
+  });
+});

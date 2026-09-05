@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, cleanup, fireEvent } from "@testing-library/svelte";
 import Toolbar from "../../../src/lib/components/Toolbar.svelte";
 import { editor } from "../../../src/lib/stores/editor.svelte.js";
+import { galeria } from "../../../src/lib/stores/galeria.svelte.js";
 import { Canvas } from "../../../src/lib/models/Canvas.js";
 
 function botonPorLabel(container, label) {
@@ -16,10 +17,14 @@ beforeEach(() => {
   editor.model = new Canvas(16, 16);
   editor.undoStack = [];
   editor.redoStack = [];
+  galeria.visible = false;
+  galeria.enfocarGuardar = false;
+  galeria.dibujos = [];
 });
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
 
 describe("Toolbar (F03)", () => {
@@ -35,8 +40,11 @@ describe("Toolbar (F03)", () => {
       "Relleno",
       "Deshacer",
       "Rehacer",
+      "Nuevo dibujo",
+      "Guardar",
+      "Galería",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(6);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(9);
   });
 
   it("seleccionar una herramienta la activa y queda marcada (US1/FR-002)", async () => {
@@ -85,5 +93,41 @@ describe("Toolbar — undo/redo (F04/FR-001)", () => {
     await fireEvent.click(botonPorLabel(container, "Rehacer"));
     expect(editor.model.getPixel(3, 3).r).toBe(255);
     expect(editor.canRedo).toBe(false);
+  });
+});
+
+describe("Toolbar — galería (F05/FR-001/FR-003)", () => {
+  it("Galería abre el modal", async () => {
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Galería"));
+    expect(galeria.visible).toBe(true);
+  });
+
+  it("Guardar abre el modal enfocando el campo de nombre", async () => {
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Guardar"));
+    expect(galeria.visible).toBe(true);
+    expect(galeria.enfocarGuardar).toBe(true);
+  });
+
+  it("Nuevo dibujo pregunta confirmación y, al aceptar, limpia el lienzo (US4/FR-005)", async () => {
+    editor.pintarPixel(1, 1);
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Nuevo dibujo"));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(editor.model.getPixel(1, 1).a).toBe(0);
+  });
+
+  it("Nuevo dibujo no cambia el lienzo si se cancela (US4/FR-005)", async () => {
+    editor.pintarPixel(1, 1);
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    const { container } = render(Toolbar);
+    await fireEvent.click(botonPorLabel(container, "Nuevo dibujo"));
+
+    expect(editor.model.getPixel(1, 1).r).toBe(255);
   });
 });
