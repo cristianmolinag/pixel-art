@@ -36,4 +36,9 @@ pnpm build
 
 ## Deploy
 
-It auto-deploys to GitHub Pages via GitHub Actions on push to `main`.
+It auto-deploys to GitHub Pages via GitHub Actions on push to `develop`.
+
+## Git workflow
+
+- Create one dedicated Git worktree and branch for each issue or feature.
+- Merge changes into `develop` through a pull request; do not push directly to protected branches.

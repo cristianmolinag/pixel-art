@@ -31,6 +31,7 @@ in complexity and verifying each feature before moving on:
 9. **Canvas matrix** - change dimensions through presets or custom values -> **#17**.
 10. **Zoom** - zoom the canvas view in and out -> **#18**.
 11. **Grid guide** - a reference overlay decoupled from canvas data -> **#19**.
+12. **UX and release workflow polish** - pointer-centered desktop zoom, iOS safe-area support, and protected deployment workflow -> **#24**.
 
 Each feature maps to a GitHub issue and a spec in `specs/features/`.
 
@@ -69,5 +70,5 @@ GitHub issues are the live work tracker.
 ## Project status
 
 - **Active branch**: `feat/sdd-rewrite` until the pending squash merge into `develop`.
-- **Recent implementation**: responsive menu, mobile zoom expander, fluid toolbar sizing, grid guide overlay, zoom/pan-aware painting, auto-hiding pan/zoom hint, custom confirmation modals, and gallery list-only scrolling.
+- **Recent implementation**: responsive menu, mobile zoom expander, fluid toolbar sizing, grid guide overlay, zoom/pan-aware painting, desktop `Ctrl + wheel` zoom, iOS footer safe-area padding, protected release workflow, auto-hiding pan/zoom hint, custom confirmation modals, and gallery list-only scrolling.
 - **Remaining backlog**: #1 PWA icons, #8 mobile/UX improvements, and #10 keyboard shortcuts.
