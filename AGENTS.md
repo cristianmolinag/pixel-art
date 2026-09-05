@@ -28,6 +28,8 @@ mise exec -- pnpm check     # typecheck (svelte-check)
 - Canvas logic: el canvas se redibuja a resolución de dispositivo (DPR); cada celda = 1 píxel del modelo y zoom/pan se aplican en el draw con redondeo a enteros de dispositivo (sin `transform` CSS)
 - Acciones del toolbar se comunican via flags en el store (`pendingImageData`, `pendingClear`, `pendingExport`)
 - No usar `document.querySelector` para acceder al canvas — usar el patrón de acciones pendientes
+- Toolbar responsivo: tamaños de icono y gap **fluidos** via clamp (`.tam-icono`, `.toolbar-fila` en `src/app.css`); en mobile el **zoom** se pliega en su propio expander (sin elipsis) y cuadrícula/matriz quedan visibles
+- Confirmaciones de usuario con **modales propios** (patrón `Matriz.svelte`): nada de `window.confirm`/`alert`
 
 ## Issues
 - El plan de desarrollo es **simple e incremental**, alineado a `specs/project/objective.md`:
@@ -36,5 +38,7 @@ mise exec -- pnpm check     # typecheck (svelte-check)
   - F03 Herramientas de dibujo (borrador, línea, relleno) → **#5**
   - F04 Undo/Redo (deshacer/rehacer) → **#13**
   - F05 Galería y persistencia (IndexedDB) → **#6**
+  - F07 Layout del menú → **#15** (implementada y cerrada)
   - Backlog cross-cutting (sin milestone): **#1** Iconos PWA, **#8** Mejoras mobile/UX, **#10** Atajos de teclado
+  - Pendiente en milestone **v1.0 MVP**: **#19** Ajustar la cuadrícula como capa-guía superpuesta
 - Cualquier sesión debe consultar los issues abiertos antes de implementar algo nuevo

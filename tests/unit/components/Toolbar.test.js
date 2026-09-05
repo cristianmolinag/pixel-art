@@ -46,8 +46,9 @@ describe("Toolbar (F03)", () => {
       "Restablecer zoom al 100%",
       "Deshacer",
       "Rehacer",
+      "Zoom",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(11);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(12);
   });
 
   it("seleccionar una herramienta la activa y queda marcada (US1/FR-002)", async () => {

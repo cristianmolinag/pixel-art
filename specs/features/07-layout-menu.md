@@ -1,9 +1,9 @@
 # Feature 007: Layout del menú (sidebar en escritorio)
 
-**Estado:** 🚧 En implementación
+**Estado:** ✅ Implementada (#15 cerrada)
 **Spec escrita:** 2026-09-04
 **Objetivo:** `specs/project/objective.md`
-**Issue asociado:** [#15](https://github.com/cristianmolinag/pixel-art/issues/15)
+**Issue asociado:** [#15](https://github.com/cristianmolinag/pixel-art/issues/15) (cerrado)
 **Depende de:** F03 Herramientas (#5), F04 Undo/Redo (#13) y F05 Galería (#6), ya implementadas
 
 > Esta spec es el **ancla** de la feature. Define **qué** debe hacer (sin decir cómo).
@@ -61,33 +61,54 @@ con el lienzo centrado.
 3. **Given** una pantalla móvil (`< lg`), **When** veo el layout, **Then** se mantiene el layout
    actual (título, toolbar, lienzo y paleta apilados) — el ajuste móvil de la iteración siguiente.
 
+### User Story 3 — Toolbar móvil responsivo (Priority: P1)
+
+Como usuario en móvil, quiero que la barra de herramientas se adapte al ancho sin apretarse ni
+cortarse, manteniendo acceso directo a las herramientas.
+
+**Por qué esta prioridad:** el ajuste móvil se iteró tras el sidebar de escritorio acordado en US2.
+
+**Acceptance Scenarios (Given/When/Then):**
+
+1. **Given** una pantalla móvil (`< lg`), **When** veo el toolbar, **Then** herramientas, cuadrícula,
+   matriz, deshacer/rehacer y zoom están accesibles sin cortes; el zoom se pliega en un expander propio.
+2. **Given** poco ancho disponible, **When** la fila no cabe, **Then** los iconos (`clamp(28px, 9vw, 40px)`)
+   y el gap (`clamp(2px, 0.8vw, 4px)`) se reducen fluidamente y el grupo queda **centrado** al sobrar espacio.
+3. **Given** el zoom expandido, **When** elijo una opción o pulso Escape, **Then** el panel de zoom se cierra.
+
 ## No-objetivos
 
 - No cambiar la lógica de herramientas/historial/galería.
 - No atajos de teclado (cubiertos por #10).
 - No alterar el comportamiento de los botones existentes.
-- No rediseñar el layout móvil en esta iteración (se hará después).
+- El rediseño móvil se itera por separado (ver US3); sin elipsis: las opciones de cuadrícula quedan
+  siempre visibles y solo el zoom se pliega.
 
 ## Decisiones
 
 ### De diseño (resueltas con el usuario)
 
-- **Sidebar en escritorio (`≥ lg`)**: columna izquierda fija (`w-60`, `bg-surface-light`) con:
-  - **header**: título "Pixel Art Studio";
-  - **body**: `Toolbar` (herramientas, historial, zoom, archivo);
-  - **footer**: `Palette`, pegada abajo (`mt-auto`).
-- **Área principal**: el `PixelCanvas` ocupa todo el espacio restante (`flex-1`) y queda centrado
-  (`items-center justify-center`).
-- **Mobile (`< lg`)**: se conserva el layout actual apilado (título → toolbar → lienzo → paleta);
-  el rediseño móvil es una iteración posterior.
-- Implementación en `App.svelte` (single source del layout); la paleta se monta en dos variantes
-  (móvil `lg:hidden` y footer de escritorio `hidden lg:block`) para conservar el orden móvil sin
-  duplicar toolbar/lienzo.
+- **Layout global (app shell)**: `header` (icono + título + `AccionesArchivo` a la derecha), un
+  contenedor flex con `aside` (toolbar) + `main` (canvas centrado) y un único `footer` con la
+  `Palette` **full-width** (paleta + recientes).
+- **Escritorio (`≥ lg`)**: el toolbar es una **columna** apilada en el `aside` (herramientas,
+  cuadrícula, matriz, zoom, historial).
+- **Mobile (`< lg`)**: el toolbar es una **fila responsiva** con herramientas + cuadrícula + matriz +
+  deshacer/rehacer y un botón **zoom** que despliega sus controles (−, %, +, reset) en una fila
+  extra debajo. Sin elipsis genérico.
+- **Iconos fluidos**: clases `tam-icono` / `tam-icono-ancho` (`clamp(28px, 9vw, 40px)`) y `toolbar-fila`
+  (gap `clamp(2px, 0.8vw, 4px)`) en `src/app.css`; el icono SVG ocupa el 60% del botón. El grupo se
+  centra (`justify-center`) cuando sobra espacio y arropa sin cortes cuando falta.
+- **Confirmaciones propias**: modales con el patrón de `Matriz.svelte` (overlay + `role="dialog"`,
+  cierre por backdrop/Escape) en lugar de `window.confirm` (ej. "Nuevo dibujo").
+- Implementación en `App.svelte` (single source del layout).
 
 ## Tests
 
-- `tests/unit/components/Toolbar.test.js`: siguen en verde sin cambios (los `aria-label` y acciones
-  no cambian). El layout es visual; no requiere test de componente nuevo en esta iteración.
+- `tests/unit/components/Toolbar.test.js`: se actualizó el orden esperado de `aria-label` (nuevo botón
+  `Zoom`) y se mantienen los escenarios de herramientas/historial/cuadrícula/zoom.
+- `tests/unit/components/AccionesArchivo.test.js`: el confirm de "Nuevo dibujo" ahora prueba el modal
+  propio (`Empezar nuevo` / `Cancelar`) en lugar de `window.confirm`.
 
 ## Relacionado
 

@@ -34,6 +34,25 @@ canvas {
   display: none;
 }
 
+.tam-icono {
+  width: clamp(28px, 9vw, 40px);
+  height: clamp(28px, 9vw, 40px);
+}
+
+.tam-icono-ancho {
+  width: clamp(28px, 9vw, 40px);
+}
+
+.tam-icono > svg,
+.tam-icono-ancho > svg {
+  width: 60%;
+  height: 60%;
+}
+
+.toolbar-fila {
+  gap: clamp(2px, 0.8vw, 4px);
+}
+
 #app {
   height: 100dvh;
 }

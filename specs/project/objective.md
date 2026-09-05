@@ -70,12 +70,16 @@ Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
 ## Dónde está el trabajo (cómo saber qué falta)
 
 - **Qué queremos / cómo está pensado** → este documento + `specs/architecture/` + `specs/features/`.
-- **En qué se está trabajando / qué falta** → *issues abiertos* de GitHub (milestone **v1.0 MVP** + backlog sin milestone: #1, #8, #10).
+- **En qué se está trabajando / qué falta** → *issues abiertos* de GitHub (incluye **#19** en el milestone **v1.0 MVP**; backlog sin milestone: #1, #8, #10).
 - Cada feature de `specs/features/` se asocia a un issue. Ver el estado en la cabecera de cada spec.
 
 ## Estado del proyecto
 
 - **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F10 Zoom del lienzo (#18) implementada y verificada. Queda pendiente en el
-  milestone **v1.0 MVP**: F07 Layout del menú (#15);
-  y backlog sin milestone: #1, #8, #10.
+- **Fase actual**: F07 Layout del menú (**#15**) implementada y cerrada — app shell con header
+  (icono + título + archivo), sidebar de herramientas en escritorio y **toolbar móvil responsivo**
+  (zoom plegado en expander propio, iconos y gap fluidos con `clamp`, grupo centrado al sobrar
+  espacio), paleta **full-width** y confirmaciones por **modal** (sin `window.confirm`).
+- **Pendiente en milestone `v1.0 MVP`**: **#19** (ajustar la cuadrícula como capa-guía superpuesta,
+  no parte del lienzo). **Backlog sin milestone**: #1 (iconos PWA), #10 (atajos de teclado);
+  **#8** (mejoras mobile/UX) parcialmente atendido con el toolbar responsivo.

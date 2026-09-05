@@ -60,7 +60,7 @@
     title="Cambiar matriz del lienzo"
     aria-expanded={abierto}
     aria-haspopup="dialog"
-    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white transition
+    class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition
       {abierto ? 'bg-white/15' : 'hover:bg-white/10'}"
     onclick={() => (abierto ? cerrar() : abrir())}
   >

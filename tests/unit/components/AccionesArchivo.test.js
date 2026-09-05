@@ -46,23 +46,26 @@ describe("AccionesArchivo (F05/FR-001/FR-003)", () => {
     expect(galeria.enfocarGuardar).toBe(true);
   });
 
-  it("Nuevo dibujo pregunta confirmación y, al aceptar, limpia el lienzo (US4/FR-005)", async () => {
+  it("Nuevo dibujo abre un modal de confirmación y, al aceptar, limpia el lienzo (US4/FR-005)", async () => {
     editor.pintarPixel(1, 1);
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const { container } = render(AccionesArchivo);
     await fireEvent.click(botonPorLabel(container, "Nuevo dibujo"));
 
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(botonPorLabel(container, "Empezar nuevo")).toBeTruthy();
+    await fireEvent.click(botonPorLabel(container, "Empezar nuevo"));
+
     expect(editor.model.getPixel(1, 1).a).toBe(0);
+    expect(botonPorLabel(container, "Empezar nuevo")).toBeUndefined();
   });
 
   it("Nuevo dibujo no cambia el lienzo si se cancela (US4/FR-005)", async () => {
     editor.pintarPixel(1, 1);
-    vi.spyOn(window, "confirm").mockReturnValue(false);
 
     const { container } = render(AccionesArchivo);
     await fireEvent.click(botonPorLabel(container, "Nuevo dibujo"));
+
+    await fireEvent.click(botonPorLabel(container, "Cancelar"));
 
     expect(editor.model.getPixel(1, 1).r).toBe(255);
   });
