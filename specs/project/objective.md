@@ -1,86 +1,73 @@
-# Objetivo de Pixel Art Studio
+# Pixel Art Studio Objective
 
-Este documento es el **ancla del proyecto**: responde *qué queremos* y *qué no*.
-Es la puerta de entrada para cualquier persona ajena al proyecto. Los issues y las
-specs de feature se referencian desde aquí.
+This document is the **project anchor**: it explains what we want and what we do not.
+It is the entry point for anyone new to the project. GitHub issues and feature specs
+are referenced from here.
 
-## Qué es
+## What it is
 
-Pixel Art Studio es un **editor de pixel art web**, creado para divertirse y aprender
-Svelte 5, Tailwind CSS v4 y arquitectura de frontend moderna. El objetivo del proceso
-no es solo construir una app, sino **aprender el stack mientras se desarrolla un
-producto real**, feature por feature.
+Pixel Art Studio is a **web pixel art editor**, created for fun and to learn Svelte 5,
+Tailwind CSS v4, and modern frontend architecture. The goal is not only to build an app,
+but to learn the stack while developing a real product, one feature at a time.
 
-## Para quién es
+## Who it is for
 
-- **Principalmente**: creado en compañía de los hijos del autor, solo por diversión.
-- **Audiencia/usuario final**: cualquiera que quiera dibujar pixel art en el
-  navegador, en especial desde **móvil** (la app es mobile-first).
+- **Primary audience**: the author's children and family, just for fun.
+- **End users**: anyone who wants to draw pixel art in a browser, especially on mobile.
 
-## Alcance (simple e incremental)
+## Scope (simple and incremental)
 
-No partimos de un editor completo. Construimos **una feature a la vez**, en orden de
-complejidad creciente, verificando antes de avanzar:
+We are not starting with a complete editor. We build **one feature at a time**, increasing
+in complexity and verifying each feature before moving on:
 
-1. **Canvas** — ver un lienzo de píxeles cuadriculado (base de todo lo demás) → **#11**.
-2. **Colores** — elegir color y pintar sobre píxeles → **#12**.
-3. **Herramientas** — borrar, línea, relleno, etc. → **#5**.
-4. **Undo/redo** — deshacer y rehacer acciones → **#13**.
-5. **Galería** — guardar y listar dibujos → **#6**.
-6. **Color picker** — selector de color libre decente y colores recientes → **#14**.
-7. **Layout del menú** — agrupar iconos sin saltos de línea → **#15**.
-8. **Toggle de cuadrícula** — mostrar/ocultar la cuadrícula del lienzo → **#16**.
-9. **Matriz del lienzo** — menú para cambiar dimensiones (presets/custom) → **#17**.
-10. **Zoom** — acercar/alejar la vista del lienzo → **#18**.
-11. **Cuadrícula como capa-guía** — overlay de referencia, desacoplado de los datos → **#19**.
+1. **Canvas** - view a gridded pixel canvas -> **#11**.
+2. **Colors** - choose colors and paint pixels -> **#12**.
+3. **Tools** - eraser, line, fill, and more -> **#5**.
+4. **Undo/redo** - undo and redo actions -> **#13**.
+5. **Gallery** - save and list drawings -> **#6**.
+6. **Color picker** - a free-form color picker and recent colors -> **#14**.
+7. **Menu layout** - group icons without line wrapping -> **#15**.
+8. **Grid toggle** - show or hide the canvas grid -> **#16**.
+9. **Canvas matrix** - change dimensions through presets or custom values -> **#17**.
+10. **Zoom** - zoom the canvas view in and out -> **#18**.
+11. **Grid guide** - a reference overlay decoupled from canvas data -> **#19**.
 
-Cada feature se traza a un issue de GitHub (y su spec en `specs/features/`).
+Each feature maps to a GitHub issue and a spec in `specs/features/`.
 
-## No-objetivos (fuera del alcance actual)
+## Non-goals
 
-Para mantener el aprendizaje enfocado, **queda fuera del alcance inicial**:
+The following remain outside the initial scope:
 
-- Capas múltiples (se mencionan como visión futura, no se implementan al inicio).
-- Animación / timeline / GIF animado / spritesheet.
-- Colaboración en tiempo real.
+- Multiple layers.
+- Animation, timelines, animated GIFs, or spritesheets.
+- Real-time collaboration.
 
-> Los issues abiertos correspondientes a estos no-objetivos (#3, #4, #7, #9) fueron
-> cerrados para trazar solo el alcance actual. El milestone v1.1/v2.0 se eliminó;
-> el roadmap de trabajo vive en el milestone **v1.0 MVP** + backlog sin milestone.
+## Principles
 
-## Principios
+- **Mobile-first**: the canvas is a responsive square (`aspect-ratio: 1/1`) with pixelated rendering and touch protections.
+- **One cell equals one real pixel** in the HTML canvas; the display is scaled during drawing.
+- **English-first project language**: UI, code, tests, specs, and project communication use American English.
+- **Simplicity**: add each feature only after the previous feature is verified.
+- **Central Svelte 5 rune state** with a unidirectional architecture (see `specs/architecture/overview.md`).
+- **No guessing**: mark ambiguity instead of assuming.
 
-- **Mobile-first**: el canvas es un cuadrado responsivo (`aspect-ratio: 1/1`), se
-  escala con CSS y `image-rendering: pixelated`. Protecciones táctiles activadas.
-- **Cada celda = 1 píxel real** del canvas HTML; el display se escala con CSS.
-- **UI en español** (textos de la interfaz).
-- **Simplicidad**: cada feature se agrega solo cuando la anterior está verificada.
-- **Estado central con runes de Svelte 5**; arquitectura uni-direccional
-  (ver `specs/architecture/overview.md`).
-- **No adivinar**: lo ambiguo se marca, no se asume (ver metodología abajo).
+## Development method
 
-## Metodología de desarrollo
+We use **Spec-Anchored Development**: a spec guides and verifies the code; it is not a
+code generator. We write the what (spec) before the how (code), and evolve both in
+parallel while checking that implementation does not drift.
 
-Usamos **Spec-Anchored Development**: la spec es un *ancla* que orienta y verifica el
-código, no un generador. Escribimos el *qué* (spec) antes del *cómo* (código), y el
-código evoluciona en paralelo con la spec verificando constantemente que no se desvía.
+The `specs/` directory is the source of truth for requirements and architecture.
+GitHub issues are the live work tracker.
 
-Este directorio (`specs/`) es la **fuente de verdad** de requisitos y arquitectura.
-Los **issues de GitHub** son el estado vivo del trabajo (ver abajo).
+## Where to find work
 
-## Dónde está el trabajo (cómo saber qué falta)
+- **What we want / how it is structured** -> this document, `specs/architecture/`, and `specs/features/`.
+- **What is being worked on / what remains** -> open GitHub issues.
+- Each feature spec is associated with an issue and records its implementation status.
 
-- **Qué queremos / cómo está pensado** → este documento + `specs/architecture/` + `specs/features/`.
-- **En qué se está trabajando / qué falta** → *issues abiertos* de GitHub (incluye **#19** en el milestone **v1.0 MVP**; backlog sin milestone: #1, #8, #10).
-- Cada feature de `specs/features/` se asocia a un issue. Ver el estado en la cabecera de cada spec.
+## Project status
 
-## Estado del proyecto
-
-- **Rama activa**: `feat/sdd-rewrite` (los cambios de la reescritura viven en ramas `feat/*`).
-- **Fase actual**: F07 Layout del menú (**#15**) implementada y cerrada — app shell con header
-  (icono + título + archivo), sidebar de herramientas en escritorio y **toolbar móvil responsivo**
-  (zoom plegado en expander propio, iconos y gap fluidos con `clamp`, grupo centrado al sobrar
-  espacio), paleta **full-width** y confirmaciones por **modal** (sin `window.confirm`).
-- **Pendiente en milestone `v1.0 MVP`**: **#19** (ajustar la cuadrícula como capa-guía superpuesta,
-  no parte del lienzo). **Backlog sin milestone**: #1 (iconos PWA), #10 (atajos de teclado);
-  **#8** (mejoras mobile/UX) parcialmente atendido con el toolbar responsivo.
+- **Active branch**: `feat/sdd-rewrite` until the pending squash merge into `develop`.
+- **Recent implementation**: responsive menu, mobile zoom expander, fluid toolbar sizing, grid guide overlay, zoom/pan-aware painting, auto-hiding pan/zoom hint, custom confirmation modals, and gallery list-only scrolling.
+- **Remaining backlog**: #1 PWA icons, #8 mobile/UX improvements, and #10 keyboard shortcuts.

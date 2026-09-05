@@ -1,54 +1,58 @@
-# Arquitectura de Pixel Art Studio
+# Pixel Art Studio Architecture
 
 ## Stack
 
 - **Svelte 5** (runes: `$state`, `$derived`, `$effect`)
 - **Vite 6**
-- **Tailwind CSS v4** (config vía `@theme` en CSS, sin `tailwind.config.js`)
+- **Tailwind CSS v4** (theme tokens through `@theme` in CSS)
 - **vite-plugin-pwa**
 - **Vitest** + **jsdom** (tests)
-- **Node 22** + **pnpm 12** gestionados por **mise**
+- **Node 22** + **pnpm 12**, managed by **mise**
 
-## Organización de `src/`
+## `src/` organization
 
-```
+```text
 src/
-├── main.js                     # Montaje de la app (mount de Svelte 5)
-├── App.svelte                  # Raíz / layout
-├── app.css                     # Tailwind v4 + tokens @theme
+├── main.js                     # Svelte 5 application entry point
+├── App.svelte                  # Root layout
+├── app.css                     # Tailwind v4 and @theme tokens
 └── lib/
-    ├── stores/                 # Estado central con runes
-    ├── models/                 # Clases de dominio puras
-    └── components/             # Componentes de UI
+    ├── stores/                 # Central state with runes
+    ├── models/                 # Pure domain models
+    └── components/             # UI components
 ```
 
-## Estado central
+## Central state
 
-- El estado vive en stores con runes (ej. `editor.svelte.js`) que exportan una
-  instancia singleton (`export const editor = new EditorState()`).
-- Los componentes leen `$state` / `$derived` y mutan a través de métodos del store.
-- El estado es la **única fuente de verdad**; los componentes son una proyección de él.
+- State lives in rune-based stores such as `editor.svelte.js`, which export singleton instances.
+- Components read `$state` and `$derived` values and mutate state through store methods.
+- The store is the single source of truth; components are projections of it.
 
-## Canvas y comunicación (patrón de acciones pendientes)
+## Canvas and pending actions
 
-Cada celda del canvas = 1 píxel real; el display se escala con CSS.
+Each canvas cell represents one real pixel. The display is rendered at device resolution,
+with zoom and pan applied during drawing and rounded to device-pixel integers.
 
-**Regla de oro:** no usar `document.querySelector` para acceder al canvas. En su
-lugar, el toolbar y otros componentes se comunican con el canvas mediante **flags
-de acciones pendientes** en el store (`pendingImageData`, `pendingClear`,
-`pendingExport`, `pendingComposite`). El componente del canvas observa esos flags
-con `$effect` y ejecuta la acción.
+**Rule:** do not use `document.querySelector` to access the canvas. Toolbar and other
+components communicate with the canvas through pending-action flags in the store
+(`pendingImageData`, `pendingClear`, `pendingExport`, `pendingComposite`). The canvas
+component observes those flags with `$effect` and performs the action.
 
-Este patrón mantiene la arquitectura uni-direccional: no hay acceso directo al DOM,
-solo flujos declarados.
+This keeps the architecture unidirectional: there is no direct DOM access, only declared flows.
+
+## Responsive interaction
+
+- The toolbar uses fluid icon and gap sizes through `clamp()`.
+- On mobile, zoom is in a dedicated expander while grid and matrix controls remain visible.
+- At zoom levels above 100%, a brief auto-hiding hint explains touch and desktop pan/zoom controls.
+- Painting coordinates invert the zoom and pan transform so input maps to the correct model cell.
 
 ## Tests
 
-- `tests/unit/` — tests de stores y models (lógica pura).
-- `tests/integration/` — flujos que combinan varias piezas.
-- `tests/setup.js` — mock de `OffscreenCanvas` (no existe en jsdom).
+- `tests/unit/` - store, model, service, and component tests.
+- `tests/setup.js` - `OffscreenCanvas` mock for jsdom.
 
-## Herramientas
+## Tooling
 
-- Mise gestiona Node 22 y pnpm 12 (ver `mise.toml`).
-- Comandos: `pnpm dev`, `pnpm build`, `pnpm check`, `pnpm test`.
+- Mise manages Node 22 and pnpm 12.
+- Commands: `mise exec -- pnpm dev`, `mise exec -- pnpm build`, `mise exec -- pnpm check`, `mise exec -- pnpm test`.

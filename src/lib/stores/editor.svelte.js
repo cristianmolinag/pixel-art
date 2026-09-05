@@ -1,36 +1,36 @@
 import { Canvas } from "../models/Canvas.js";
 import {
-  cargarRecientes,
-  guardarRecientes,
-  normalizarHex,
-  LIMITE_RECIENTES,
-} from "../services/colores.js";
+  loadRecentColors,
+  saveRecentColors,
+  normalizeHex,
+  RECENT_LIMIT,
+} from "../services/colors.js";
 
-const CLAVE_CUADRICULA = "pixel-art-studio:mostrar-cuadricula";
+const GRID_STORAGE_KEY = "pixel-art-studio:show-grid";
 
-function cargarMostrarCuadricula() {
+function loadGridVisibility() {
   try {
-    return localStorage.getItem(CLAVE_CUADRICULA) !== "false";
+    return localStorage.getItem(GRID_STORAGE_KEY) !== "false";
   } catch {
     return true;
   }
 }
 
-function guardarMostrarCuadricula(valor) {
+function saveGridVisibility(valor) {
   try {
-    localStorage.setItem(CLAVE_CUADRICULA, String(valor));
+    localStorage.setItem(GRID_STORAGE_KEY, String(valor));
   } catch {
     // sin storage (SSR/pruebas) se ignora
   }
 }
 
-export const MATRICES = [16, 32, 48, 64];
-export const MIN_MATRIZ = 4;
-export const MAX_MATRIZ = 128;
+export const MATRIX_PRESETS = [16, 32, 48, 64];
+export const MIN_MATRIX_SIZE = 4;
+export const MAX_MATRIX_SIZE = 128;
 
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 4;
-export const PASO_ZOOM = 0.5;
+export const ZOOM_STEP = 0.5;
 
 export const PALETA = [
   "#000000",
@@ -69,28 +69,28 @@ export const PALETA = [
 
 class EditorStore {
   model = $state(new Canvas(16, 16));
-  colorActual = $state("#000000");
-  herramienta = $state("pincel");
+  currentColor = $state("#000000");
+  tool = $state("brush");
   version = $state(0);
-  coloresRecientes = $state(cargarRecientes());
-  mostrarCuadricula = $state(cargarMostrarCuadricula());
+  recentColors = $state(loadRecentColors());
+  showGrid = $state(loadGridVisibility());
   zoom = $state(1);
   panX = $state(0);
   panY = $state(0);
 
-  seleccionarColor(color) {
-    const norm = normalizarHex(color);
+  selectColor(color) {
+    const norm = normalizeHex(color);
     if (!norm) return;
-    this.colorActual = norm;
+    this.currentColor = norm;
   }
 
-  registrarColorUsado(color) {
-    const norm = normalizarHex(color);
+  trackColorUsage(color) {
+    const norm = normalizeHex(color);
     if (!norm) return;
-    const lista = this.coloresRecientes.filter((c) => c !== norm);
+    const lista = this.recentColors.filter((c) => c !== norm);
     lista.unshift(norm);
-    this.coloresRecientes = lista.slice(0, LIMITE_RECIENTES);
-    guardarRecientes(this.coloresRecientes);
+    this.recentColors = lista.slice(0, RECENT_LIMIT);
+    saveRecentColors(this.recentColors);
   }
 
   undoStack = $state([]);
@@ -98,24 +98,24 @@ class EditorStore {
   canUndo = $derived(this.undoStack.length > 0);
   canRedo = $derived(this.redoStack.length > 0);
 
-  _cambiosEnAccion = 0;
-  _snapshotAccion = null;
+  _actionChanges = 0;
+  _actionSnapshot = null;
 
-  abrirAccion() {
-    this._snapshotAccion = this.model.snapshot();
-    this._cambiosEnAccion = 0;
+  beginAction() {
+    this._actionSnapshot = this.model.snapshot();
+    this._actionChanges = 0;
   }
 
-  cerrarAccion() {
-    if (this._cambiosEnAccion > 0 && this._snapshotAccion && !this.model.iguales(this._snapshotAccion)) {
-      this.undoStack.push(this._snapshotAccion);
+  endAction() {
+    if (this._actionChanges > 0 && this._actionSnapshot && !this.model.equals(this._actionSnapshot)) {
+      this.undoStack.push(this._actionSnapshot);
       this.redoStack.length = 0;
     }
-    this._snapshotAccion = null;
-    this._cambiosEnAccion = 0;
+    this._actionSnapshot = null;
+    this._actionChanges = 0;
   }
 
-  deshacer() {
+  undo() {
     while (this.undoStack.length > 0) {
       const snapshot = this.undoStack.pop();
       if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
@@ -126,7 +126,7 @@ class EditorStore {
     }
   }
 
-  rehacer() {
+  redo() {
     while (this.redoStack.length > 0) {
       const snapshot = this.redoStack.pop();
       if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
@@ -137,77 +137,77 @@ class EditorStore {
     }
   }
 
-  seleccionarHerramienta(herramienta) {
-    this.herramienta = herramienta;
+  selectTool(tool) {
+    this.tool = tool;
   }
 
-  alternarCuadricula() {
-    this.mostrarCuadricula = !this.mostrarCuadricula;
-    guardarMostrarCuadricula(this.mostrarCuadricula);
+  toggleGrid() {
+    this.showGrid = !this.showGrid;
+    saveGridVisibility(this.showGrid);
   }
 
-  redondearZoom(valor) {
-    return Math.round(valor / PASO_ZOOM) * PASO_ZOOM;
+  roundZoom(valor) {
+    return Math.round(valor / ZOOM_STEP) * ZOOM_STEP;
   }
 
-  acercar() {
-    this.zoom = Math.min(MAX_ZOOM, this.redondearZoom(this.zoom + PASO_ZOOM));
+  zoomIn() {
+    this.zoom = Math.min(MAX_ZOOM, this.roundZoom(this.zoom + ZOOM_STEP));
   }
 
-  alejar() {
-    this.zoom = Math.max(MIN_ZOOM, this.redondearZoom(this.zoom - PASO_ZOOM));
+  zoomOut() {
+    this.zoom = Math.max(MIN_ZOOM, this.roundZoom(this.zoom - ZOOM_STEP));
   }
 
-  establecerZoom(valor) {
+  setZoom(valor) {
     this.zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, valor));
   }
 
-  reiniciarZoom() {
+  resetZoom() {
     this.zoom = 1;
     this.panX = 0;
     this.panY = 0;
   }
 
-  desplazarPan(dx, dy, maxX = Infinity, maxY = Infinity) {
+  panBy(dx, dy, maxX = Infinity, maxY = Infinity) {
     this.panX = Math.min(maxX, Math.max(-maxX, this.panX + dx));
     this.panY = Math.min(maxY, Math.max(-maxY, this.panY + dy));
   }
 
-  establecerMatriz(cols, rows) {
+  setMatrix(cols, rows) {
     const c = Math.floor(Number(cols));
     const r = Math.floor(Number(rows));
     if (!Number.isFinite(c) || !Number.isFinite(r)) return false;
-    if (c < MIN_MATRIZ || c > MAX_MATRIZ || r < MIN_MATRIZ || r > MAX_MATRIZ) return false;
+    if (c < MIN_MATRIX_SIZE || c > MAX_MATRIX_SIZE || r < MIN_MATRIX_SIZE || r > MAX_MATRIX_SIZE) return false;
     this.model = new Canvas(c, r);
     this.version += 1;
     return true;
   }
 
-  pintarPixel(x, y) {
-    if (!this.model.setPixel(x, y, this.colorActual)) return;
-    this.registrarColorUsado(this.colorActual);
-    this._cambiosEnAccion += 1;
+  paintPixel(x, y) {
+    if (!this.model.setPixel(x, y, this.currentColor)) return;
+    this.trackColorUsage(this.currentColor);
+    this._actionChanges += 1;
     this.version += 1;
   }
 
-  borrarPixel(x, y) {
-    if (!this.model.borrarPixel(x, y)) return;
-    this._cambiosEnAccion += 1;
+  erasePixel(x, y) {
+    if (!this.model.erasePixel(x, y)) return;
+    this._actionChanges += 1;
     this.version += 1;
   }
 
-  dibujarLinea(x0, y0, x1, y1) {
-    if (!this.model.drawLine(x0, y0, x1, y1, this.colorActual)) return;
-    this.registrarColorUsado(this.colorActual);
-    this._cambiosEnAccion += 1;
+  drawLine(x0, y0, x1, y1) {
+    if (!this.model.drawLine(x0, y0, x1, y1, this.currentColor)) return;
+    this.trackColorUsage(this.currentColor);
+    this._actionChanges += 1;
     this.version += 1;
   }
 
-  rellenar(x, y) {
-    const pintados = this.model.floodFill(x, y, this.colorActual);
-    if (pintados <= 0) return;
-    this.registrarColorUsado(this.colorActual);
-    this._cambiosEnAccion += 1;
+  floodFill(x, y) {
+    const painted = this.model.floodFill(x, y, this.currentColor);
+    if (painted <= 0) return;
+    this.trackColorUsage(this.currentColor);
+    this._actionChanges += 1;
     this.version += 1;
   }
 }

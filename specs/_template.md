@@ -1,57 +1,57 @@
-# Feature: <Nombre de la feature>
+# Feature: <Feature name>
 
-**Estado:** 📋 Planeada | 🚧 En progreso | ✅ Implementada
-**Spec escrita:** <fecha>
-**Objetivo:** `specs/project/objective.md`
-**Issues asociados:** <#issue>
+**Status:** Planned | In progress | Implemented
+**Spec written:** <date>
+**Objective:** `specs/project/objective.md`
+**Related issues:** <#issue>
 
-> Esta spec es el **ancla** de la feature. Define **qué** debe hacer (sin decir cómo).
-> Las decisiones técnicas van en la sección "Decisiones" — separadas del "qué".
+> This spec is the feature anchor. It defines what the feature must do without prescribing how.
+> Technical decisions belong in the separate Decisions section.
 
-## Historia de usuario (resumen)
+## User story summary
 
-> Como **<rol>**, quiero **<capacidad>** para **<beneficio>**.
+> As a **<role>**, I want **<capability>** so that **<benefit>**.
 
-## User stories (priorizadas)
+## Prioritized user stories
 
-Cada user story es un **slice independiente** que entrega valor y puede probarse sola.
+Each user story is an independent slice that delivers value and can be tested on its own.
 
-### User Story <N> — <Título> (Priority: P<N>)
+### User Story <N> - <Title> (Priority: P<N>)
 
-Como <rol>, quiero <capacidad>.
+As a <role>, I want <capability>.
 
-**Por qué esta prioridad:** <valor>.
+**Why this priority:** <value>.
 
-**Test independiente:** <cómo se prueba sola>.
+**Independent test:** <how it can be tested alone>.
 
-**Acceptance Scenarios (Given/When/Then):**
+**Acceptance scenarios (Given/When/Then):**
 
-1. **Given** <estado inicial>, **When** <acción>, **Then** <resultado esperado>
+1. **Given** <initial state>, **When** <action>, **Then** <expected result>
 2. ...
 
 ---
 
-## Requisitos funcionales
+## Functional requirements
 
-- **FR-001**: El sistema DEBE <capacidad>.
-- **FR-00X**: <capacidad> [NEEDS CLARIFICATION: <qué falta aclarar>].
+- **FR-001**: The system MUST <capability>.
+- **FR-00X**: <capability> [NEEDS CLARIFICATION: <what is unclear>].
 
-## Success Criteria
+## Success criteria
 
-- **SC-001**: <métrica medible>.
+- **SC-001**: <measurable metric>.
 - ...
 
 ## Assumptions
 
-- <supuesto sobre usuarios / alcance / tecnología>.
+- <assumption about users, scope, or technology>.
 
 ---
 
-## Decisiones (cómo — tecnología)
+## Decisions (how - technology)
 
-- <qué implementamos y por qué>.
-- <qué aprendimos de Svelte/Tailwind>.
+- <what we implemented and why>.
+- <what we learned about Svelte/Tailwind>.
 
-## Relacionado con
+## Related
 
-- <issues / próximos pasos>.
+- <issues / next steps>.

@@ -1,18 +1,18 @@
 # Pixel Art Studio
 
-Editor de pixel art simple e incremental, creado en compañía de mis hijos, solo por diversión.
+A simple, incremental pixel art editor, built together with my kids, just for fun.
 
-> **¿Qué es esto?** Un editor de pixel art web (mobile-first) que se construye feature
-> por feature para aprender Svelte 5, Tailwind CSS v4 y arquitectura de frontend.
+> **What is this?** A mobile-first web pixel art editor built feature by feature to learn
+> Svelte 5, Tailwind CSS v4 and frontend architecture.
 
-## Onboarding rápido (para personas ajenas al proyecto)
+## Quick onboarding (for people new to the project)
 
-1. **Qué queremos** → [`specs/project/objective.md`](specs/project/objective.md)
-   (objetivo, alcance simple-incremental, no-objetivos, principios).
-2. **Cómo está pensado** → [`specs/architecture/overview.md`](specs/architecture/overview.md).
-3. **Qué debe hacer cada feature** → [`specs/features/`](specs/features/).
-4. **En qué se trabaja / qué falta** → issues abiertos de GitHub
-   (milestones: v1.0 MVP, v1.1 Animación y Galería, v2.0 Colaboración).
+1. **What we want** → [`specs/project/objective.md`](specs/project/objective.md)
+   (objective, simple-incremental scope, non-goals, principles).
+2. **How it is designed** → [`specs/architecture/overview.md`](specs/architecture/overview.md).
+3. **What each feature must do** → [`specs/features/`](specs/features/).
+4. **What is being worked on / what is missing** → open GitHub issues
+   (milestones: v1.0 MVP, v1.1 Animation and Gallery, v2.0 Collaboration).
 
 ## Stack
 
@@ -23,10 +23,10 @@ Editor de pixel art simple e incremental, creado en compañía de mis hijos, sol
 - Vitest + jsdom (tests)
 - Node 22 + pnpm 12 (mise)
 
-## Desarrollo
+## Development
 
 ```bash
-mise install    # instala Node 22 y pnpm 12 según mise.toml
+mise install    # installs Node 22 and pnpm 12 per mise.toml
 pnpm install
 pnpm dev
 pnpm check      # typecheck
@@ -36,4 +36,4 @@ pnpm build
 
 ## Deploy
 
-Se despliega automaticamente a GitHub Pages via GitHub Actions al hacer push a `main`.
+It auto-deploys to GitHub Pages via GitHub Actions on push to `main`.

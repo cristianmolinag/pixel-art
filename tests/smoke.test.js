@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 
-describe("setup de pruebas", () => {
-  it("jsdom está disponible como entorno", () => {
+describe("test setup", () => {
+  it("jsdom is available as the environment", () => {
     expect(typeof document).toBe("object");
   });
 
-  it("OffscreenCanvas está mockeado en el setup", () => {
+  it("OffscreenCanvas is mocked in the setup", () => {
     const canvas = new OffscreenCanvas(8, 8);
     expect(canvas.width).toBe(8);
     expect(canvas.height).toBe(8);

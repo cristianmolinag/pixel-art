@@ -2,8 +2,8 @@
   import PixelCanvas from "./lib/components/PixelCanvas.svelte";
   import Palette from "./lib/components/Palette.svelte";
   import Toolbar from "./lib/components/Toolbar.svelte";
-  import AccionesArchivo from "./lib/components/AccionesArchivo.svelte";
-  import Galeria from "./lib/components/Galeria.svelte";
+  import FileActions from "./lib/components/FileActions.svelte";
+  import Gallery from "./lib/components/Gallery.svelte";
 </script>
 
 <div class="flex h-screen flex-col bg-surface">
@@ -17,7 +17,7 @@
     />
     <h1 class="text-xl font-bold text-white">Pixel Art Studio</h1>
     <div class="ml-auto flex items-center gap-1">
-      <AccionesArchivo />
+      <FileActions />
     </div>
   </header>
 
@@ -38,4 +38,4 @@
   </footer>
 </div>
 
-<Galeria />
+<Gallery />

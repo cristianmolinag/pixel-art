@@ -1,102 +1,102 @@
 <script>
   import { GRID_COLOR, GRID_ALPHA } from "../canvas/draw.js";
   import { editor } from "../stores/editor.svelte.js";
-  import { lineaPuntos } from "../models/Canvas.js";
+  import { linePoints } from "../models/Canvas.js";
 
   let canvasEl = $state();
-  let contenedor = $state();
-  let pintando = $state(false);
-  let lineaInicio = $state(null);
-  let lineaFin = $state(null);
-  let previsualizando = $state(false);
-  const punteros = new Map();
-  let pellizco = null;
-  let panActivo = false;
-  let panUltimo = null;
-  let ayudaVisible = $state(false);
-  let ayudaTimer;
-  let nivelZoomPrev = null;
-  const esTactil =
+  let container = $state();
+  let painting = $state(false);
+  let lineStart = $state(null);
+  let lineEnd = $state(null);
+  let previewing = $state(false);
+  const pointers = new Map();
+  let pinch = null;
+  let panActive = false;
+  let lastPan = null;
+  let hintVisible = $state(false);
+  let hintTimer;
+  let prevZoomLevel = null;
+  const isTouch =
     typeof window !== "undefined" && !!window.matchMedia?.("(pointer: coarse)").matches;
 
-  function dibujar() {
+  function draw() {
     void editor.version;
     const canvas = canvasEl;
-    if (!canvas || !contenedor) return;
-    const rect = contenedor.getBoundingClientRect();
+    if (!canvas || !container) return;
+    const rect = container.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const dpr = window.devicePixelRatio || 1;
-    const ancho = Math.max(1, Math.round(rect.width * dpr));
-    const alto = Math.max(1, Math.round(rect.height * dpr));
-    if (canvas.width !== ancho || canvas.height !== alto) {
-      canvas.width = ancho;
-      canvas.height = alto;
+    const width = Math.max(1, Math.round(rect.width * dpr));
+    const height = Math.max(1, Math.round(rect.height * dpr));
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
     }
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
-    ctx.clearRect(0, 0, ancho, alto);
+    ctx.clearRect(0, 0, width, height);
 
     const { cols, rows } = editor.model;
-    const contenidoX = rect.width * editor.zoom;
-    const contenidoY = rect.height * editor.zoom;
-    const izq = (rect.width - contenidoX) / 2 + editor.panX;
-    const arriba = (rect.height - contenidoY) / 2 + editor.panY;
-    const pasoCssX = contenidoX / cols;
-    const pasoCssY = contenidoY / rows;
-    const datos = editor.model.snapshot();
-    const aX = (i) => Math.round((izq + i * pasoCssX) * dpr);
-    const aY = (j) => Math.round((arriba + j * pasoCssY) * dpr);
-    const vacio = (i, j) => datos[(j * cols + i) * 4 + 3] === 0;
+    const contentWidth = rect.width * editor.zoom;
+    const contentHeight = rect.height * editor.zoom;
+    const left = (rect.width - contentWidth) / 2 + editor.panX;
+    const top = (rect.height - contentHeight) / 2 + editor.panY;
+    const stepCssX = contentWidth / cols;
+    const stepCssY = contentHeight / rows;
+    const data = editor.model.snapshot();
+    const aX = (i) => Math.round((left + i * stepCssX) * dpr);
+    const aY = (j) => Math.round((top + j * stepCssY) * dpr);
+    const isEmpty = (i, j) => data[(j * cols + i) * 4 + 3] === 0;
 
     for (let j = 0; j < rows; j++) {
       const y0 = aY(j);
       const y1 = aY(j + 1);
       if (y1 <= y0) continue;
       for (let i = 0; i < cols; i++) {
-        if (vacio(i, j)) continue;
+        if (isEmpty(i, j)) continue;
         const x0 = aX(i);
         const x1 = aX(i + 1);
         if (x1 <= x0) continue;
         const off = (j * cols + i) * 4;
-        ctx.fillStyle = `rgba(${datos[off]},${datos[off + 1]},${datos[off + 2]},${
-          datos[off + 3] / 255
+        ctx.fillStyle = `rgba(${data[off]},${data[off + 1]},${data[off + 2]},${
+          data[off + 3] / 255
         })`;
         ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
       }
     }
 
-    if (editor.mostrarCuadricula) {
+    if (editor.showGrid) {
       ctx.globalAlpha = GRID_ALPHA;
       ctx.fillStyle = GRID_COLOR;
-      const grueso = Math.max(1, Math.round(dpr));
+      const thickness = Math.max(1, Math.round(dpr));
       const y0 = aY(0);
       const y1 = aY(rows);
       for (let i = 0; i <= cols; i++) {
-        ctx.fillRect(aX(i), y0, grueso, y1 - y0);
+        ctx.fillRect(aX(i), y0, thickness, y1 - y0);
       }
       for (let j = 0; j <= rows; j++) {
         const by = aY(j);
         for (let i = 0; i < cols; i++) {
-          const sx = aX(i) + grueso;
+          const sx = aX(i) + thickness;
           const ex = aX(i + 1);
           if (ex <= sx) continue;
-          ctx.fillRect(sx, by, ex - sx, grueso);
+          ctx.fillRect(sx, by, ex - sx, thickness);
         }
       }
       ctx.globalAlpha = 1;
     }
 
     if (
-      editor.herramienta === "linea" &&
-      previsualizando &&
-      lineaInicio &&
-      lineaFin
+      editor.tool === "line" &&
+      previewing &&
+      lineStart &&
+      lineEnd
     ) {
-      ctx.fillStyle = editor.colorActual;
+      ctx.fillStyle = editor.currentColor;
       ctx.globalAlpha = 0.5;
-      for (const [x, y] of lineaPuntos(lineaInicio.x, lineaInicio.y, lineaFin.x, lineaFin.y)) {
+      for (const [x, y] of linePoints(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y)) {
         if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
         ctx.fillRect(
           aX(x),
@@ -110,65 +110,65 @@
   }
 
   $effect(() => {
-    dibujar();
+    draw();
   });
 
   $effect(() => {
-    const el = contenedor;
+    const el = container;
     if (!el || typeof ResizeObserver === "undefined") return;
-    const obs = new ResizeObserver(() => dibujar());
+    const obs = new ResizeObserver(() => draw());
     obs.observe(el);
     return () => obs.disconnect();
   });
 
   $effect(() => {
     const nivel = editor.zoom > 1 ? 1 : 0;
-    if (nivel === nivelZoomPrev) return;
-    nivelZoomPrev = nivel;
-    clearTimeout(ayudaTimer);
+    if (nivel === prevZoomLevel) return;
+    prevZoomLevel = nivel;
+    clearTimeout(hintTimer);
     if (nivel === 1) {
-      ayudaVisible = true;
-      ayudaTimer = setTimeout(() => {
-        ayudaVisible = false;
+      hintVisible = true;
+      hintTimer = setTimeout(() => {
+        hintVisible = false;
       }, 3000);
     } else {
-      ayudaVisible = false;
+      hintVisible = false;
     }
   });
 
-  $effect(() => () => clearTimeout(ayudaTimer));
+  $effect(() => () => clearTimeout(hintTimer));
 
-  function celdaDeEvento(event) {
+  function cellFromEvent(event) {
     const rect = canvasEl.getBoundingClientRect();
-    const contenidoX = rect.width * editor.zoom;
-    const contenidoY = rect.height * editor.zoom;
-    const izq = (rect.width - contenidoX) / 2 + editor.panX;
-    const arriba = (rect.height - contenidoY) / 2 + editor.panY;
-    const x = Math.floor(((event.clientX - rect.left - izq) / contenidoX) * editor.model.cols);
-    const y = Math.floor(((event.clientY - rect.top - arriba) / contenidoY) * editor.model.rows);
+    const contentWidth = rect.width * editor.zoom;
+    const contentHeight = rect.height * editor.zoom;
+    const left = (rect.width - contentWidth) / 2 + editor.panX;
+    const top = (rect.height - contentHeight) / 2 + editor.panY;
+    const x = Math.floor(((event.clientX - rect.left - left) / contentWidth) * editor.model.cols);
+    const y = Math.floor(((event.clientY - rect.top - top) / contentHeight) * editor.model.rows);
     if (x < 0 || y < 0 || x >= editor.model.cols || y >= editor.model.rows) return null;
     return { x, y };
   }
 
-function limitesPan() {
+function panLimits() {
   const base = canvasEl.clientWidth;
   if (base === 0) return { maxX: Infinity, maxY: Infinity };
-  const exceso = (base * editor.zoom - base) / 2;
-  return { maxX: exceso, maxY: exceso };
+  const excess = (base * editor.zoom - base) / 2;
+  return { maxX: excess, maxY: excess };
 }
 
-function dispararPellizco() {
-  const [a, b] = [...punteros.values()];
+function applyPinch() {
+  const [a, b] = [...pointers.values()];
   if (!a || !b) return;
   const dist = Math.hypot(b.x - a.x, b.y - a.y);
-  if (dist === 0 || !pellizco) return;
-  editor.establecerZoom(pellizco.zoomInicial * (dist / pellizco.distInicial));
+  if (dist === 0 || !pinch) return;
+  editor.setZoom(pinch.initialZoom * (dist / pinch.initialDistance));
 }
 
 function onPointerDown(event) {
   if (event.ctrlKey || event.metaKey) {
-    panActivo = true;
-    panUltimo = { x: event.clientX, y: event.clientY };
+    panActive = true;
+    lastPan = { x: event.clientX, y: event.clientY };
     if (canvasEl && canvasEl.setPointerCapture) {
       try {
         canvasEl.setPointerCapture(event.pointerId);
@@ -179,77 +179,77 @@ function onPointerDown(event) {
     return;
   }
 
-  punteros.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
-  if (punteros.size === 2) {
-    if (pintando) {
-      editor.cerrarAccion();
-      pintando = false;
-      previsualizando = false;
-      lineaInicio = null;
-      lineaFin = null;
+  if (pointers.size === 2) {
+    if (painting) {
+      editor.endAction();
+      painting = false;
+      previewing = false;
+      lineStart = null;
+      lineEnd = null;
     }
-    const [a, b] = [...punteros.values()];
-    pellizco = {
-      distInicial: Math.hypot(b.x - a.x, b.y - a.y),
-      zoomInicial: editor.zoom,
+    const [a, b] = [...pointers.values()];
+    pinch = {
+      initialDistance: Math.hypot(b.x - a.x, b.y - a.y),
+      initialZoom: editor.zoom,
     };
     return;
   }
 
-  const celda = celdaDeEvento(event);
-  if (!celda) return;
-  pintando = true;
-  editor.abrirAccion();
-  switch (editor.herramienta) {
-    case "borrador":
-      editor.borrarPixel(celda.x, celda.y);
+  const cell = cellFromEvent(event);
+  if (!cell) return;
+  painting = true;
+  editor.beginAction();
+  switch (editor.tool) {
+    case "eraser":
+      editor.erasePixel(cell.x, cell.y);
       break;
-    case "linea":
-      lineaInicio = celda;
-      lineaFin = celda;
-      previsualizando = true;
+    case "line":
+      lineStart = cell;
+      lineEnd = cell;
+      previewing = true;
       break;
-    case "relleno":
-      editor.rellenar(celda.x, celda.y);
+    case "fill":
+      editor.floodFill(cell.x, cell.y);
       break;
     default:
-      editor.pintarPixel(celda.x, celda.y);
+      editor.paintPixel(cell.x, cell.y);
   }
 }
 
 function onPointerMove(event) {
-  if (panActivo && panUltimo) {
-    const { maxX, maxY } = limitesPan();
-    editor.desplazarPan(event.clientX - panUltimo.x, event.clientY - panUltimo.y, maxX, maxY);
-    panUltimo = { x: event.clientX, y: event.clientY };
+  if (panActive && lastPan) {
+    const { maxX, maxY } = panLimits();
+    editor.panBy(event.clientX - lastPan.x, event.clientY - lastPan.y, maxX, maxY);
+    lastPan = { x: event.clientX, y: event.clientY };
     return;
   }
 
-  if (punteros.set(event.pointerId, { x: event.clientX, y: event.clientY }) && pellizco) {
-    dispararPellizco();
+  if (pointers.set(event.pointerId, { x: event.clientX, y: event.clientY }) && pinch) {
+    applyPinch();
     return;
   }
 
-  if (!pintando) return;
-  const celda = celdaDeEvento(event);
-  if (!celda) return;
-  switch (editor.herramienta) {
-    case "borrador":
-      editor.borrarPixel(celda.x, celda.y);
+  if (!painting) return;
+  const cell = cellFromEvent(event);
+  if (!cell) return;
+  switch (editor.tool) {
+    case "eraser":
+      editor.erasePixel(cell.x, cell.y);
       break;
-    case "linea":
-      lineaFin = celda;
+    case "line":
+      lineEnd = cell;
       break;
     default:
-      editor.pintarPixel(celda.x, celda.y);
+      editor.paintPixel(cell.x, cell.y);
   }
 }
 
 function onPointerUp(event) {
-  if (panActivo) {
-    panActivo = false;
-    panUltimo = null;
+  if (panActive) {
+    panActive = false;
+    lastPan = null;
     if (canvasEl && canvasEl.releasePointerCapture) {
       try {
         canvasEl.releasePointerCapture(event.pointerId);
@@ -260,33 +260,33 @@ function onPointerUp(event) {
     return;
   }
 
-  punteros.delete(event.pointerId);
+  pointers.delete(event.pointerId);
 
-  if (pellizco) {
-    if (punteros.size < 2) {
-      pellizco = null;
-      punteros.clear();
-      pintando = false;
-      previsualizando = false;
-      lineaInicio = null;
-      lineaFin = null;
+  if (pinch) {
+    if (pointers.size < 2) {
+      pinch = null;
+      pointers.clear();
+      painting = false;
+      previewing = false;
+      lineStart = null;
+      lineEnd = null;
     }
     return;
   }
 
-  pintando = false;
-  if (editor.herramienta === "linea" && previsualizando && lineaInicio && lineaFin) {
-    editor.dibujarLinea(lineaInicio.x, lineaInicio.y, lineaFin.x, lineaFin.y);
+  painting = false;
+  if (editor.tool === "line" && previewing && lineStart && lineEnd) {
+    editor.drawLine(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y);
   }
-  editor.cerrarAccion();
-  previsualizando = false;
-  lineaInicio = null;
-  lineaFin = null;
+  editor.endAction();
+  previewing = false;
+  lineStart = null;
+  lineEnd = null;
 }
 </script>
 
 <div
-  bind:this={contenedor}
+  bind:this={container}
   class="relative w-full overflow-hidden"
   style:max-width="min(100%, 512px)"
   style:aspect-ratio="1 / 1"
@@ -302,11 +302,11 @@ function onPointerUp(event) {
     onpointerleave={onPointerUp}
   ></canvas>
   <div
-    data-ayuda-pan
-    aria-hidden={!ayudaVisible}
+    data-pan-hint
+    aria-hidden={!hintVisible}
     class="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-neutral-900/85 px-3 py-1.5 text-center text-xs text-white shadow transition-opacity duration-300
-      {ayudaVisible ? 'opacity-100' : 'opacity-0'}"
+      {hintVisible ? 'opacity-100' : 'opacity-0'}"
   >
-    {esTactil ? "Mueve con dos dedos · Ajusta el zoom con pellizco" : "Mueve con Ctrl + arrastrar · Ajusta el zoom con + / −"}
+    {isTouch ? "Move with two fingers · Pinch to zoom" : "Move with Ctrl + drag · Zoom with + / −"}
   </div>
 </div>

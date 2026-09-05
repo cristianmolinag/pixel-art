@@ -1,9 +1,9 @@
 const DB_NAME = "pixel-art-studio";
 const DB_VERSION = 1;
-const STORE = "dibujos";
-const INDEX = "creado";
+const STORE = "drawings";
+const INDEX = "created";
 
-function abrirDB() {
+function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
@@ -18,13 +18,13 @@ function abrirDB() {
   });
 }
 
-function enStore(txMode, accion) {
+function inStore(txMode, operation) {
   return new Promise((resolve, reject) => {
-    abrirDB().then(
+    openDB().then(
       (db) => {
         const tx = db.transaction(STORE, txMode);
         const store = tx.objectStore(STORE);
-        const req = accion(store);
+        const req = operation(store);
         req.onerror = () => reject(req.error);
         req.onsuccess = () => {
           try {
@@ -48,16 +48,16 @@ function enStore(txMode, accion) {
   });
 }
 
-export function guardarDibujo(dibujo) {
-  return enStore("readwrite", (store) => store.put(dibujo));
+export function saveDrawing(drawing) {
+  return inStore("readwrite", (store) => store.put(drawing));
 }
 
-export function listarDibujos() {
-  return enStore("readonly", (store) => store.getAll()).then((dibujos) =>
-    [...dibujos].sort((a, b) => b.createdAt - a.createdAt || b.id - a.id)
+export function listDrawings() {
+  return inStore("readonly", (store) => store.getAll()).then((drawings) =>
+    [...drawings].sort((a, b) => b.createdAt - a.createdAt || b.id - a.id)
   );
 }
 
-export function eliminarDibujo(id) {
-  return enStore("readwrite", (store) => store.delete(id));
+export function deleteDrawing(id) {
+  return inStore("readwrite", (store) => store.delete(id));
 }

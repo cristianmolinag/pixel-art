@@ -1,110 +1,77 @@
 # Feature 001: Canvas
 
-**Estado:** ✅ Implementada
-**Spec escrita:** 2026-09-04
-**Objetivo:** `specs/project/objective.md`
-**Issue asociado:** [#11](https://github.com/cristianmolinag/pixel-art/issues/11)
+**Status:** Implemented
+**Spec written:** 2026-09-04
+**Objective:** `specs/project/objective.md`
+**Related issue:** [#11](https://github.com/cristianmolinag/pixel-art/issues/11)
 
-> Esta spec es el **ancla** de la feature. Define **qué** debe hacer (sin decir cómo).
-> Las decisiones técnicas van en la sección "Decisiones" al final — se mantienen
-> separadas para que el "qué" no se rompa si cambia la tecnología.
+> This spec is the feature anchor. It defines what the feature must do, not how.
+> Technical decisions are kept separate in the Decisions section.
 
-## Historia de usuario (resumen)
+## User Story Summary
 
-> Como **usuario**, quiero **un lienzo de píxeles cuadriculado** para **tener un área
-> de dibujo visible** sobre la que pintar en features siguientes.
+> As a **user**, I want a **gridded pixel canvas** so I have a visible drawing area
+> on which to paint in later features.
 
-## User stories (priorizadas)
+## Prioritized User Stories
 
-Cada user story es un **slice independiente** que por sí solo entrega valor y puede
-probarse de forma aislada.
+Each user story is an independently testable slice that delivers value.
 
-### User Story 1 — Ver el lienzo (Priority: P1)
+### User Story 1: View the canvas (Priority: P1)
 
-Como usuario, quiero ver un lienzo de píxeles cuadriculado de 16×16 celdas.
+As a user, I want to see a gridded 16x16 pixel canvas.
 
-**Por qué esta prioridad:** es la base mínima: sin área de dibujo visible no hay nada más.
+**Why this priority:** It is the minimum foundation; without a visible drawing area there is nothing else to use.
 
-**Test independiente:** puede probarse viendo el grid renderizado, sin necesidad de
-ninguna otra pieza del editor.
+**Independent test:** View the rendered grid without requiring any other editor feature.
 
 **Acceptance Scenarios (Given/When/Then):**
 
-1. **Given** que abro el editor, **When** se carga la vista, **Then** veo un grid
-   cuadrado de 16 columnas y 16 filas.
-2. **Given** el grid visible, **When** observo una celda, **Then** distingo cada celda
-   por las líneas de la cuadrícula.
-3. **Given** el grid visible, **When** cuento las celdas en un borde, **Then** hay
-   exactamente 16 celdas por lado.
+1. **Given** I open the editor, **When** the view loads, **Then** I see a square grid of 16 columns and 16 rows.
+2. **Given** the grid is visible, **When** I inspect a cell, **Then** I can distinguish it by the grid lines.
+3. **Given** the grid is visible, **When** I count the cells along an edge, **Then** there are exactly 16 cells per side.
 
----
-### User Story 2 — Lienzo responsivo mobile-first (Priority: P2)
+### User Story 2: Responsive mobile-first canvas (Priority: P2)
 
-Como usuario, quiero que el lienzo se vea bien tanto en móvil como en desktop.
+As a user, I want the canvas to look good on both mobile and desktop.
 
-**Por qué esta prioridad:** el mobile-first es un principio del proyecto, pero el grid
-funcional (US1) tiene prioridad sobre responder bien en todas las pantallas.
+**Acceptance Scenarios:**
 
-**Test independiente:** puede probarse cambiando el ancho de la ventana y verificando
-que el lienzo sigue siendo cuadrado y no desborda.
+1. **Given** a narrow phone screen, **When** the canvas is shown, **Then** it uses the available width with `p-4` spacing and remains square (`aspect-ratio: 1/1`).
+2. **Given** a wide desktop screen, **When** the canvas is shown, **Then** its size is limited to **512px** maximum.
+3. **Given** a scaled canvas, **When** the display is enlarged, **Then** pixels remain sharp with `image-rendering: pixelated`.
+4. **Given** the user touches or drags the canvas on mobile, **Then** the page does not scroll or zoom accidentally (`touch-action` is controlled).
 
-**Acceptance Scenarios (Given/When/Then):**
+## Functional Requirements
 
-1. **Given** una pantalla angosta (celular), **When** se muestra el lienzo, **Then**
-   ocupa el ancho disponible (con un `p-4` de margen) y mantiene proporción cuadrada
-   (`aspect-ratio: 1/1`).
-2. **Given** una pantalla ancha (desktop), **When** se muestra el lienzo, **Then** su
-   tamaño está limitado a **512px** máximo (no se estira infinitamente).
-3. **Given** un lienzo escalado, **When** se amplía el display, **Then** los píxeles se
-   ven nítidos y con bordes marcados (`image-rendering: pixelated`).
-4. **Given** que el usuario toca/arrastra sobre el lienzo, **When** lo hace desde móvil,
-   **Then** la página no hace scroll ni zoom accidental (`touch-action` controlada).
-
----
-
-## Requisitos funcionales
-
-- **FR-001**: El sistema DEBE renderizar un lienzo de 16×16 celdas.
-- **FR-002**: El sistema DEBE mostrar una cuadrícula visible entre celdas.
-- **FR-003**: El lienzo DEBE verse cuadrado en cualquier pantalla.
-- **FR-004**: El sistema DEBE limitar el tamaño del lienzo a **512px** en pantallas grandes.
-- **FR-005**: El display DEBE escalar los píxeles con `image-rendering: pixelated`.
-- **FR-006**: El lienzo NO DEBE provocar scroll/zoom accidental en móvil.
+- **FR-001:** The system MUST render a 16x16-cell canvas.
+- **FR-002:** The system MUST show a visible grid between cells.
+- **FR-003:** The canvas MUST remain square at every viewport size.
+- **FR-004:** The canvas MUST be limited to **512px** on large screens.
+- **FR-005:** The display MUST scale pixels with `image-rendering: pixelated`.
+- **FR-006:** The canvas MUST NOT cause accidental scrolling or zooming on mobile.
 
 ## Success Criteria
 
-- **SC-001**: Un usuario puede cargar el editor en un celular y ver el grid 16×16
-  completo dentro de la pantalla, sin scroll horizontal.
-- **SC-002**: Un usuario puede cargar el editor en desktop y ver el grid sin que
-  este se estire más allá de un tamaño máximo razonable.
-- **SC-003**: Los escenarios Given/When/Then de US1 y US2 se verifican con tests.
+- **SC-001:** A user can load the editor on a phone and see the complete 16x16 grid without horizontal scrolling.
+- **SC-002:** A user can load the editor on desktop and see the grid without it growing beyond a reasonable maximum.
+- **SC-003:** The Given/When/Then scenarios for US1 and US2 are covered by tests.
 
 ## Assumptions
 
-- Se usará el modelo de dominio `Canvas` (`src/lib/models/Canvas.js`) ya existente.
-- El stack es Svelte 5 + Vite + Tailwind CSS v4 (no cambiar en esta feature).
-- Cada celda = 1 píxel real del canvas HTML; el display escala con CSS.
-- Componente Svelte nuevo dedicado al canvas (p. ej. `PixelCanvas.svelte`).
+- The existing `Canvas` domain model is used (`src/lib/models/Canvas.js`).
+- The stack is Svelte 5, Vite, and Tailwind CSS v4.
+- Each cell is one real HTML canvas pixel; CSS scales the display.
+- A dedicated Svelte canvas component is used (`PixelCanvas.svelte`).
 
----
+## Decisions
 
-## Decisiones (cómo — tecnología)
+- Use the native 2D Canvas API (`fillRect`) instead of a grid of divs.
+- Each canvas cell is one real pixel; CSS scaling uses `image-rendering: pixelated`.
+- `Canvas` is a pure class tested with the `OffscreenCanvas` mock in `tests/setup.js`.
+- Since F08, the grid is rendered as an overlay in `PixelCanvas` so it remains sharp and aligned at every scale.
+- Visible cell size and editing zoom are handled by F10, not this feature.
 
-*Sección separada del "qué" para que la spec no dependa de la implementación.*
+## Related
 
-- **Canvas nativo** (API 2D, `fillRect`) en lugar de grid de divs: escala con grids
-  grandes y es la API real del proyecto.
-- Cada celda del canvas = **1 píxel real**; el display se escala con CSS usando
-  `image-rendering: pixelated`.
-- El modelo `Canvas` es una clase pura (fáciles de testear con el mock de
-  `OffscreenCanvas` en `tests/setup.js`).
-- Cuadrícula como **overlay CSS** sobre el canvas (desde F08), para líneas nítidas a
-  cualquier escala; antes eran líneas `stroke` de `lineWidth 0.1` que quedaban invisibles.
-
-> **Decisión tomada**: el tamaño de celda visible / zoom de edición **queda fuera de
-> esta feature** y se resolverá en la feature 02 (colores / pintar). Aquí el display
-> simplemente escala el grid 16×16 con CSS.
-
-## Relacionado con
-
-- Siguiente: feature 02 (colores / pintar píxeles).
+- Next: Feature 002 (colors and painting).

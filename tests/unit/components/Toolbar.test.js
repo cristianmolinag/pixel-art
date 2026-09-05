@@ -2,25 +2,25 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, cleanup, fireEvent } from "@testing-library/svelte";
 import Toolbar from "../../../src/lib/components/Toolbar.svelte";
 import { editor } from "../../../src/lib/stores/editor.svelte.js";
-import { galeria } from "../../../src/lib/stores/galeria.svelte.js";
+import { gallery } from "../../../src/lib/stores/gallery.svelte.js";
 import { Canvas } from "../../../src/lib/models/Canvas.js";
 
-function botonPorLabel(container, label) {
+function buttonByLabel(container, label) {
   return Array.from(container.querySelectorAll("button")).find(
     (b) => b.getAttribute("aria-label") === label
   );
 }
 
 beforeEach(() => {
-  editor.herramienta = "pincel";
-  editor.colorActual = "#ff0000";
+  editor.tool = "brush";
+  editor.currentColor = "#ff0000";
   editor.model = new Canvas(16, 16);
   editor.undoStack = [];
   editor.redoStack = [];
-  editor.mostrarCuadricula = true;
-  galeria.visible = false;
-  galeria.enfocarGuardar = false;
-  galeria.dibujos = [];
+  editor.showGrid = true;
+  gallery.visible = false;
+  gallery.focusSave = false;
+  gallery.drawings = [];
 });
 
 afterEach(() => {
@@ -29,98 +29,98 @@ afterEach(() => {
 });
 
 describe("Toolbar (F03)", () => {
-  it("ofrece Pincel, Borrador, Línea y Relleno con iconos (FR-001)", () => {
+  it("shows Brush, Eraser, Line and Fill with icons (FR-001)", () => {
     const { container } = render(Toolbar);
-    const botones = Array.from(container.querySelectorAll("button")).map((b) =>
+    const buttons = Array.from(container.querySelectorAll("button")).map((b) =>
       b.getAttribute("aria-label")
     );
-    expect(botones).toEqual([
-      "Pincel",
-      "Borrador",
-      "Línea",
-      "Relleno",
-      "Ocultar cuadrícula",
-      "Cambiar matriz del lienzo",
-      "Alejar (zoom)",
-      "Acercar (zoom)",
-      "Restablecer zoom al 100%",
-      "Deshacer",
-      "Rehacer",
+    expect(buttons).toEqual([
+      "Brush",
+      "Eraser",
+      "Line",
+      "Fill",
+      "Hide grid",
+      "Change canvas matrix",
+      "Zoom out",
+      "Zoom in",
+      "Reset zoom to 100%",
+      "Undo",
+      "Redo",
       "Zoom",
     ]);
     expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(12);
   });
 
-  it("seleccionar una herramienta la activa y queda marcada (US1/FR-002)", async () => {
+  it("selecting a tool activates it and marks it (US1/FR-002)", async () => {
     const { container } = render(Toolbar);
-    const botonRelleno = botonPorLabel(container, "Relleno");
-    await fireEvent.click(botonRelleno);
-    expect(editor.herramienta).toBe("relleno");
-    expect(botonRelleno.getAttribute("aria-pressed")).toBe("true");
+    const fillButton = buttonByLabel(container, "Fill");
+    await fireEvent.click(fillButton);
+    expect(editor.tool).toBe("fill");
+    expect(fillButton.getAttribute("aria-pressed")).toBe("true");
   });
 });
 
 describe("Toolbar — undo/redo (F04/FR-001)", () => {
-  it("ofrece botones Deshacer y Rehacer, deshabilitados sin historial (FR-005)", () => {
+  it("offers Undo and Redo buttons, disabled without history (FR-005)", () => {
     const { container } = render(Toolbar);
-    expect(botonPorLabel(container, "Deshacer").disabled).toBe(true);
-    expect(botonPorLabel(container, "Rehacer").disabled).toBe(true);
+    expect(buttonByLabel(container, "Undo").disabled).toBe(true);
+    expect(buttonByLabel(container, "Redo").disabled).toBe(true);
   });
 
-  it("se habilitan solo cuando hay historial correspondiente", () => {
-    editor.abrirAccion();
-    editor.pintarPixel(1, 1);
-    editor.cerrarAccion();
+  it("enables them only when there is matching history", () => {
+    editor.beginAction();
+    editor.paintPixel(1, 1);
+    editor.endAction();
     const { container } = render(Toolbar);
-    expect(botonPorLabel(container, "Deshacer").disabled).toBe(false);
-    expect(botonPorLabel(container, "Rehacer").disabled).toBe(true);
+    expect(buttonByLabel(container, "Undo").disabled).toBe(false);
+    expect(buttonByLabel(container, "Redo").disabled).toBe(true);
   });
 
-  it("click en Deshacer revierte la última acción (US1/FR-002)", async () => {
-    editor.abrirAccion();
-    editor.pintarPixel(3, 3);
-    editor.cerrarAccion();
+  it("clicking Undo reverts the last action (US1/FR-002)", async () => {
+    editor.beginAction();
+    editor.paintPixel(3, 3);
+    editor.endAction();
     const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Deshacer"));
+    await fireEvent.click(buttonByLabel(container, "Undo"));
     expect(editor.model.getPixel(3, 3).a).toBe(0);
     expect(editor.canUndo).toBe(false);
     expect(editor.canRedo).toBe(true);
   });
 
-  it("click en Rehacer restaura la acción deshecha (US2/FR-003)", async () => {
-    editor.abrirAccion();
-    editor.pintarPixel(3, 3);
-    editor.cerrarAccion();
-    editor.deshacer();
+  it("clicking Redo restores the undone action (US2/FR-003)", async () => {
+    editor.beginAction();
+    editor.paintPixel(3, 3);
+    editor.endAction();
+    editor.undo();
     const { container } = render(Toolbar);
-    expect(botonPorLabel(container, "Rehacer").disabled).toBe(false);
-    await fireEvent.click(botonPorLabel(container, "Rehacer"));
+    expect(buttonByLabel(container, "Redo").disabled).toBe(false);
+    await fireEvent.click(buttonByLabel(container, "Redo"));
     expect(editor.model.getPixel(3, 3).r).toBe(255);
     expect(editor.canRedo).toBe(false);
   });
 });
 
-describe("Toolbar — toggle de cuadrícula (F08)", () => {
-  it("muestra el toggle marcado por defecto (cuadrícula visible)", () => {
+describe("Toolbar — grid toggle (F08)", () => {
+  it("shows the toggle active by default (grid visible)", () => {
     const { container } = render(Toolbar);
-    const boton = botonPorLabel(container, "Ocultar cuadrícula");
-    expect(boton).toBeTruthy();
-    expect(boton.getAttribute("aria-pressed")).toBe("true");
+    const button = buttonByLabel(container, "Hide grid");
+    expect(button).toBeTruthy();
+    expect(button.getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("alterna el estado y cambia el aria-label al ocultar (US1)", async () => {
+  it("toggles the state and changes the aria-label when hiding (US1)", async () => {
     const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Ocultar cuadrícula"));
-    expect(editor.mostrarCuadricula).toBe(false);
-    expect(botonPorLabel(container, "Mostrar cuadrícula").getAttribute("aria-pressed")).toBe("false");
-    expect(botonPorLabel(container, "Ocultar cuadrícula")).toBeUndefined();
+    await fireEvent.click(buttonByLabel(container, "Hide grid"));
+    expect(editor.showGrid).toBe(false);
+    expect(buttonByLabel(container, "Show grid").getAttribute("aria-pressed")).toBe("false");
+    expect(buttonByLabel(container, "Hide grid")).toBeUndefined();
   });
 
-  it("volver a pulsar muestra de nuevo la cuadrícula", async () => {
-    editor.mostrarCuadricula = false;
+  it("pressing again shows the grid", async () => {
+    editor.showGrid = false;
     const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Mostrar cuadrícula"));
-    expect(editor.mostrarCuadricula).toBe(true);
+    await fireEvent.click(buttonByLabel(container, "Show grid"));
+    expect(editor.showGrid).toBe(true);
   });
 });
 
@@ -129,65 +129,65 @@ describe("Toolbar — zoom (F10)", () => {
     editor.zoom = 1;
   });
 
-  it("el indicador muestra 100% por defecto", () => {
+  it("the indicator shows 100% by default", () => {
     const { container } = render(Toolbar);
     expect(container.textContent).toContain("100%");
   });
 
-  it("+ acerca el zoom y − lo aleja en pasos de 0.5 (US1)", async () => {
+  it("+ zooms in and − zooms out in 0.5 steps (US1)", async () => {
     const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Acercar (zoom)"));
+    await fireEvent.click(buttonByLabel(container, "Zoom in"));
     expect(editor.zoom).toBe(1.5);
-    await fireEvent.click(botonPorLabel(container, "Alejar (zoom)"));
+    await fireEvent.click(buttonByLabel(container, "Zoom out"));
     expect(editor.zoom).toBe(1);
   });
 
-  it("100% restablece el zoom al tamaño base (US1)", async () => {
+  it("100% resets the zoom to the base size (US1)", async () => {
     const { container } = render(Toolbar);
-    editor.acercar();
-    editor.acercar();
+    editor.zoomIn();
+    editor.zoomIn();
     expect(editor.zoom).toBe(2);
-    await fireEvent.click(botonPorLabel(container, "Restablecer zoom al 100%"));
+    await fireEvent.click(buttonByLabel(container, "Reset zoom to 100%"));
     expect(editor.zoom).toBe(1);
   });
 
-  it("los controles del panel de zoom no cierran el panel al usarlos (UX mobile)", async () => {
+  it("the zoom panel controls do not close the panel when used (mobile UX)", async () => {
     const { container } = render(Toolbar);
     const panel = () => container.querySelector("[data-zoom-panel]");
-    await fireEvent.click(botonPorLabel(container, "Zoom"));
+    await fireEvent.click(buttonByLabel(container, "Zoom"));
     expect(panel()).toBeTruthy();
-    const enPanel = (label) =>
+    const inPanel = (label) =>
       panel().querySelector(`[aria-label="${label}"]`);
-    await fireEvent.click(enPanel("Acercar (zoom)"));
+    await fireEvent.click(inPanel("Zoom in"));
     expect(editor.zoom).toBe(1.5);
     expect(panel()).toBeTruthy();
-    await fireEvent.click(enPanel("Alejar (zoom)"));
+    await fireEvent.click(inPanel("Zoom out"));
     expect(editor.zoom).toBe(1);
     expect(panel()).toBeTruthy();
-    await fireEvent.click(enPanel("Restablecer zoom al 100%"));
+    await fireEvent.click(inPanel("Reset zoom to 100%"));
     expect(editor.zoom).toBe(1);
     expect(panel()).toBeTruthy();
   });
 
-  it("− queda deshabilitado en el zoom mínimo (límites F10)", () => {
+  it("− disabled at minimum zoom (F10 limits)", () => {
   editor.zoom = 1;
   const { container } = render(Toolbar);
-  expect(botonPorLabel(container, "Alejar (zoom)").disabled).toBe(true);
-  expect(botonPorLabel(container, "Acercar (zoom)").disabled).toBe(false);
+  expect(buttonByLabel(container, "Zoom out").disabled).toBe(true);
+  expect(buttonByLabel(container, "Zoom in").disabled).toBe(false);
 });
 
-it("+ queda deshabilitado en el zoom máximo (límites F10)", () => {
+it("+ disabled at maximum zoom (F10 limits)", () => {
   editor.zoom = 4;
   const { container } = render(Toolbar);
-  expect(botonPorLabel(container, "Alejar (zoom)").disabled).toBe(false);
-  expect(botonPorLabel(container, "Acercar (zoom)").disabled).toBe(true);
+  expect(buttonByLabel(container, "Zoom out").disabled).toBe(false);
+  expect(buttonByLabel(container, "Zoom in").disabled).toBe(true);
 });
 
-  it("elegir otra herramienta sí cierra el panel de zoom", async () => {
+  it("selecting another tool closes the zoom panel", async () => {
     const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Zoom"));
+    await fireEvent.click(buttonByLabel(container, "Zoom"));
     expect(container.querySelector("[data-zoom-panel]")).toBeTruthy();
-    await fireEvent.click(botonPorLabel(container, "Borrador"));
+    await fireEvent.click(buttonByLabel(container, "Eraser"));
     expect(container.querySelector("[data-zoom-panel]")).toBeNull();
   });
 });

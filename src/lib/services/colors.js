@@ -1,8 +1,8 @@
-const STORAGE_KEY = "pixel-art-studio:colores-recientes";
+const STORAGE_KEY = "pixel-art-studio:recent-colors";
 
-export const LIMITE_RECIENTES = 6;
+export const RECENT_LIMIT = 6;
 
-export function normalizarHex(color) {
+export function normalizeHex(color) {
   if (typeof color !== "string") return null;
   const h = color.trim();
   const match = h.match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
@@ -17,24 +17,24 @@ export function normalizarHex(color) {
   return `#${hex.toUpperCase()}`;
 }
 
-export function cargarRecientes(limite = LIMITE_RECIENTES) {
+export function loadRecentColors(limite = RECENT_LIMIT) {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    const validos = [];
+    const valid = [];
     for (const color of parsed) {
-      const norm = normalizarHex(color);
-      if (norm && !validos.includes(norm)) validos.push(norm);
+      const norm = normalizeHex(color);
+      if (norm && !valid.includes(norm)) valid.push(norm);
     }
-    return validos.slice(0, limite);
+    return valid.slice(0, limite);
   } catch {
     return [];
   }
 }
 
-export function guardarRecientes(lista) {
+export function saveRecentColors(lista) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
   } catch {
@@ -43,7 +43,7 @@ export function guardarRecientes(lista) {
 }
 
 export function hexToRgb(hex) {
-  const norm = normalizarHex(hex);
+  const norm = normalizeHex(hex);
   if (!norm) return null;
   return {
     r: parseInt(norm.slice(1, 3), 16),
@@ -100,6 +100,6 @@ export function hsvToHex(h, s, v) {
       rgb = [v, p, q];
       break;
   }
-  const aByte = (x) => Math.round(Math.min(1, Math.max(0, x)) * 255).toString(16).padStart(2, "0");
-  return `#${rgb.map(aByte).join("").toUpperCase()}`;
+  const byte = (x) => Math.round(Math.min(1, Math.max(0, x)) * 255).toString(16).padStart(2, "0");
+  return `#${rgb.map(byte).join("").toUpperCase()}`;
 }

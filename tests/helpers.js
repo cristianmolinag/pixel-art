@@ -1,6 +1,6 @@
 const DB_NAME = "pixel-art-studio";
 
-export function reiniciarGaleriaDB() {
+export function resetGalleryDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.deleteDatabase(DB_NAME);
     req.onsuccess = () => resolve();

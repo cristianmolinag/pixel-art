@@ -11,59 +11,59 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Maximize from "@lucide/svelte/icons/maximize";
   import ZoomIn from "@lucide/svelte/icons/zoom-in";
-  import Matriz from "./Matriz.svelte";
+  import Matrix from "./Matrix.svelte";
 
-  const HERRAMIENTAS = [
-    { id: "pincel", label: "Pincel", icon: Brush },
-    { id: "borrador", label: "Borrador", icon: Eraser },
-    { id: "linea", label: "Línea", icon: Slash },
-    { id: "relleno", label: "Relleno", icon: PaintBucket },
+  const TOOLS = [
+    { id: "brush", label: "Brush", icon: Brush },
+    { id: "eraser", label: "Eraser", icon: Eraser },
+    { id: "line", label: "Line", icon: Slash },
+    { id: "fill", label: "Fill", icon: PaintBucket },
   ];
 
-  let zoomAbierto = $state(false);
+  let zoomOpen = $state(false);
 
-  function cerrarPanelAlSeleccionar(node) {
+  function closePanelOnSelect(node) {
     const zoomButton = node.querySelector('[aria-label="Zoom"]');
     node.addEventListener("click", (e) => {
       if (zoomButton && zoomButton.contains(e.target)) return;
       if (e.target.closest("[data-zoom-panel]")) return;
-      if (zoomAbierto) zoomAbierto = false;
+      if (zoomOpen) zoomOpen = false;
     });
   }
 </script>
 
-{#snippet zoomGrupo()}
+{#snippet zoomGroup()}
   <span class="mx-1 h-6 w-px bg-white/20 lg:mx-0 lg:my-1 lg:h-px lg:w-6" aria-hidden="true"></span>
 
   <button
     type="button"
-    aria-label="Alejar (zoom)"
-    title="Alejar vista (zoom −)"
+    aria-label="Zoom out"
+    title="Zoom out (zoom −)"
     disabled={editor.zoom <= MIN_ZOOM}
     class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-    onclick={() => editor.alejar()}
+    onclick={() => editor.zoomOut()}
   >
     <Minus size={20} />
   </button>
-  <span class="tam-icono-ancho flex items-center justify-center text-center text-xs text-white/70" aria-live="polite">
+  <span class="tam-icono-width flex items-center justify-center text-center text-xs text-white/70" aria-live="polite">
     {Math.round(editor.zoom * 100)}%
   </span>
   <button
     type="button"
-    aria-label="Acercar (zoom)"
-    title="Acercar vista (zoom +)"
+    aria-label="Zoom in"
+    title="Zoom in (zoom +)"
     disabled={editor.zoom >= MAX_ZOOM}
     class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-    onclick={() => editor.acercar()}
+    onclick={() => editor.zoomIn()}
   >
     <Plus size={20} />
   </button>
   <button
     type="button"
-    aria-label="Restablecer zoom al 100%"
-    title="Restablecer zoom y centrado"
+    aria-label="Reset zoom to 100%"
+    title="Reset zoom and pan"
     class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
-    onclick={() => editor.reiniciarZoom()}
+    onclick={() => editor.resetZoom()}
   >
     <Maximize size={20} />
   </button>
@@ -73,21 +73,21 @@
 
 <div
   role="group"
-  use:cerrarPanelAlSeleccionar
+  use:closePanelOnSelect
   class="toolbar-fila flex flex-wrap items-center justify-center lg:items-center lg:justify-start lg:flex-col lg:gap-0"
 >
-  {#each HERRAMIENTAS as { id, label, icon } (id)}
+  {#each TOOLS as { id, label, icon } (id)}
     {@const Icone = icon}
     <button
       type="button"
       aria-label={label}
       title={label}
-      aria-pressed={editor.herramienta === id}
+      aria-pressed={editor.tool === id}
       class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition
-        {editor.herramienta === id
+        {editor.tool === id
           ? 'bg-white text-black shadow'
           : 'text-white hover:bg-white/10'}"
-      onclick={() => editor.seleccionarHerramienta(id)}
+      onclick={() => editor.selectTool(id)}
     >
       <Icone size={20} />
     </button>
@@ -95,43 +95,43 @@
 
   <button
     type="button"
-    aria-label={editor.mostrarCuadricula ? "Ocultar cuadrícula" : "Mostrar cuadrícula"}
-    title={editor.mostrarCuadricula ? "Ocultar cuadrícula" : "Mostrar cuadrícula"}
-    aria-pressed={editor.mostrarCuadricula}
+    aria-label={editor.showGrid ? "Hide grid" : "Show grid"}
+    title={editor.showGrid ? "Hide grid" : "Show grid"}
+    aria-pressed={editor.showGrid}
     class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition
-      {editor.mostrarCuadricula
+      {editor.showGrid
         ? 'bg-white text-black shadow'
         : 'text-white hover:bg-white/10'}"
-    onclick={() => editor.alternarCuadricula()}
+    onclick={() => editor.toggleGrid()}
   >
     <Grid3x3 size={20} />
   </button>
 
-  <Matriz />
+  <Matrix />
 
   <div class="hidden lg:flex lg:flex-col lg:items-center">
-    {@render zoomGrupo()}
+    {@render zoomGroup()}
   </div>
 
   <button
     type="button"
-    aria-label="Deshacer"
-    title="Deshacer"
+    aria-label="Undo"
+    title="Undo"
     disabled={!editor.canUndo}
     class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition
       hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-    onclick={() => editor.deshacer()}
+    onclick={() => editor.undo()}
   >
     <Undo2 size={20} />
   </button>
   <button
     type="button"
-    aria-label="Rehacer"
-    title="Rehacer"
+    aria-label="Redo"
+    title="Redo"
     disabled={!editor.canRedo}
     class="tam-icono flex cursor-pointer items-center justify-center rounded-md text-white transition
       hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-    onclick={() => editor.rehacer()}
+    onclick={() => editor.redo()}
   >
     <Redo2 size={20} />
   </button>
@@ -140,26 +140,26 @@
     type="button"
     aria-label="Zoom"
     title="Zoom"
-    aria-expanded={zoomAbierto}
+    aria-expanded={zoomOpen}
     class="tam-icono flex cursor-pointer items-center justify-center rounded-md transition lg:hidden
-      {zoomAbierto ? 'bg-white text-black shadow' : 'text-white hover:bg-white/10'}"
+      {zoomOpen ? 'bg-white text-black shadow' : 'text-white hover:bg-white/10'}"
     onclick={(e) => {
       e.stopPropagation();
-      zoomAbierto = !zoomAbierto;
+      zoomOpen = !zoomOpen;
     }}
   >
     <ZoomIn size={20} />
   </button>
 
-  {#if zoomAbierto}
+  {#if zoomOpen}
     <div data-zoom-panel class="toolbar-fila flex w-full flex-wrap items-center lg:hidden">
-      {@render zoomGrupo()}
+      {@render zoomGroup()}
     </div>
   {/if}
 </div>
 
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === "Escape") zoomAbierto = false;
+    if (e.key === "Escape") zoomOpen = false;
   }}
 />

@@ -1,20 +1,20 @@
 <script>
-  import { galeria } from "../stores/galeria.svelte.js";
+  import { gallery } from "../stores/gallery.svelte.js";
   import FilePlus2 from "@lucide/svelte/icons/file-plus-2";
   import Save from "@lucide/svelte/icons/save";
   import Images from "@lucide/svelte/icons/images";
 
-  let confirmandoNuevo = $state(false);
+  let confirmingNew = $state(false);
 
   const ACCIONES = [
     {
-      id: "nuevo",
-      label: "Nuevo dibujo",
+      id: "newDrawing",
+      label: "New drawing",
       icon: FilePlus2,
-      fn: () => (confirmandoNuevo = true),
+      fn: () => (confirmingNew = true),
     },
-    { id: "guardar", label: "Guardar", icon: Save, fn: () => galeria.abrir({ enfocarGuardar: true }) },
-    { id: "galeria", label: "Galería", icon: Images, fn: () => galeria.abrir() },
+    { id: "save", label: "Save", icon: Save, fn: () => gallery.open({ focusSave: true }) },
+    { id: "gallery", label: "Gallery", icon: Images, fn: () => gallery.open() },
   ];
 </script>
 
@@ -34,45 +34,45 @@
   {/each}
 </div>
 
-{#if confirmandoNuevo}
+{#if confirmingNew}
   <div
     role="button"
     tabindex="-1"
     class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
     onclick={(e) => {
-      if (e.target === e.currentTarget) confirmandoNuevo = false;
+      if (e.target === e.currentTarget) confirmingNew = false;
     }}
     onkeydown={(e) => {
-      if (e.key === "Escape") confirmandoNuevo = false;
+      if (e.key === "Escape") confirmingNew = false;
     }}
   >
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Confirmar nuevo dibujo"
+      aria-label="Confirm new drawing"
       class="w-full max-w-xs rounded-2xl bg-surface-light p-4 shadow-xl"
     >
-      <h2 class="mb-3 text-lg font-bold text-white">Nuevo dibujo</h2>
-      <p class="text-sm text-white/70">¿Empezar un nuevo dibujo? El lienzo actual se limpiará.</p>
+      <h2 class="mb-3 text-lg font-bold text-white">New drawing</h2>
+      <p class="text-sm text-white/70">Start a new drawing? The current canvas will be cleared.</p>
       <div class="mt-4 flex justify-end gap-2">
         <button
           type="button"
-          aria-label="Cancelar"
+          aria-label="Cancel"
           class="h-9 cursor-pointer rounded-md px-3 text-sm font-semibold text-white transition hover:bg-white/10"
-          onclick={() => (confirmandoNuevo = false)}
+          onclick={() => (confirmingNew = false)}
         >
-          Cancelar
+          Cancel
         </button>
         <button
           type="button"
-          aria-label="Empezar nuevo"
+          aria-label="Start new drawing"
           class="h-9 cursor-pointer rounded-md bg-red-600 px-3 text-sm font-semibold text-white transition hover:bg-red-700"
           onclick={() => {
-            galeria.nuevo();
-            confirmandoNuevo = false;
+            gallery.newDrawing();
+            confirmingNew = false;
           }}
         >
-          Empezar nuevo
+          Start new drawing
         </button>
       </div>
     </div>
@@ -81,6 +81,6 @@
 
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === "Escape") confirmandoNuevo = false;
+    if (e.key === "Escape") confirmingNew = false;
   }}
 />
