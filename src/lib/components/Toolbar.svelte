@@ -11,6 +11,7 @@
   import Save from "@lucide/svelte/icons/save";
   import Images from "@lucide/svelte/icons/images";
   import Grid3x3 from "@lucide/svelte/icons/grid-3x3";
+  import Matriz from "./Matriz.svelte";
 
   const HERRAMIENTAS = [
     { id: "pincel", label: "Pincel", icon: Brush },
@@ -66,6 +67,8 @@
   >
     <Grid3x3 size={20} />
   </button>
+
+  <Matriz />
 
   <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
 

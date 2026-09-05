@@ -1,7 +1,9 @@
 # Feature 009: Menú para cambiar la matriz del lienzo
 
-**Estado:** 📋 Pendiente
+**Estado:** ✅ Implementada
 **Spec escrita:** 2026-09-04
+**Tests:** `tests/unit/components/Matriz.test.js`, `tests/unit/stores/editor.test.js`,
+`tests/unit/components/Toolbar.test.js`
 **Objetivo:** `specs/project/objective.md`
 **Issue asociado:** [#17](https://github.com/cristianmolinag/pixel-art/issues/17)
 **Depende de:** F01 Canvas (#11) y F05 Galería (#6), implementadas
@@ -58,7 +60,8 @@ Como usuario, quiero poder indicar ancho×alto arbitrarios si un preset no me si
 
 ## Fronteras e integración
 
-- **Undo/redo:** cambiar la matriz debe integrarse sin corromper el historial (ver F04).
+- **Undo/redo:** se conserva el historial; los snapshots que no coinciden con la matriz actual se
+  omiten al deshacer/rehacer (ver "Decisiones").
 - **Galería:** `Dibujo` ya serializa dimensiones y `cargar` las restaura en el editor (F05).
 
 ## No-objetivos
@@ -68,17 +71,27 @@ Como usuario, quiero poder indicar ancho×alto arbitrarios si un preset no me si
 
 ## Decisiones
 
-### Pendientes
+### Resueltas (decidido con el usuario)
 
-- ¿Al cambiar la matriz se **limpia** el lienzo o se **conserva** el contenido (top-left, centrado)?
-- ¿Se ofrece el cambio de matriz también al crear un dibujo nuevo (galería) o solo en el editor?
-- ¿Presets cuáles exactamente y si incluyen opción custom (US2) en el MVP?
+- **Contenido al cambiar**: el lienzo se **limpia** al cambiar la matriz. Antes de aplicar se
+  muestra un `window.confirm` similar al de "Nuevo dibujo" ("¿Cambiar la matriz a X×Y? El lienzo
+  actual se limpiará."); si se cancela, la matriz no cambia y el popover queda abierto.
+- **Opciones**: presets fijos **16×16, 32×32, 48×48 y 64×64** + **tamaño personalizado**
+  (ancho×alto, enteros entre `MIN_MATRIZ=4` y `MAX_MATRIZ=128`); valor inválido muestra error
+  (`aria-live`) y no aplica.
+- **Historial**: se **conserva**; `deshacer`/`rehacer` **omiten snapshots cuya dimensión no
+  coincide** con la matriz actual (para no romper `restore` al cambiar de tamaño).
+- Estado y lógica en el store (`establecerMatriz`), UI popover en `Matriz.svelte` (patrón del
+  picker de F06: backdrop + Escape), botón `LayoutGrid` junto a las herramientas en el toolbar.
 
 ## Tests
 
-- `tests/unit/models/Canvas.test.js`: ya cubre dimensiones custom; extender si aplica.
-- `tests/unit/stores/editor.test.js` y nuevo `tests/unit/components/Matriz.test.js` (o dentro de
-  `Toolbar.test.js`): elegir preset, validación custom, cierre del popover.
+- `tests/unit/models/Canvas.test.js`: dimensiones custom (preexistente).
+- `tests/unit/stores/editor.test.js`: `establecerMatriz` cambia/limpia, valida rangos y conserva
+  historial omitiendo snapshots de otra dimensión.
+- `tests/unit/components/Matriz.test.js`: popover con presets y custom, confirmación antes de
+  limpiar, cancelación, error en inválido, cierre por Escape.
+- `tests/unit/components/Toolbar.test.js`: botón presente en la lista del toolbar.
 
 ## Relacionado con
 

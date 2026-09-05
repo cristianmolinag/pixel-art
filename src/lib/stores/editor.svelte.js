@@ -24,6 +24,10 @@ function guardarMostrarCuadricula(valor) {
   }
 }
 
+export const MATRICES = [16, 32, 48, 64];
+export const MIN_MATRIZ = 4;
+export const MAX_MATRIZ = 128;
+
 export const PALETA = [
   "#000000",
   "#ffffff",
@@ -89,17 +93,25 @@ class EditorStore {
   }
 
   deshacer() {
-    if (this.undoStack.length === 0) return;
-    this.redoStack.push(this.model.snapshot());
-    this.model.restore(this.undoStack.pop());
-    this.version += 1;
+    while (this.undoStack.length > 0) {
+      const snapshot = this.undoStack.pop();
+      if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
+      this.redoStack.push(this.model.snapshot());
+      this.model.restore(snapshot);
+      this.version += 1;
+      return;
+    }
   }
 
   rehacer() {
-    if (this.redoStack.length === 0) return;
-    this.undoStack.push(this.model.snapshot());
-    this.model.restore(this.redoStack.pop());
-    this.version += 1;
+    while (this.redoStack.length > 0) {
+      const snapshot = this.redoStack.pop();
+      if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
+      this.undoStack.push(this.model.snapshot());
+      this.model.restore(snapshot);
+      this.version += 1;
+      return;
+    }
   }
 
   seleccionarHerramienta(herramienta) {
@@ -109,6 +121,16 @@ class EditorStore {
   alternarCuadricula() {
     this.mostrarCuadricula = !this.mostrarCuadricula;
     guardarMostrarCuadricula(this.mostrarCuadricula);
+  }
+
+  establecerMatriz(cols, rows) {
+    const c = Math.floor(Number(cols));
+    const r = Math.floor(Number(rows));
+    if (!Number.isFinite(c) || !Number.isFinite(r)) return false;
+    if (c < MIN_MATRIZ || c > MAX_MATRIZ || r < MIN_MATRIZ || r > MAX_MATRIZ) return false;
+    this.model = new Canvas(c, r);
+    this.version += 1;
+    return true;
   }
 
   pintarPixel(x, y) {

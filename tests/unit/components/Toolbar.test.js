@@ -40,13 +40,14 @@ describe("Toolbar (F03)", () => {
       "Línea",
       "Relleno",
       "Ocultar cuadrícula",
+      "Cambiar matriz del lienzo",
       "Deshacer",
       "Rehacer",
       "Nuevo dibujo",
       "Guardar",
       "Galería",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(10);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(11);
   });
 
   it("seleccionar una herramienta la activa y queda marcada (US1/FR-002)", async () => {

@@ -291,3 +291,44 @@ describe("editor store (F08 cuadrícula)", () => {
     expect(localStorage.getItem("pixel-art-studio:mostrar-cuadricula")).toBe("true");
   });
 });
+
+describe("editor store (F09 matriz)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    editor.model = new Canvas(16, 16);
+    editor.version = 0;
+    editor.undoStack = [];
+    editor.redoStack = [];
+  });
+
+  it("establecerMatriz cambia las dimensiones del lienzo", () => {
+    expect(editor.establecerMatriz(32, 48)).toBe(true);
+    expect(editor.model.cols).toBe(32);
+    expect(editor.model.rows).toBe(48);
+  });
+
+  it("cambiar de matriz limpia el lienzo (decisión de diseño)", () => {
+    editor.pintarPixel(1, 1);
+    editor.establecerMatriz(32, 32);
+    expect(editor.model.getPixel(1, 1).a).toBe(0);
+  });
+
+  it("rechaza dimensiones fuera de rango o no numéricas", () => {
+    expect(editor.establecerMatriz(0, 16)).toBe(false);
+    expect(editor.establecerMatriz(16, 500)).toBe(false);
+    expect(editor.establecerMatriz("a", 16)).toBe(false);
+    expect(editor.establecerMatriz(undefined, 16)).toBe(false);
+    expect(editor.establecerMatriz(3, 16)).toBe(false);
+    expect(editor.model.cols).toBe(16);
+  });
+
+  it("conserva el historial: deshacer omite snapshots de otra dimensión", () => {
+    editor.abrirAccion();
+    editor.pintarPixel(1, 1);
+    editor.cerrarAccion();
+    editor.establecerMatriz(32, 32);
+    editor.deshacer();
+    expect(editor.model.getPixel(1, 1).a).toBe(0);
+    expect(editor.undoStack.length).toBe(0);
+  });
+});
