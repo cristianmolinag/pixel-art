@@ -5,10 +5,17 @@
 - Commit messages must use conventional commits.
 
 ## Git
-- Always work on the `develop` branch. Never commit directly to `main`.
+- `develop` is the integration branch. Every issue/feature must be developed in its own Git worktree and dedicated branch.
+- Never push directly to `develop` or `main`; all changes to protected branches must be merged through a pull request.
+- Every code change must belong to a defined feature and have a corresponding GitHub issue.
+- Every feature implementation must update the relevant context files, including `AGENTS.md` and the applicable files under `specs/`.
 - Before committing, run `mise exec -- pnpm build` and verify that it succeeds.
 - If tests are configured, run them before committing.
 - Do not make design or implementation assumptions without asking the user first.
+
+## Deployment
+- GitHub Pages deploys from `develop` through `.github/workflows/deploy.yml`.
+- The `develop` and `main` branches must reject direct changes and require pull requests.
 
 ## Stack
 - Svelte 5 (runes: `$state`, `$derived`, `$effect`)
@@ -29,9 +36,11 @@ mise exec -- pnpm check
 ## Architecture
 - Central editor state lives in `src/lib/stores/editor.svelte.js` and uses runes.
 - The canvas is redrawn at device resolution (DPR). Each cell is one model pixel; zoom and pan are applied during drawing with device-pixel integer rounding, without CSS transforms.
+- Desktop canvas zoom supports `Ctrl + wheel` and reuses the store's button actions (`zoomIn`/`zoomOut`) so `ZOOM_STEP`, `MIN_ZOOM`, and `MAX_ZOOM` remain consistent. The zoom is centered on the cursor position.
 - Toolbar actions communicate through pending-action flags in the store (`pendingImageData`, `pendingClear`, `pendingExport`).
 - Do not use `document.querySelector` to access the canvas. Use the pending-action pattern.
 - The responsive toolbar uses fluid icon and gap sizes through `clamp()` (`.toolbar-icon`, `.toolbar-row` in `src/app.css`). On mobile, zoom is contained in its own expander; grid and matrix controls remain visible.
+- The palette footer accounts for iOS home-indicator safe area through `env(safe-area-inset-bottom)`.
 - Use custom confirmation modals (the `Matrix.svelte` pattern). Do not use `window.confirm` or `alert`.
 
 ## Issues
@@ -44,4 +53,5 @@ mise exec -- pnpm check
   - F07 Menu layout -> **#15** (implemented and closed)
   - Cross-cutting backlog: **#1** PWA icons, **#8** mobile/UX improvements, **#10** keyboard shortcuts
   - v1.0 MVP item: **#19** grid guide overlay
+  - F12 UX and release workflow polish -> **#24** (implemented; spec: `specs/features/12-ux-and-release-workflow.md`)
 - Review open issues before implementing new work.

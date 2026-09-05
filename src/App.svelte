@@ -33,7 +33,10 @@
     </main>
   </div>
 
-  <footer class="bg-surface-light px-4 py-3 shadow-[0_-4px_6px_rgba(0,0,0,0.25)]">
+  <footer
+    class="bg-surface-light px-4 py-3 shadow-[0_-4px_6px_rgba(0,0,0,0.25)]"
+    style:padding-bottom="max(0.75rem, env(safe-area-inset-bottom))"
+  >
     <Palette />
   </footer>
 </div>

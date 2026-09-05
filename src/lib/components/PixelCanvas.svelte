@@ -376,6 +376,43 @@ function onPointerUp(event) {
   lineStart = null;
   lineEnd = null;
 }
+
+function onWheel(event) {
+  if (!event.ctrlKey) return;
+  event.preventDefault();
+
+  const rect = canvasEl.getBoundingClientRect();
+  const cursorX = event.clientX - rect.left;
+  const cursorY = event.clientY - rect.top;
+
+  const oldZoom = editor.zoom;
+  const oldContentWidth = rect.width * oldZoom;
+  const oldContentHeight = rect.height * oldZoom;
+  const oldLeft = (rect.width - oldContentWidth) / 2 + editor.panX;
+  const oldTop = (rect.height - oldContentHeight) / 2 + editor.panY;
+
+  const modelX = (cursorX - oldLeft) / oldContentWidth;
+  const modelY = (cursorY - oldTop) / oldContentHeight;
+
+  if (event.deltaY < 0) {
+    editor.zoomIn();
+  } else if (event.deltaY > 0) {
+    editor.zoomOut();
+  }
+
+  const newZoom = editor.zoom;
+  const newContentWidth = rect.width * newZoom;
+  const newContentHeight = rect.height * newZoom;
+  const newLeft = (rect.width - newContentWidth) / 2;
+  const newTop = (rect.height - newContentHeight) / 2;
+
+  const newPanX = cursorX - newLeft - modelX * newContentWidth;
+  const newPanY = cursorY - newTop - modelY * newContentHeight;
+
+  const { maxX, maxY } = panLimits();
+  editor.panX = Math.min(maxX, Math.max(-maxX, newPanX));
+  editor.panY = Math.min(maxY, Math.max(-maxY, newPanY));
+}
 </script>
 
 <div
@@ -393,6 +430,7 @@ function onPointerUp(event) {
     onpointerup={onPointerUp}
     onpointercancel={onPointerUp}
     onpointerleave={onPointerUp}
+    onwheel={onWheel}
   ></canvas>
   <div
     data-pan-hint
@@ -400,6 +438,6 @@ function onPointerUp(event) {
     class="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-neutral-900/85 px-3 py-1.5 text-center text-xs text-white shadow transition-opacity duration-300
       {hintVisible ? 'opacity-100' : 'opacity-0'}"
   >
-    {isTouch ? "Pan with two fingers · Pinch to zoom" : "Move with Ctrl + drag · Zoom with + / −"}
+    {isTouch ? "Pan with two fingers · Pinch to zoom" : "Move with Ctrl + drag · Zoom with Ctrl + wheel or + / −"}
   </div>
 </div>
