@@ -25,7 +25,7 @@ mise exec -- pnpm check     # typecheck (svelte-check)
 
 ## Arquitectura
 - Estado central en `src/lib/stores/editor.svelte.js` (runes)
-- Canvas logic: cada celda = 1 píxel real, display escala con CSS
+- Canvas logic: el canvas se redibuja a resolución de dispositivo (DPR); cada celda = 1 píxel del modelo y zoom/pan se aplican en el draw con redondeo a enteros de dispositivo (sin `transform` CSS)
 - Acciones del toolbar se comunican via flags en el store (`pendingImageData`, `pendingClear`, `pendingExport`)
 - No usar `document.querySelector` para acceder al canvas — usar el patrón de acciones pendientes
 

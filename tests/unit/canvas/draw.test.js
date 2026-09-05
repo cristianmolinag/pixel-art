@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { drawPixels, drawCanvas } from "../../../src/lib/canvas/draw.js";
+import { drawPixels, drawCanvas, GRID_COLOR } from "../../../src/lib/canvas/draw.js";
 import { Canvas } from "../../../src/lib/models/Canvas.js";
 
 function makeCtx() {
@@ -14,6 +14,8 @@ function makeCtx() {
     moveTo: vi.fn(),
     lineTo: vi.fn(),
     stroke: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
   };
 }
 
@@ -40,11 +42,16 @@ describe("drawCanvas", () => {
     expect(clear).toBeLessThan(blit);
   });
 
-  it("no dibuja la cuadrícula sobre el canvas (grid es fondo CSS en F08)", () => {
+  it("no traza líneas (la cuadrícula vive en el overlay de PixelCanvas)", () => {
     const ctx = makeCtx();
     const model = new Canvas(16, 16);
     drawCanvas(ctx, model);
+    expect(ctx.fillRect).not.toHaveBeenCalled();
     expect(ctx.stroke).not.toHaveBeenCalled();
     expect(ctx.beginPath).not.toHaveBeenCalled();
+  });
+
+  it("exporta el color de cuadrícula compartido con el overlay", () => {
+    expect(GRID_COLOR).toBe("#cccccc");
   });
 });

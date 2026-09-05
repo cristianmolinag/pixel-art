@@ -1,3 +1,5 @@
+export const GRID_COLOR = "#cccccc";
+
 export function drawPixels(ctx, model) {
   ctx.drawImage(model.offscreen, 0, 0);
 }
