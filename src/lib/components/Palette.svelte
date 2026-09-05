@@ -234,74 +234,84 @@
 
   {#if abierto}
     <div
-      class="fixed inset-0 z-40"
-      aria-hidden="true"
-      onclick={cerrarPicker}
-    ></div>
-    <div
-      role="dialog"
-      aria-label="Selector de color personalizado"
-      class="absolute bottom-full right-0 z-50 mb-2 w-72 rounded-xl bg-surface p-3 shadow-xl"
+      role="button"
+      tabindex="-1"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onclick={(e) => {
+        if (e.target === e.currentTarget) cerrarPicker();
+      }}
+      onkeydown={(e) => {
+        if (e.key === "Escape") cerrarPicker();
+      }}
     >
-      <div class="relative aspect-square w-full">
-        <canvas
-          bind:this={svCanvas}
-          width={SV_ALTO}
-          height={SV_ALTO}
-          aria-label="Área de saturación y luminosidad"
-          class="h-full w-full cursor-crosshair touch-none rounded-lg border border-white/20"
-          onpointerdown={onSVPointerDown}
-          onpointermove={onSVPointerMove}
-          onpointerup={onSVPointerUp}
-        ></canvas>
-        <div
-          class="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-md"
-          style:left={sat * 100 + "%"}
-          style:top={(1 - val) * 100 + "%"}
-        ></div>
-      </div>
-
       <div
-        role="slider"
-        tabindex="0"
-        aria-label="Matiz del color"
-        aria-valuemin="0"
-        aria-valuemax="360"
-        aria-valuenow={Math.round(hue)}
-        bind:this={hueBar}
-        class="relative mt-4 h-6 w-full cursor-pointer touch-none rounded-full ring-2 ring-white/15 outline-none focus-visible:ring-brand"
-        style="background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);"
-        use:wheelNoPasivo={onHueWheel}
-        onpointerdown={onHuePointerDown}
-        onpointermove={onHuePointerMove}
-        onpointerup={onHuePointerUp}
-        onkeydown={onHueKeyDown}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Selector de color personalizado"
+        class="w-full max-w-sm rounded-2xl bg-surface-light p-4 shadow-xl"
       >
-        <div
-          class="pointer-events-none absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-md"
-          style:left={hue / 3.6 + "%"}
-          style:background-color={hsvToHex(hue, 1, 1)}
-        ></div>
-      </div>
+        <h2 class="mb-3 text-lg font-bold text-white">Color personalizado</h2>
 
-      <div class="mt-4 flex w-full items-center gap-2">
-        <span
-          class="h-6 w-6 shrink-0 rounded-full border border-white/30"
-          aria-hidden="true"
-          style:background-color={editor.colorActual}
-        ></span>
-        <input
-          type="text"
-          aria-label="Código hex del color"
-          title="Código hex del color (ej. #ff0000)"
-          placeholder="#rrggbb"
-          spellcheck="false"
-          class="h-9 w-full rounded-md border-2 border-white/20 bg-surface px-2 text-sm text-white outline-none transition focus:border-brand"
-          value={hexInput}
-          oninput={(e) => (hexInput = e.currentTarget.value)}
-          onkeydown={(e) => e.key === "Enter" && aplicarHex()}
-          onblur={aplicarHex}
-        />
+        <div class="relative aspect-square w-full">
+          <canvas
+            bind:this={svCanvas}
+            width={SV_ALTO}
+            height={SV_ALTO}
+            aria-label="Área de saturación y luminosidad"
+            class="h-full w-full cursor-crosshair touch-none rounded-lg border border-white/20"
+            onpointerdown={onSVPointerDown}
+            onpointermove={onSVPointerMove}
+            onpointerup={onSVPointerUp}
+          ></canvas>
+          <div
+            class="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-md"
+            style:left={sat * 100 + "%"}
+            style:top={(1 - val) * 100 + "%"}
+          ></div>
+        </div>
+
+        <div
+          role="slider"
+          tabindex="0"
+          aria-label="Matiz del color"
+          aria-valuemin="0"
+          aria-valuemax="360"
+          aria-valuenow={Math.round(hue)}
+          bind:this={hueBar}
+          class="relative mt-4 h-6 w-full cursor-pointer touch-none rounded-full ring-2 ring-white/15 outline-none focus-visible:ring-brand"
+          style="background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);"
+          use:wheelNoPasivo={onHueWheel}
+          onpointerdown={onHuePointerDown}
+          onpointermove={onHuePointerMove}
+          onpointerup={onHuePointerUp}
+          onkeydown={onHueKeyDown}
+        >
+          <div
+            class="pointer-events-none absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-md"
+            style:left={hue / 3.6 + "%"}
+            style:background-color={hsvToHex(hue, 1, 1)}
+          ></div>
+        </div>
+
+        <div class="mt-4 flex w-full items-center gap-2">
+          <span
+            class="h-6 w-6 shrink-0 rounded-full border border-white/30"
+            aria-hidden="true"
+            style:background-color={editor.colorActual}
+          ></span>
+          <input
+            type="text"
+            aria-label="Código hex del color"
+            title="Código hex del color (ej. #ff0000)"
+            placeholder="#rrggbb"
+            spellcheck="false"
+            class="h-9 w-full rounded-md border-2 border-white/20 bg-surface px-2 text-sm text-white outline-none transition focus:border-brand"
+            value={hexInput}
+            oninput={(e) => (hexInput = e.currentTarget.value)}
+            onkeydown={(e) => e.key === "Enter" && aplicarHex()}
+            onblur={aplicarHex}
+          />
+        </div>
       </div>
     </div>
   {/if}
