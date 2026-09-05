@@ -1,15 +1,11 @@
 <script>
   import { editor } from "../stores/editor.svelte.js";
-  import { galeria } from "../stores/galeria.svelte.js";
   import Brush from "@lucide/svelte/icons/brush";
   import Eraser from "@lucide/svelte/icons/eraser";
   import Slash from "@lucide/svelte/icons/slash";
   import PaintBucket from "@lucide/svelte/icons/paint-bucket";
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Redo2 from "@lucide/svelte/icons/redo-2";
-  import FilePlus2 from "@lucide/svelte/icons/file-plus-2";
-  import Save from "@lucide/svelte/icons/save";
-  import Images from "@lucide/svelte/icons/images";
   import Grid3x3 from "@lucide/svelte/icons/grid-3x3";
   import Minus from "@lucide/svelte/icons/minus";
   import Plus from "@lucide/svelte/icons/plus";
@@ -22,24 +18,9 @@
     { id: "linea", label: "Línea", icon: Slash },
     { id: "relleno", label: "Relleno", icon: PaintBucket },
   ];
-
-  const ACCIONES_GALERIA = [
-    {
-      id: "nuevo",
-      label: "Nuevo dibujo",
-      icon: FilePlus2,
-      fn: () => {
-        if (window.confirm("¿Empezar un nuevo dibujo? El lienzo actual se limpiará.")) {
-          galeria.nuevo();
-        }
-      },
-    },
-    { id: "guardar", label: "Guardar", icon: Save, fn: () => galeria.abrir({ enfocarGuardar: true }) },
-    { id: "galeria", label: "Galería", icon: Images, fn: () => galeria.abrir() },
-  ];
 </script>
 
-<div class="flex flex-wrap items-center justify-center gap-1 rounded-xl bg-surface-light p-2">
+<div class="flex flex-wrap items-center gap-1 lg:flex-col lg:items-center">
   {#each HERRAMIENTAS as { id, label, icon } (id)}
     {@const Icone = icon}
     <button
@@ -73,7 +54,7 @@
 
   <Matriz />
 
-  <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
+  <span class="mx-1 h-6 w-px bg-white/20 lg:mx-0 lg:my-1 lg:h-px lg:w-6" aria-hidden="true"></span>
 
   <button
     type="button"
@@ -106,7 +87,7 @@
     <Maximize size={20} />
   </button>
 
-  <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
+  <span class="mx-1 h-6 w-px bg-white/20 lg:mx-0 lg:my-1 lg:h-px lg:w-6" aria-hidden="true"></span>
 
   <button
     type="button"
@@ -130,20 +111,4 @@
   >
     <Redo2 size={20} />
   </button>
-
-  <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
-
-  {#each ACCIONES_GALERIA as { id, label, icon, fn } (id)}
-    {@const Icone = icon}
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white transition
-        hover:bg-white/10"
-      onclick={fn}
-    >
-      <Icone size={20} />
-    </button>
-  {/each}
 </div>

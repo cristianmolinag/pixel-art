@@ -29,22 +29,24 @@ describe("Palette (F02)", () => {
     expect(swatches.length).toBeGreaterThanOrEqual(8);
   });
 
-  it("marca visualmente el color seleccionado (FR-002)", () => {
+  it("marca el color seleccionado solo con el check (FR-002)", () => {
     editor.colorActual = "#ff0000";
     const { container } = render(Palette);
     const rojo = container.querySelector("button[aria-label='Color #ff0000']");
     const clas = rojo.className;
-    expect(clas).toContain("scale-110");
-    expect(clas).toContain("border-white");
+    expect(clas).not.toContain("scale-110");
+    expect(clas).not.toContain("shadow-md");
+    expect(rojo.querySelector("svg")).toBeTruthy();
   });
 
-  it("agranda el swatch de la paleta aunque el color esté normalizado (FR-002)", () => {
+  it("marca con check el swatch de la paleta aunque el color esté normalizado (FR-002)", () => {
     editor.seleccionarColor("#ff0000");
     expect(editor.colorActual).toBe("#FF0000");
     const { container } = render(Palette);
     const rojo = container.querySelector("button[aria-label='Color #ff0000']");
-    expect(rojo.className).toContain("scale-110");
-    expect(rojo.className).toContain("border-white");
+    expect(rojo.className).not.toContain("scale-110");
+    expect(rojo.className).not.toContain("shadow-md");
+    expect(rojo.querySelector("svg")).toBeTruthy();
   });
 
   it("al clickear un swatch cambia el color actual (FR-002)", async () => {
@@ -119,18 +121,18 @@ describe("Palette (F06 color picker)", () => {
     expect(editor.coloresRecientes).toEqual(["#FF0000", "#00FF00"]);
   });
 
-  it("marca el reciente seleccionado con borde blanco como la paleta", () => {
+  it("marca el reciente seleccionado solo con el check como la paleta", () => {
     editor.coloresRecientes = ["#FF0000", "#00FF00"];
     editor.colorActual = "#00FF00";
     const { container } = render(Palette);
     const seleccionado = container.querySelector("button[aria-label='Reciente #00FF00']");
     const noSeleccionado = container.querySelector("button[aria-label='Reciente #FF0000']");
-    expect(seleccionado.className).toContain("border-2");
-    expect(seleccionado.className).toContain("border-white");
-    expect(seleccionado.className).toContain("shadow-md");
-    expect(noSeleccionado.className).not.toContain("border-2");
+    expect(seleccionado.className).not.toContain("shadow-md");
+    expect(seleccionado.className).not.toContain("scale-110");
+    expect(seleccionado.querySelector("svg")).toBeTruthy();
     expect(noSeleccionado.className).not.toContain("shadow-md");
-    expect(noSeleccionado.className).toContain("border-white/30");
+    expect(noSeleccionado.className).not.toContain("scale-110");
+    expect(noSeleccionado.querySelector("svg")).toBeFalsy();
   });
 
   it("no muestra la fila de recientes si no hay ninguno", () => {

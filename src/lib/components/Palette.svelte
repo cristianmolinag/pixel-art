@@ -1,8 +1,17 @@
 <script>
   import { editor, PALETA } from "../stores/editor.svelte.js";
   import { normalizarHex, hexToRgb, hexToHsv, hsvToHex } from "../services/colores.js";
+  import Check from "@lucide/svelte/icons/check";
+  import Clock from "@lucide/svelte/icons/clock";
 
   const SV_ALTO = 256;
+
+  function colorDeContraste(hex) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return "#ffffff";
+    const luminancia = (299 * rgb.r + 587 * rgb.g + 114 * rgb.b) / 1000;
+    return luminancia >= 150 ? "#1a1a2e" : "#ffffff";
+  }
 
   let hexInput = $state(editor.colorActual);
   let abierto = $state(false);
@@ -13,6 +22,15 @@
   let hueBar = $state(undefined);
   let arrastrando = $state(false);
   let arrastrandoHue = $state(false);
+  let paletaScroll = $state(undefined);
+  let scrollArrastrando = $state(false);
+  let scrollInicioX = $state(0);
+  let scrollInicioIzq = $state(0);
+  let scrollMaximo = $state(0);
+  let scrollMovido = $state(false);
+  let recientesAbierto = $state(false);
+  let recientesRef = $state(undefined);
+  let scrollInfo = $state({ izq: false, der: false });
 
   function sincronizarPicker() {
     const hsv = hexToHsv(editor.colorActual);
@@ -170,6 +188,34 @@
     aplicarDesdePicker();
   }
 
+  function onPaletaPointerDown(e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    scrollArrastrando = true;
+    scrollInicioX = e.clientX;
+    scrollInicioIzq = paletaScroll ? paletaScroll.scrollLeft : 0;
+    scrollMaximo = 0;
+    scrollMovido = false;
+  }
+
+  function actualizarFlechas() {
+    if (!paletaScroll) return;
+    const { scrollLeft, scrollWidth, clientWidth } = paletaScroll;
+    scrollInfo = {
+      izq: scrollLeft > 0,
+      der: scrollWidth - clientWidth - scrollLeft > 1,
+    };
+  }
+
+  function mascaraPaleta() {
+    const izq = scrollInfo.izq ? "transparent 0, black 6%" : "black 0";
+    const der = scrollInfo.der ? ", black 94%, transparent 100%" : ", black 100%";
+    return `linear-gradient(to right, ${izq}${der})`;
+  }
+
+  $effect(() => {
+    if (paletaScroll) actualizarFlechas();
+  });
+
   function onHueWheel(e) {
     e.preventDefault();
     hue = (hue + (e.deltaY < 0 ? 1 : -1) + 360) % 360;
@@ -186,51 +232,114 @@
   }
 </script>
 
-<div class="relative flex flex-wrap items-center gap-2 rounded-xl bg-surface-light p-3">
-  {#each PALETA as color}
+{#snippet recientesSwatches()}
+  {#each editor.coloresRecientes as color (color)}
     <button
       type="button"
-      aria-label="Color {color}"
-      class="h-8 w-8 cursor-pointer rounded-md border-2 transition
-        {esColorActual(color)
-          ? 'scale-110 border-white shadow-md'
-          : 'border-white/20 hover:scale-105'}"
+      aria-label="Reciente {color}"
+      class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded transition hover:scale-105"
       style:background-color={color}
-      onclick={() => editor.seleccionarColor(color)}
-    ></button>
+      onclick={() => {
+        editor.seleccionarColor(color);
+        recientesAbierto = false;
+      }}
+    >
+      {#if esColorActual(color)}
+        <Check size={10} strokeWidth={3} color={colorDeContraste(color)} class="pointer-events-none" />
+      {/if}
+    </button>
   {/each}
+{/snippet}
 
-  <span class="mx-1 h-6 w-px bg-white/20" aria-hidden="true"></span>
+<div class="w-full min-w-0">
+  <div class="flex w-full min-w-0 items-center gap-4">
+  <div class="flex min-w-0 flex-1 items-center gap-2">
+    <button
+      type="button"
+      aria-label="Elegir color personalizado"
+      title="Elegir color personalizado"
+      aria-expanded={abierto}
+      aria-haspopup="dialog"
+      class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition
+        {abierto ? 'scale-110' : 'hover:scale-105'}"
+      style:background-color={editor.colorActual}
+      onclick={alternarPicker}
+    >
+      <Check size={16} strokeWidth={3} color={colorDeContraste(editor.colorActual)} class="pointer-events-none" />
+    </button>
 
-  <button
-    type="button"
-    aria-label="Elegir color personalizado"
-    title="Elegir color personalizado"
-    aria-expanded={abierto}
-    aria-haspopup="dialog"
-    class="h-9 w-9 cursor-pointer rounded-full border-2 transition
-      {abierto ? 'border-brand' : 'border-white/20 hover:scale-105'}"
-    style:background-color={editor.colorActual}
-    onclick={alternarPicker}
-  ></button>
+    <span class="mx-1 h-6 w-px shrink-0 bg-white/20" aria-hidden="true"></span>
+
+    <div class="relative min-w-0 flex-1">
+      <div
+        bind:this={paletaScroll}
+        role="region"
+        aria-label="Paleta de colores"
+        class="scrollbar-invisible w-full cursor-grab touch-pan-y select-none items-center gap-2 overflow-x-auto overflow-y-hidden active:cursor-grabbing flex px-2"
+        style:mask-image={mascaraPaleta()}
+        style:-webkit-mask-image={mascaraPaleta()}
+        onscroll={actualizarFlechas}
+        onpointerdown={onPaletaPointerDown}
+      >
+        {#each PALETA as color}
+          <button
+            type="button"
+            aria-label="Color {color}"
+            class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:scale-105"
+            style:background-color={color}
+            onclick={() => {
+              if (scrollMovido) return;
+              editor.seleccionarColor(color);
+            }}
+          >
+            {#if esColorActual(color)}
+              <Check size={14} strokeWidth={3} color={colorDeContraste(color)} class="pointer-events-none" />
+            {/if}
+          </button>
+        {/each}
+    </div>
+  </div>
+  </div>
+
+  <div class="hidden shrink-0 items-center gap-2 lg:flex">
+    <span class="text-xs uppercase tracking-wide text-white/50">Recientes</span>
+    {#if editor.coloresRecientes.length > 0}
+      {@render recientesSwatches()}
+    {:else}
+      <span class="text-xs text-white/40">Sin colores recientes todavía</span>
+    {/if}
+  </div>
 
   {#if editor.coloresRecientes.length > 0}
-    <div class="mt-1 flex w-full flex-wrap items-center gap-2">
-      <span class="mr-1 text-xs uppercase tracking-wide text-white/50">Recientes</span>
-      {#each editor.coloresRecientes as color (color)}
-        <button
-          type="button"
-          aria-label="Reciente {color}"
-          class="h-6 w-6 cursor-pointer rounded transition
-            {esColorActual(color)
-              ? 'scale-110 border-2 border-white shadow-md'
-              : 'border border-white/30 hover:scale-105'}"
-          style:background-color={color}
-          onclick={() => editor.seleccionarColor(color)}
-        ></button>
-      {/each}
+    <div bind:this={recientesRef} class="relative shrink-0 lg:hidden">
+      <button
+        type="button"
+        aria-label="Mostrar colores recientes"
+        title="Colores recientes"
+        aria-expanded={recientesAbierto}
+        aria-haspopup="dialog"
+        class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white/60 transition hover:bg-white/10 hover:text-white"
+        onclick={() => (recientesAbierto = !recientesAbierto)}
+      >
+        <Clock size={18} />
+      </button>
+
+      {#if recientesAbierto}
+        <div
+          role="dialog"
+          aria-label="Colores recientes"
+          class="absolute bottom-full right-0 mb-2 w-max max-w-[80vw] rounded-xl bg-surface-lighter p-3 shadow-xl ring-1 ring-white/10"
+        >
+          <span class="mb-2 block text-xs uppercase tracking-wide text-white/50">Recientes</span>
+          <div class="flex flex-wrap items-center gap-2">
+            {@render recientesSwatches()}
+          </div>
+        </div>
+      {/if}
     </div>
   {/if}
+
+  </div>
 
   {#if abierto}
     <div
@@ -317,4 +426,38 @@
   {/if}
 </div>
 
-<svelte:window onkeydown={(e) => e.key === "Escape" && cerrarPicker()} />
+<svelte:window
+  onpointermove={(e) => {
+    if (!scrollArrastrando || !paletaScroll) return;
+    const dx = scrollInicioX - e.clientX;
+    paletaScroll.scrollLeft = scrollInicioIzq + dx;
+    scrollMaximo = Math.max(
+      scrollMaximo,
+      Math.abs(paletaScroll.scrollLeft - scrollInicioIzq),
+    );
+  }}
+  onpointerup={() => {
+    if (!scrollArrastrando) return;
+    scrollArrastrando = false;
+    if (scrollMaximo > 3) scrollMovido = true;
+    setTimeout(() => {
+      scrollMovido = false;
+    }, 0);
+  }}
+  onkeydown={(e) => {
+    if (e.key !== "Escape") return;
+    cerrarPicker();
+    recientesAbierto = false;
+  }}
+  onpointerdown={(e) => {
+    if (
+      recientesAbierto &&
+      e.target instanceof Node &&
+      recientesRef &&
+      !recientesRef.contains(e.target)
+    ) {
+      recientesAbierto = false;
+    }
+  }}
+  onresize={actualizarFlechas}
+/>

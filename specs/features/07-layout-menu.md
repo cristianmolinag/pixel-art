@@ -1,6 +1,6 @@
-# Feature 007: Layout del menú (agrupar iconos sin saltos de línea)
+# Feature 007: Layout del menú (sidebar en escritorio)
 
-**Estado:** 📋 Pendiente (decisión de diseño en evaluación — ver "Decisiones")
+**Estado:** 🚧 En implementación
 **Spec escrita:** 2026-09-04
 **Objetivo:** `specs/project/objective.md`
 **Issue asociado:** [#15](https://github.com/cristianmolinag/pixel-art/issues/15)
@@ -44,29 +44,50 @@ posterior (AppBar u overflow).
 3. **Given** la app funcionando, **When** ejecuto los tests existentes, **Then** siguen en verde
    (`aria-label` y acciones sin cambios).
 
+### User Story 2 — Sidebar en escritorio con header/body/footer (Priority: P1)
+
+Como usuario de escritorio, quiero que el menú sea un **sidebar a la izquierda con estructura de
+header, body y footer**, y que el **contenedor de la cuadrícula ocupe todo el resto del área**
+con el lienzo centrado.
+
+**Por qué esta prioridad:** es el rediseño principal acordado con el usuario para F07.
+
+**Acceptance Scenarios (Given/When/Then):**
+
+1. **Given** una pantalla de escritorio (`≥ lg`), **When** veo el layout, **Then** el sidebar está a
+   la izquierda con **header** (título), **body** (toolbar) y **footer** (paleta de colores).
+2. **Given** el layout de escritorio, **When** miro el área principal, **Then** el contenedor de la
+   cuadrícula ocupa todo el espacio restante y el lienzo aparece **centrado**.
+3. **Given** una pantalla móvil (`< lg`), **When** veo el layout, **Then** se mantiene el layout
+   actual (título, toolbar, lienzo y paleta apilados) — el ajuste móvil de la iteración siguiente.
+
 ## No-objetivos
 
 - No cambiar la lógica de herramientas/historial/galería.
 - No atajos de teclado (cubiertos por #10).
 - No alterar el comportamiento de los botones existentes.
+- No rediseñar el layout móvil en esta iteración (se hará después).
 
 ## Decisiones
 
-### De diseño (pendiente — elegir una de las opciones del issue #15)
+### De diseño (resueltas con el usuario)
 
-- **A) Dos filas fijas separadas** — tarjeta 1: Herramientas (Pincel, Borrador, Línea, Relleno);
-  tarjeta 2: Acciones (Deshacer, Rehacer | Nuevo, Guardar, Galería). Sin `flex-wrap`; cada fila con
-  `justify-center`. Cambio mínimo, predecible y agrupa por función.
-- **B) Header tipo AppBar** — el título pasa a una barra superior con las acciones globales (Nuevo,
-  Guardar, Galería) a la derecha; el toolbar queda solo con herramientas + deshacer/rehacer (caben
-  en cualquier ancho). Requiere refactor de layout (`App.svelte`).
-- **C) Menú overflow "•••"** — las acciones secundarias se pliegan en un botón `MoreHorizontal` con
-  popover. Una sola fila siempre; pero más complejo (estado, posicionamiento, accesibilidad, tests)
-  y añade taps en móvil.
+- **Sidebar en escritorio (`≥ lg`)**: columna izquierda fija (`w-60`, `bg-surface-light`) con:
+  - **header**: título "Pixel Art Studio";
+  - **body**: `Toolbar` (herramientas, historial, zoom, archivo);
+  - **footer**: `Palette`, pegada abajo (`mt-auto`).
+- **Área principal**: el `PixelCanvas` ocupa todo el espacio restante (`flex-1`) y queda centrado
+  (`items-center justify-center`).
+- **Mobile (`< lg`)**: se conserva el layout actual apilado (título → toolbar → lienzo → paleta);
+  el rediseño móvil es una iteración posterior.
+- Implementación en `App.svelte` (single source del layout); la paleta se monta en dos variantes
+  (móvil `lg:hidden` y footer de escritorio `hidden lg:block`) para conservar el orden móvil sin
+  duplicar toolbar/lienzo.
 
 ## Tests
 
-- Pendientes de la decisión de diseño (los tests actuales de `Toolbar.test.js` deben seguir en verde).
+- `tests/unit/components/Toolbar.test.js`: siguen en verde sin cambios (los `aria-label` y acciones
+  no cambian). El layout es visual; no requiere test de componente nuevo en esta iteración.
 
 ## Relacionado
 

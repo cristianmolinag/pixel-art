@@ -7,7 +7,6 @@
   --color-surface-light: #16213e;
   --color-surface-lighter: #0f3460;
   --color-canvas-bg: #ffffff;
-  --color-grid: #cccccc;
 }
 
 html,
@@ -24,6 +23,15 @@ body {
 canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+}
+
+.scrollbar-invisible {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-invisible::-webkit-scrollbar {
+  display: none;
 }
 
 #app {

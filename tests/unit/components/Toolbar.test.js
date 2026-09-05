@@ -46,11 +46,8 @@ describe("Toolbar (F03)", () => {
       "Restablecer zoom al 100%",
       "Deshacer",
       "Rehacer",
-      "Nuevo dibujo",
-      "Guardar",
-      "Galería",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(13);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(11);
   });
 
   it("seleccionar una herramienta la activa y queda marcada (US1/FR-002)", async () => {
@@ -151,41 +148,5 @@ describe("Toolbar — zoom (F10)", () => {
     expect(editor.zoom).toBe(2);
     await fireEvent.click(botonPorLabel(container, "Restablecer zoom al 100%"));
     expect(editor.zoom).toBe(1);
-  });
-});
-
-describe("Toolbar — galería (F05/FR-001/FR-003)", () => {
-  it("Galería abre el modal", async () => {
-    const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Galería"));
-    expect(galeria.visible).toBe(true);
-  });
-
-  it("Guardar abre el modal enfocando el campo de nombre", async () => {
-    const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Guardar"));
-    expect(galeria.visible).toBe(true);
-    expect(galeria.enfocarGuardar).toBe(true);
-  });
-
-  it("Nuevo dibujo pregunta confirmación y, al aceptar, limpia el lienzo (US4/FR-005)", async () => {
-    editor.pintarPixel(1, 1);
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-
-    const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Nuevo dibujo"));
-
-    expect(confirmSpy).toHaveBeenCalled();
-    expect(editor.model.getPixel(1, 1).a).toBe(0);
-  });
-
-  it("Nuevo dibujo no cambia el lienzo si se cancela (US4/FR-005)", async () => {
-    editor.pintarPixel(1, 1);
-    vi.spyOn(window, "confirm").mockReturnValue(false);
-
-    const { container } = render(Toolbar);
-    await fireEvent.click(botonPorLabel(container, "Nuevo dibujo"));
-
-    expect(editor.model.getPixel(1, 1).r).toBe(255);
   });
 });
