@@ -9,6 +9,7 @@
   let lineStart = $state(null);
   let lineEnd = $state(null);
   let previewing = $state(false);
+  let touchStartCell = $state(null);
   const pointers = new Map();
   let pinch = null;
   let panActive = false;
@@ -157,6 +158,19 @@ function panLimits() {
   return { maxX: excess, maxY: excess };
 }
 
+function applyToolToCell(cell) {
+  switch (editor.tool) {
+    case "eraser":
+      editor.erasePixel(cell.x, cell.y);
+      break;
+    case "fill":
+      editor.floodFill(cell.x, cell.y);
+      break;
+    default:
+      editor.paintPixel(cell.x, cell.y);
+  }
+}
+
 function applyPinch() {
   const [a, b] = [...pointers.values()];
   if (!a || !b) return;
@@ -189,6 +203,7 @@ function onPointerDown(event) {
       lineStart = null;
       lineEnd = null;
     }
+    touchStartCell = null;
     const [a, b] = [...pointers.values()];
     pinch = {
       initialDistance: Math.hypot(b.x - a.x, b.y - a.y),
@@ -199,22 +214,22 @@ function onPointerDown(event) {
 
   const cell = cellFromEvent(event);
   if (!cell) return;
+
+  if (event.pointerType === "touch") {
+    touchStartCell = cell;
+    return;
+  }
+
   painting = true;
   editor.beginAction();
   switch (editor.tool) {
-    case "eraser":
-      editor.erasePixel(cell.x, cell.y);
-      break;
     case "line":
       lineStart = cell;
       lineEnd = cell;
       previewing = true;
       break;
-    case "fill":
-      editor.floodFill(cell.x, cell.y);
-      break;
     default:
-      editor.paintPixel(cell.x, cell.y);
+      applyToolToCell(cell);
   }
 }
 
@@ -231,18 +246,28 @@ function onPointerMove(event) {
     return;
   }
 
+  if (touchStartCell) {
+    painting = true;
+    editor.beginAction();
+    if (editor.tool === "line") {
+      lineStart = touchStartCell;
+      lineEnd = touchStartCell;
+      previewing = true;
+    } else {
+      applyToolToCell(touchStartCell);
+    }
+    touchStartCell = null;
+  }
+
   if (!painting) return;
   const cell = cellFromEvent(event);
   if (!cell) return;
   switch (editor.tool) {
-    case "eraser":
-      editor.erasePixel(cell.x, cell.y);
-      break;
     case "line":
       lineEnd = cell;
       break;
     default:
-      editor.paintPixel(cell.x, cell.y);
+      applyToolToCell(cell);
   }
 }
 
@@ -270,7 +295,20 @@ function onPointerUp(event) {
       previewing = false;
       lineStart = null;
       lineEnd = null;
+      touchStartCell = null;
     }
+    return;
+  }
+
+  if (touchStartCell) {
+    editor.beginAction();
+    if (editor.tool === "line") {
+      editor.drawLine(touchStartCell.x, touchStartCell.y, touchStartCell.x, touchStartCell.y);
+    } else {
+      applyToolToCell(touchStartCell);
+    }
+    editor.endAction();
+    touchStartCell = null;
     return;
   }
 
