@@ -77,6 +77,15 @@ class EditorStore {
   zoom = $state(1);
   panX = $state(0);
   panY = $state(0);
+  dirty = $state(false);
+
+  markDirty() {
+    this.dirty = true;
+  }
+
+  markSaved() {
+    this.dirty = false;
+  }
 
   selectColor(color) {
     const norm = normalizeHex(color);
@@ -122,6 +131,7 @@ class EditorStore {
       this.redoStack.push(this.model.snapshot());
       this.model.restore(snapshot);
       this.version += 1;
+      this.markDirty();
       return;
     }
   }
@@ -133,6 +143,7 @@ class EditorStore {
       this.undoStack.push(this.model.snapshot());
       this.model.restore(snapshot);
       this.version += 1;
+      this.markDirty();
       return;
     }
   }
@@ -180,6 +191,7 @@ class EditorStore {
     if (c < MIN_MATRIX_SIZE || c > MAX_MATRIX_SIZE || r < MIN_MATRIX_SIZE || r > MAX_MATRIX_SIZE) return false;
     this.model = new Canvas(c, r);
     this.version += 1;
+    this.markDirty();
     return true;
   }
 
@@ -188,12 +200,14 @@ class EditorStore {
     this.trackColorUsage(this.currentColor);
     this._actionChanges += 1;
     this.version += 1;
+    this.markDirty();
   }
 
   erasePixel(x, y) {
     if (!this.model.erasePixel(x, y)) return;
     this._actionChanges += 1;
     this.version += 1;
+    this.markDirty();
   }
 
   drawLine(x0, y0, x1, y1) {
@@ -201,6 +215,7 @@ class EditorStore {
     this.trackColorUsage(this.currentColor);
     this._actionChanges += 1;
     this.version += 1;
+    this.markDirty();
   }
 
   floodFill(x, y) {
@@ -209,6 +224,7 @@ class EditorStore {
     this.trackColorUsage(this.currentColor);
     this._actionChanges += 1;
     this.version += 1;
+    this.markDirty();
   }
 }
 

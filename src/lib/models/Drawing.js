@@ -19,9 +19,10 @@ export function suggestedName() {
 }
 
 export const Drawing = {
-  fromModel(model, name) {
+  fromModel(model, name, id = null) {
     const now = Date.now();
     return {
+      ...(id != null ? { id } : {}),
       name,
       cols: model.cols,
       rows: model.rows,

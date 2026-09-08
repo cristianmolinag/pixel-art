@@ -9,6 +9,7 @@ beforeEach(async () => {
   editor.model = new Canvas(16, 16);
   editor.currentColor = "#ff0000";
   editor.version = 0;
+  editor.dirty = false;
   editor.undoStack = [];
   editor.redoStack = [];
   gallery.visible = false;
@@ -16,6 +17,8 @@ beforeEach(async () => {
   gallery.drawings = [];
   gallery.error = "";
   gallery.saving = false;
+  gallery.currentDrawingId = null;
+  gallery.currentDrawingName = null;
 });
 
 describe("gallery store (F05/FR-008)", () => {
@@ -111,5 +114,77 @@ describe("gallery store (F05/FR-008)", () => {
 
     gallery.close();
     expect(gallery.visible).toBe(false);
+  });
+
+  it("save sets the new drawing as current and clears the dirty flag (FR-015)", async () => {
+    editor.paintPixel(2, 2);
+    await gallery.save("Alpha");
+    const saved = gallery.drawings[0];
+    expect(gallery.currentDrawingId).toBe(saved.id);
+    expect(gallery.currentDrawingName).toBe("Alpha");
+    expect(editor.dirty).toBe(false);
+  });
+
+  it("updateCurrent overwrites the current drawing and allows renaming (FR-014)", async () => {
+    editor.paintPixel(1, 1);
+    await gallery.save("Alpha");
+    const saved = gallery.drawings[0];
+    editor.paintPixel(2, 2);
+
+    const ok = await gallery.updateCurrent("Alpha Prime");
+
+    expect(ok).toBe(true);
+    expect(gallery.drawings).toHaveLength(1);
+    expect(gallery.drawings[0].id).toBe(saved.id);
+    expect(gallery.drawings[0].name).toBe("Alpha Prime");
+    expect(gallery.currentDrawingName).toBe("Alpha Prime");
+    expect(editor.dirty).toBe(false);
+  });
+
+  it("updateCurrent requires a name and a loaded drawing", async () => {
+    const okEmpty = await gallery.updateCurrent("   ");
+    expect(okEmpty).toBe(false);
+    expect(gallery.error).toBe("Name is required.");
+    gallery.error = "";
+    const okNoCurrent = await gallery.updateCurrent("Name");
+    expect(okNoCurrent).toBe(false);
+    expect(gallery.error).toBe("No drawing is loaded.");
+  });
+
+  it("load sets the current drawing and clears the dirty flag (FR-013)", async () => {
+    editor.paintPixel(3, 3);
+    await gallery.save("X");
+    const drawing = gallery.drawings[0];
+    editor.paintPixel(4, 4);
+    expect(editor.dirty).toBe(true);
+
+    gallery.load(drawing);
+
+    expect(gallery.currentDrawingId).toBe(drawing.id);
+    expect(gallery.currentDrawingName).toBe("X");
+    expect(editor.dirty).toBe(false);
+  });
+
+  it("newDrawing clears the current drawing and dirty flag (FR-013)", async () => {
+    editor.paintPixel(1, 1);
+    await gallery.save("X");
+    editor.paintPixel(2, 2);
+
+    gallery.newDrawing();
+
+    expect(gallery.currentDrawingId).toBeNull();
+    expect(gallery.currentDrawingName).toBeNull();
+    expect(editor.dirty).toBe(false);
+  });
+
+  it("delete clears current tracking when deleting the loaded drawing (FR-013)", async () => {
+    await gallery.save("A");
+    const saved = gallery.drawings[0];
+    expect(gallery.currentDrawingId).toBe(saved.id);
+
+    await gallery.delete(saved.id);
+
+    expect(gallery.currentDrawingId).toBeNull();
+    expect(gallery.currentDrawingName).toBeNull();
   });
 });

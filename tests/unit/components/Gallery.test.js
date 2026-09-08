@@ -34,6 +34,7 @@ beforeEach(async () => {
   editor.model = new Canvas(16, 16);
   editor.currentColor = "#ff0000";
   editor.version = 0;
+  editor.dirty = false;
   editor.undoStack = [];
   editor.redoStack = [];
   gallery.visible = false;
@@ -41,6 +42,8 @@ beforeEach(async () => {
   gallery.drawings = [];
   gallery.error = "";
   gallery.saving = false;
+  gallery.currentDrawingId = null;
+  gallery.currentDrawingName = null;
 });
 
 afterEach(() => {
@@ -148,5 +151,74 @@ describe("Gallery (F05/FR-003)", () => {
     const { container } = render(Gallery);
     await fireEvent.click(buttonByLabel(container, "Close gallery"));
     expect(gallery.visible).toBe(false);
+  });
+
+  it("shows the Update button when a drawing is loaded (FR-013)", () => {
+    gallery.visible = true;
+    gallery.currentDrawingName = "Kitten";
+    const { container } = render(Gallery);
+    expect(buttonByLabel(container, "Update Kitten")).not.toBeNull();
+  });
+
+  it("clicking Update updates the current drawing (FR-014)", async () => {
+    editor.model.setPixel(0, 0, "#ff0000");
+    await gallery.save("Kitten");
+    editor.model.setPixel(1, 1, "#00ff00");
+    gallery.visible = true;
+
+    const { container } = render(Gallery);
+    await fireEvent.click(buttonByLabel(container, "Update Kitten"));
+
+    await waitFor(() => expect(gallery.drawings).toHaveLength(1));
+    expect(gallery.drawings[0].name).toBe("Kitten");
+    expect(editor.dirty).toBe(false);
+  });
+
+  it("loading a card while dirty shows a confirmation modal (FR-016)", async () => {
+    editor.model.setPixel(7, 7, "#00ff00");
+    await gallery.save("Kitten");
+    gallery.visible = true;
+    gallery.drawings = [sampleDrawing];
+    editor.paintPixel(0, 0);
+    expect(editor.dirty).toBe(true);
+
+    const { container } = render(Gallery);
+    await fireEvent.click(buttonByLabel(container, "Load Kitten"));
+
+    expect(buttonByLabel(container, "Confirm load")).not.toBeNull();
+    expect(container.textContent).toContain("This will replace the current canvas");
+    expect(gallery.visible).toBe(true);
+  });
+
+  it("cancelling the load confirmation keeps the current canvas (FR-016)", async () => {
+    editor.model.setPixel(7, 7, "#00ff00");
+    await gallery.save("Kitten");
+    gallery.visible = true;
+    gallery.drawings = [sampleDrawing];
+    editor.paintPixel(0, 0);
+
+    const { container } = render(Gallery);
+    await fireEvent.click(buttonByLabel(container, "Load Kitten"));
+    await fireEvent.click(buttonByLabel(container, "Cancel"));
+
+    expect(buttonByLabel(container, "Confirm load")).toBeUndefined();
+    expect(editor.model.getPixel(0, 0).r).toBe(255);
+    expect(gallery.visible).toBe(true);
+  });
+
+  it("confirming the load replaces the canvas (FR-016)", async () => {
+    editor.model.setPixel(7, 7, "#00ff00");
+    await gallery.save("Kitten");
+    gallery.visible = true;
+    gallery.drawings = [sampleDrawing];
+    editor.paintPixel(0, 0);
+
+    const { container } = render(Gallery);
+    await fireEvent.click(buttonByLabel(container, "Load Kitten"));
+    await fireEvent.click(buttonByLabel(container, "Confirm load"));
+
+    await waitFor(() => expect(gallery.visible).toBe(false));
+    expect(editor.model.getPixel(0, 0).a).toBe(0);
+    expect(editor.dirty).toBe(false);
   });
 });

@@ -1,7 +1,8 @@
 # Project Rules
 
 ## Language
-- All conversation, confirmations, decisions, commits, issues, PRs, code, comments, strings, tests, and specifications must use American English.
+- Project artifacts (commits, issues, PRs, code, comments, strings, tests, and specifications) must use American English.
+- Agent-user conversations for this project take place in Spanish.
 - Commit messages must use conventional commits.
 
 ## Git
@@ -52,7 +53,7 @@ mise exec -- pnpm check
   - F02 Colors and painting -> **#12**
   - F03 Drawing tools -> **#5**
   - F04 Undo/Redo -> **#13**
-  - F05 Gallery and persistence -> **#6**
+  - F05 Gallery and persistence -> **#6** (extended by **#28** update/save-as-new)
   - F07 Menu layout -> **#15** (implemented and closed)
   - Cross-cutting backlog: **#1** PWA icons, **#8** mobile/UX improvements, **#10** keyboard shortcuts
   - v1.0 MVP item: **#19** grid guide overlay
