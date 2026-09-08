@@ -1,39 +1,11 @@
 <script>
   import { gallery } from "../stores/gallery.svelte.js";
   import { editor } from "../stores/editor.svelte.js";
-  import { suggestedName } from "../models/Drawing.js";
-  import Save from "@lucide/svelte/icons/save";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import X from "@lucide/svelte/icons/x";
 
-  let name = $state("");
-  let nameInput = $state(null);
   let confirming = $state(null);
   let confirmingLoad = $state(null);
-
-  $effect(() => {
-    if (gallery.visible) {
-      name = gallery.currentDrawingName ?? suggestedName();
-    }
-  });
-
-  $effect(() => {
-    if (gallery.visible && gallery.focusSave && nameInput) {
-      nameInput.focus();
-    }
-  });
-
-  async function handleSave() {
-    if (await gallery.save(name)) {
-      name = gallery.currentDrawingName ?? suggestedName();
-    }
-  }
-
-  async function handleUpdate() {
-    if (await gallery.updateCurrent(name)) {
-      name = gallery.currentDrawingName ?? suggestedName();
-    }
-  }
 
   function startDelete(drawing) {
     confirming = drawing;
@@ -111,42 +83,6 @@
           <X size={20} />
         </button>
       </div>
-
-      <section class="mb-4 rounded-xl bg-surface p-3">
-        <h3 class="mb-2 text-sm font-semibold text-white">Save current drawing</h3>
-        <div class="flex flex-wrap gap-2">
-          <input
-            bind:this={nameInput}
-            bind:value={name}
-            placeholder="Drawing name"
-            class="min-w-0 flex-1 rounded-md bg-surface-light px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          {#if gallery.currentDrawingName}
-            <button
-              type="button"
-              class="flex h-10 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-brand px-3 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
-              onclick={handleUpdate}
-              disabled={gallery.saving}
-              aria-label={`Update ${gallery.currentDrawingName}`}
-            >
-              <Save size={18} />
-              Update
-            </button>
-          {/if}
-          <button
-            type="button"
-            class="flex h-10 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-brand px-3 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
-            onclick={handleSave}
-            disabled={gallery.saving}
-          >
-            <Save size={18} />
-            {gallery.currentDrawingName ? "Save as new" : "Save"}
-          </button>
-        </div>
-        {#if gallery.error}
-          <p class="mt-2 text-xs text-red-400" role="alert">{gallery.error}</p>
-        {/if}
-      </section>
 
       <div class="mb-2 flex shrink-0 items-center justify-between">
         <h3 class="text-sm font-semibold text-white">My drawings</h3>

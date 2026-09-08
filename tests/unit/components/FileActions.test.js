@@ -16,7 +16,6 @@ beforeEach(() => {
   editor.currentColor = "#ff0000";
   editor.model = new Canvas(16, 16);
   gallery.visible = false;
-  gallery.focusSave = false;
   gallery.drawings = [];
 });
 
@@ -39,11 +38,11 @@ describe("FileActions (F05/FR-001/FR-003)", () => {
     expect(gallery.visible).toBe(true);
   });
 
-  it("Save opens the modal focusing the name field", async () => {
+  it("Save opens the save modal", async () => {
     const { container } = render(FileActions);
     await fireEvent.click(buttonByLabel(container, "Save"));
-    expect(gallery.visible).toBe(true);
-    expect(gallery.focusSave).toBe(true);
+    expect(gallery.visible).toBe(false);
+    expect(container.querySelector('[aria-label="Save drawing"]')).not.toBeNull();
   });
 
   it("New drawing opens a confirmation modal and, when accepted, clears the canvas (US4/FR-005)", async () => {

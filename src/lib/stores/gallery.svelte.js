@@ -6,14 +6,12 @@ import { editor } from "./editor.svelte.js";
 class GalleryStore {
   drawings = $state([]);
   visible = $state(false);
-  focusSave = $state(false);
   saving = $state(false);
   error = $state("");
   currentDrawingId = $state(null);
   currentDrawingName = $state(null);
 
-  open({ focusSave = false } = {}) {
-    this.focusSave = focusSave;
+  open() {
     this.visible = true;
     this.list();
   }

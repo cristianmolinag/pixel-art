@@ -12,12 +12,6 @@ function buttonByLabel(container, label) {
   );
 }
 
-function buttonByText(container, text) {
-  return Array.from(container.querySelectorAll("button")).find(
-    (b) => b.textContent.trim() === text
-  );
-}
-
 const sampleDrawing = {
   id: 1,
   name: "Kitten",
@@ -38,7 +32,6 @@ beforeEach(async () => {
   editor.undoStack = [];
   editor.redoStack = [];
   gallery.visible = false;
-  gallery.focusSave = false;
   gallery.drawings = [];
   gallery.error = "";
   gallery.saving = false;
@@ -80,29 +73,6 @@ describe("Gallery (F05/FR-003)", () => {
     const img = container.querySelector("img");
     expect(img).not.toBeNull();
     expect(img.src).toBe(sampleDrawing.thumbnail);
-  });
-
-  it("saving with a name creates the drawing and adds it to the list (US1/FR-002)", async () => {
-    gallery.visible = true;
-    const { container } = render(Gallery);
-    const input = container.querySelector("input");
-    await fireEvent.input(input, { target: { value: "My drawing" } });
-    await fireEvent.click(buttonByText(container, "Save"));
-
-    await waitFor(() => expect(gallery.drawings).toHaveLength(1));
-    expect(gallery.drawings[0].name).toBe("My drawing");
-    expect(gallery.error).toBe("");
-  });
-
-  it("reports that the name is required when trying to save empty (FR-007)", async () => {
-    gallery.visible = true;
-    const { container } = render(Gallery);
-    const input = container.querySelector("input");
-    await fireEvent.input(input, { target: { value: "" } });
-    await fireEvent.click(buttonByText(container, "Save"));
-
-    await waitFor(() => expect(gallery.error).toBe("Name is required."));
-    expect(container.textContent).toContain("Name is required.");
   });
 
   it("loading from a card restores the drawing in the editor and closes the modal (US3/FR-004)", async () => {
@@ -151,27 +121,6 @@ describe("Gallery (F05/FR-003)", () => {
     const { container } = render(Gallery);
     await fireEvent.click(buttonByLabel(container, "Close gallery"));
     expect(gallery.visible).toBe(false);
-  });
-
-  it("shows the Update button when a drawing is loaded (FR-013)", () => {
-    gallery.visible = true;
-    gallery.currentDrawingName = "Kitten";
-    const { container } = render(Gallery);
-    expect(buttonByLabel(container, "Update Kitten")).not.toBeNull();
-  });
-
-  it("clicking Update updates the current drawing (FR-014)", async () => {
-    editor.model.setPixel(0, 0, "#ff0000");
-    await gallery.save("Kitten");
-    editor.model.setPixel(1, 1, "#00ff00");
-    gallery.visible = true;
-
-    const { container } = render(Gallery);
-    await fireEvent.click(buttonByLabel(container, "Update Kitten"));
-
-    await waitFor(() => expect(gallery.drawings).toHaveLength(1));
-    expect(gallery.drawings[0].name).toBe("Kitten");
-    expect(editor.dirty).toBe(false);
   });
 
   it("loading a card while dirty shows a confirmation modal (FR-016)", async () => {

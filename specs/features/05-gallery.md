@@ -2,9 +2,9 @@
 
 **Status:** Implemented
 **Spec written:** 2026-09-04
-**Tests:** `tests/unit/models/Drawing.test.js`, `tests/unit/services/gallery.test.js`, `tests/unit/stores/gallery.test.js`, `tests/unit/components/Gallery.test.js`, `tests/unit/components/Toolbar.test.js`
+**Tests:** `tests/unit/models/Drawing.test.js`, `tests/unit/services/gallery.test.js`, `tests/unit/stores/gallery.test.js`, `tests/unit/components/Gallery.test.js`, `tests/unit/components/SaveModal.test.js`, `tests/unit/components/Toolbar.test.js`
 **Objective:** `specs/project/objective.md`
-**Related issue:** [#6](https://github.com/cristianmolinag/pixel-art/issues/6), update/save-as-new tracked in [#28](https://github.com/cristianmolinag/pixel-art/issues/28)
+**Related issue:** [#6](https://github.com/cristianmolinag/pixel-art/issues/6), update/save-as-new tracked in [#28](https://github.com/cristianmolinag/pixel-art/issues/28), save-modal separation tracked in [#33](https://github.com/cristianmolinag/pixel-art/issues/33)
 **Depends on:** F04 Undo/Redo (#13, implemented)
 
 ## User Story Summary
@@ -15,7 +15,7 @@
 
 ### User Story 1: Save the current drawing by name (Priority: P1)
 
-Saving a non-empty name stores the complete drawing in IndexedDB and shows it in the gallery with a thumbnail. The save form suggests an editable current-date name and rejects an empty name.
+The Save action opens a dedicated modal with a name input. Saving a non-empty name stores the complete drawing in IndexedDB and shows it in the gallery with a thumbnail. The save form suggests an editable current-date name and rejects an empty name.
 
 ### User Story 2: View saved drawings (Priority: P1)
 
@@ -35,11 +35,11 @@ Delete removes a drawing from the gallery and storage after a custom confirmatio
 
 ### User Story 6: Update the currently loaded drawing (Priority: P2)
 
-When a saved drawing is loaded and edited, the gallery offers an Update action that overwrites the same record. The name comes from the input, so renaming is allowed in the same action.
+When a saved drawing is loaded and edited, the Save modal offers an Update action that overwrites the same record. The name comes from the input, so renaming is allowed in the same action.
 
 ### User Story 7: Save the current drawing as a new entry (Priority: P2)
 
-When a drawing is loaded, the gallery also offers a Save as new action that stores the current canvas as a new record without affecting the loaded one.
+When a drawing is loaded, the Save modal also offers a Save as new action that stores the current canvas as a new record without affecting the loaded one.
 
 ### User Story 8: Confirm before replacing unsaved work (Priority: P2)
 
@@ -47,7 +47,7 @@ Activating a gallery card while the editor has unsaved changes shows a custom co
 
 ## Functional Requirements
 
-- **FR-001:** Save MUST open a form for naming the current drawing.
+- **FR-001:** Save MUST open a dedicated modal for naming the current drawing.
 - **FR-002:** Saving MUST persist name, dimensions, pixels, thumbnail, and timestamp in IndexedDB.
 - **FR-003:** Gallery MUST open a modal listing cards with thumbnail, name, and date, newest first.
 - **FR-004:** Activating a card MUST restore pixels and dimensions and close the modal.
@@ -57,7 +57,7 @@ Activating a gallery card while the editor has unsaved changes shows a custom co
 - **FR-008:** Gallery state MUST live in the central rune store `gallery.svelte.js`.
 - **FR-009:** Persistence MUST survive page reloads through IndexedDB.
 - **FR-010:** The UI MUST work on mobile with a mobile-first modal.
-- **FR-011:** Only the saved-drawing list may scroll; the modal, save controls, and surrounding gallery UI MUST remain fixed.
+- **FR-011:** Only the saved-drawing list may scroll; the modal and surrounding gallery UI MUST remain fixed.
 - **FR-012:** Delete MUST use a custom confirmation modal, never `window.confirm`.
 - **FR-013:** The gallery store MUST track the currently loaded drawing identity (`currentDrawingId` and `currentDrawingName`).
 - **FR-014:** Update MUST overwrite the record identified by `currentDrawingId` using the name in the input and MUST reset the dirty flag.
@@ -85,10 +85,11 @@ Activating a gallery card while the editor has unsaved changes shows a custom co
 
 - `Drawing` (`src/lib/models/Drawing.js`) serializes canvas snapshots and creates thumbnails.
 - `gallery.js` isolates IndexedDB and exposes `saveDrawing`, `listDrawings`, and `deleteDrawing`.
-- `gallery.svelte.js` owns drawings, visibility, save focus, errors, and loading/deletion actions.
-- `Gallery.svelte` is a fixed overlay with save controls and a vertically scrollable drawing list only. Its Delete action opens the same custom dialog pattern used elsewhere in the app.
+- `gallery.svelte.js` owns drawings, visibility, errors, and loading/deletion actions.
+- `SaveModal.svelte` is a dedicated modal for saving, updating, and saving as new.
+- `Gallery.svelte` is a fixed overlay with a vertically scrollable drawing list only. Its Delete action opens the same custom dialog pattern used elsewhere in the app.
 - The editor store tracks a `dirty` flag that is true when the canvas differs from the last saved, loaded, or new-drawing state.
-- `FileActions.svelte` provides the custom confirmation modal for New.
+- `FileActions.svelte` provides the toolbar buttons for New, Save, and Gallery, plus the custom confirmation modal for New.
 - Tests use `fake-indexeddb`.
 
 ## Related
