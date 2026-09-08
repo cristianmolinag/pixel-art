@@ -4,7 +4,7 @@
 **Spec written:** 2026-09-04
 **Tests:** `tests/unit/models/Drawing.test.js`, `tests/unit/services/gallery.test.js`, `tests/unit/stores/gallery.test.js`, `tests/unit/components/Gallery.test.js`, `tests/unit/components/Toolbar.test.js`
 **Objective:** `specs/project/objective.md`
-**Related issue:** [#6](https://github.com/cristianmolinag/pixel-art/issues/6)
+**Related issue:** [#6](https://github.com/cristianmolinag/pixel-art/issues/6), update/save-as-new tracked in [#28](https://github.com/cristianmolinag/pixel-art/issues/28)
 **Depends on:** F04 Undo/Redo (#13, implemented)
 
 ## User Story Summary
@@ -33,6 +33,18 @@ New clears the canvas and resets undo/redo after a custom confirmation modal is 
 
 Delete removes a drawing from the gallery and storage after a custom confirmation modal is accepted. Canceling leaves it intact.
 
+### User Story 6: Update the currently loaded drawing (Priority: P2)
+
+When a saved drawing is loaded and edited, the gallery offers an Update action that overwrites the same record. The name comes from the input, so renaming is allowed in the same action.
+
+### User Story 7: Save the current drawing as a new entry (Priority: P2)
+
+When a drawing is loaded, the gallery also offers a Save as new action that stores the current canvas as a new record without affecting the loaded one.
+
+### User Story 8: Confirm before replacing unsaved work (Priority: P2)
+
+Activating a gallery card while the editor has unsaved changes shows a custom confirmation modal. Confirming loads the selected drawing; canceling leaves the current canvas untouched.
+
 ## Functional Requirements
 
 - **FR-001:** Save MUST open a form for naming the current drawing.
@@ -47,14 +59,20 @@ Delete removes a drawing from the gallery and storage after a custom confirmatio
 - **FR-010:** The UI MUST work on mobile with a mobile-first modal.
 - **FR-011:** Only the saved-drawing list may scroll; the modal, save controls, and surrounding gallery UI MUST remain fixed.
 - **FR-012:** Delete MUST use a custom confirmation modal, never `window.confirm`.
+- **FR-013:** The gallery store MUST track the currently loaded drawing identity (`currentDrawingId` and `currentDrawingName`).
+- **FR-014:** Update MUST overwrite the record identified by `currentDrawingId` using the name in the input and MUST reset the dirty flag.
+- **FR-015:** Save as new MUST create a new record, set it as the current drawing, and reset the dirty flag.
+- **FR-016:** Activating a gallery card while `editor.dirty` is true MUST show a custom confirmation modal before replacing the canvas; confirming MUST load, canceling MUST leave the canvas unchanged.
 
 ## Success Criteria
 
 - **SC-001:** A saved drawing appears with thumbnail, name, and date.
 - **SC-002:** Saved drawings remain after reload.
 - **SC-003:** Activating a card restores the drawing and closes the modal.
-- **SC-004:** New and Delete apply on confirmation and do nothing on cancellation.
+- **SC-004:** New, Delete, and Replace-on-load apply on confirmation and do nothing on cancellation.
 - **SC-005:** The user-story scenarios are covered by tests.
+- **SC-006:** Updating a loaded drawing changes its pixels and/or name without creating a duplicate.
+- **SC-007:** Save as new creates a separate drawing and makes it the current one.
 
 ## Assumptions
 
@@ -69,6 +87,7 @@ Delete removes a drawing from the gallery and storage after a custom confirmatio
 - `gallery.js` isolates IndexedDB and exposes `saveDrawing`, `listDrawings`, and `deleteDrawing`.
 - `gallery.svelte.js` owns drawings, visibility, save focus, errors, and loading/deletion actions.
 - `Gallery.svelte` is a fixed overlay with save controls and a vertically scrollable drawing list only. Its Delete action opens the same custom dialog pattern used elsewhere in the app.
+- The editor store tracks a `dirty` flag that is true when the canvas differs from the last saved, loaded, or new-drawing state.
 - `FileActions.svelte` provides the custom confirmation modal for New.
 - Tests use `fake-indexeddb`.
 

@@ -32,6 +32,12 @@ describe("Drawing (F05/FR-002)", () => {
     expect(record.pixels[o + 3]).toBe(255);
   });
 
+  it("fromModel includes the id when provided for updates", () => {
+    const model = new Canvas(16, 16);
+    const record = Drawing.fromModel(model, "Prueba", 42);
+    expect(record.id).toBe(42);
+  });
+
   it("fromModel generates a thumbnail as dataURL", () => {
     const model = new Canvas(16, 16);
     model.setPixel(0, 0, "#0000ff");

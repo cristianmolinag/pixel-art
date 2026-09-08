@@ -9,6 +9,8 @@ class GalleryStore {
   focusSave = $state(false);
   saving = $state(false);
   error = $state("");
+  currentDrawingId = $state(null);
+  currentDrawingName = $state(null);
 
   open({ focusSave = false } = {}) {
     this.focusSave = focusSave;
@@ -38,7 +40,10 @@ class GalleryStore {
     }
     this.saving = true;
     try {
-      await saveDrawing(Drawing.fromModel(editor.model, trimmed));
+      const id = await saveDrawing(Drawing.fromModel(editor.model, trimmed));
+      this.currentDrawingId = id;
+      this.currentDrawingName = trimmed;
+      editor.markSaved();
       await this.list();
       this.error = "";
       return true;
@@ -50,11 +55,40 @@ class GalleryStore {
     }
   }
 
+  async updateCurrent(name) {
+    const trimmed = (name ?? "").trim();
+    if (!trimmed) {
+      this.error = "Name is required.";
+      return false;
+    }
+    if (this.currentDrawingId == null) {
+      this.error = "No drawing is loaded.";
+      return false;
+    }
+    this.saving = true;
+    try {
+      await saveDrawing(Drawing.fromModel(editor.model, trimmed, this.currentDrawingId));
+      this.currentDrawingName = trimmed;
+      editor.markSaved();
+      await this.list();
+      this.error = "";
+      return true;
+    } catch {
+      this.error = "Could not update the drawing.";
+      return false;
+    } finally {
+      this.saving = false;
+    }
+  }
+
   load(drawing) {
     editor.model = Drawing.toCanvas(drawing);
     editor.undoStack = [];
     editor.redoStack = [];
     editor.version += 1;
+    editor.markSaved();
+    this.currentDrawingId = drawing.id;
+    this.currentDrawingName = drawing.name;
     this.close();
   }
 
@@ -63,11 +97,18 @@ class GalleryStore {
     editor.undoStack = [];
     editor.redoStack = [];
     editor.version += 1;
+    editor.markSaved();
+    this.currentDrawingId = null;
+    this.currentDrawingName = null;
   }
 
   async delete(id) {
     try {
       await deleteDrawing(id);
+      if (id === this.currentDrawingId) {
+        this.currentDrawingId = null;
+        this.currentDrawingName = null;
+      }
       await this.list();
       this.error = "";
     } catch {

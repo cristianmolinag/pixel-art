@@ -1,5 +1,6 @@
 <script>
   import { gallery } from "../stores/gallery.svelte.js";
+  import { editor } from "../stores/editor.svelte.js";
   import { suggestedName } from "../models/Drawing.js";
   import Save from "@lucide/svelte/icons/save";
   import Trash2 from "@lucide/svelte/icons/trash-2";
@@ -8,10 +9,11 @@
   let name = $state("");
   let nameInput = $state(null);
   let confirming = $state(null);
+  let confirmingLoad = $state(null);
 
   $effect(() => {
     if (gallery.visible) {
-      name = suggestedName();
+      name = gallery.currentDrawingName ?? suggestedName();
     }
   });
 
@@ -23,7 +25,13 @@
 
   async function handleSave() {
     if (await gallery.save(name)) {
-      name = suggestedName();
+      name = gallery.currentDrawingName ?? suggestedName();
+    }
+  }
+
+  async function handleUpdate() {
+    if (await gallery.updateCurrent(name)) {
+      name = gallery.currentDrawingName ?? suggestedName();
     }
   }
 
@@ -38,8 +46,25 @@
     }
   }
 
+  function startLoad(drawing) {
+    if (editor.dirty) {
+      confirmingLoad = drawing;
+    } else {
+      gallery.load(drawing);
+    }
+  }
+
+  function confirmLoad() {
+    if (confirmingLoad) {
+      gallery.load(confirmingLoad);
+      confirmingLoad = null;
+    }
+  }
+
   function handleEscape() {
-    if (confirming) {
+    if (confirmingLoad) {
+      confirmingLoad = null;
+    } else if (confirming) {
       confirming = null;
     } else {
       gallery.close();
@@ -63,7 +88,7 @@
     onkeydown={(e) => {
       if (e.key === "Escape") {
         handleEscape();
-      } else if ((e.key === "Enter" || e.key === " ") && !confirming) {
+      } else if ((e.key === "Enter" || e.key === " ") && !confirming && !confirmingLoad) {
         gallery.close();
       }
     }}
@@ -89,13 +114,25 @@
 
       <section class="mb-4 rounded-xl bg-surface p-3">
         <h3 class="mb-2 text-sm font-semibold text-white">Save current drawing</h3>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <input
             bind:this={nameInput}
             bind:value={name}
             placeholder="Drawing name"
             class="min-w-0 flex-1 rounded-md bg-surface-light px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand"
           />
+          {#if gallery.currentDrawingName}
+            <button
+              type="button"
+              class="flex h-10 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-brand px-3 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+              onclick={handleUpdate}
+              disabled={gallery.saving}
+              aria-label={`Update ${gallery.currentDrawingName}`}
+            >
+              <Save size={18} />
+              Update
+            </button>
+          {/if}
           <button
             type="button"
             class="flex h-10 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-brand px-3 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
@@ -103,7 +140,7 @@
             disabled={gallery.saving}
           >
             <Save size={18} />
-            Save
+            {gallery.currentDrawingName ? "Save as new" : "Save"}
           </button>
         </div>
         {#if gallery.error}
@@ -127,7 +164,7 @@
                 type="button"
                 class="w-full cursor-pointer rounded-xl bg-surface p-2 text-left transition hover:bg-surface-lighter"
                 aria-label={`Load ${drawing.name}`}
-                onclick={() => gallery.load(drawing)}
+                onclick={() => startLoad(drawing)}
               >
                 <span
                   class="mb-1 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-white [image-rendering:pixelated]"
@@ -200,6 +237,48 @@
           onclick={confirmDelete}
         >
           Delete
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if confirmingLoad}
+  <div
+    role="button"
+    tabindex="-1"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
+    onclick={(e) => {
+      if (e.target === e.currentTarget) confirmingLoad = null;
+    }}
+    onkeydown={(e) => {
+      if (e.key === "Escape") confirmingLoad = null;
+    }}
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Confirm load"
+      class="w-full max-w-xs rounded-2xl bg-surface-light p-4 shadow-xl"
+    >
+      <h2 class="mb-3 text-lg font-bold text-white">Load drawing</h2>
+      <p class="text-sm text-white/70">{`Load "${confirmingLoad.name}"? This will replace the current canvas and unsaved work will be lost.`}</p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button
+          type="button"
+          aria-label="Cancel"
+          class="h-9 cursor-pointer rounded-md px-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          onclick={() => (confirmingLoad = null)}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          aria-label="Confirm load"
+          class="h-9 cursor-pointer rounded-md bg-brand px-3 text-sm font-semibold text-white transition hover:bg-brand-hover"
+          onclick={confirmLoad}
+        >
+          Load
         </button>
       </div>
     </div>
