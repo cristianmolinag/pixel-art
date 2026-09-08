@@ -237,7 +237,7 @@
   {/each}
 {/snippet}
 
-<div class="w-full min-w-0">
+<div class="w-full min-w-0 py-1">
   <div class="flex w-full min-w-0 items-center gap-4">
   <div class="flex min-w-0 flex-1 items-center gap-2">
     <button
@@ -246,8 +246,8 @@
       title="Choose custom color"
       aria-expanded={open}
       aria-haspopup="dialog"
-      class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition
-        {open ? 'scale-110' : 'hover:scale-105'}"
+      class="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full transition
+        {open ? 'scale-110' : 'hover:scale-105'} lg:h-9 lg:w-9"
       style:background-color={editor.currentColor}
       onclick={togglePicker}
     >
@@ -270,7 +270,7 @@
           <button
             type="button"
             aria-label="Color {color}"
-            class="flex h-8 w-8 shrink-0 cursor-pointer snap-start items-center justify-center rounded-md transition hover:scale-105"
+            class="flex h-10 w-10 shrink-0 cursor-pointer snap-start items-center justify-center rounded-md transition hover:scale-105 lg:h-8 lg:w-8"
             style:background-color={color}
             onclick={() => {
               if (scrollMoved) return;

@@ -6,7 +6,7 @@
   import Gallery from "./lib/components/Gallery.svelte";
 </script>
 
-<div class="flex h-screen flex-col bg-surface">
+<div class="flex h-full flex-col bg-surface">
   <header class="flex items-center gap-3 bg-surface-light px-4 py-3 shadow-md">
     <img
       src={`${import.meta.env.BASE_URL}icon.svg`}
@@ -34,7 +34,7 @@
   </div>
 
   <footer
-    class="bg-surface-light px-4 py-3 shadow-[0_-4px_6px_rgba(0,0,0,0.25)]"
+    class="bg-surface-light px-4 pt-3 shadow-[0_-4px_6px_rgba(0,0,0,0.25)]"
     style:padding-bottom="max(0.75rem, env(safe-area-inset-bottom))"
   >
     <Palette />
