@@ -13,6 +13,7 @@
 - Every issue/feature must use a dedicated Orca-managed worktree and branch.
 - Plan mode is mandatory before implementation, spec edits, sub-issue creation, or code changes.
 - All feature changes must be delivered through a pull request targeting `develop`.
+- Never commit changes before testing them locally. Run `mise exec -- pnpm test`, `mise exec -- pnpm check`, and `mise exec -- pnpm build` in the worktree and verify that all pass before committing.
 - Before committing, run `mise exec -- pnpm build` and verify that it succeeds.
 - If tests are configured, run them before committing.
 - Do not make design or implementation assumptions without asking the user first.

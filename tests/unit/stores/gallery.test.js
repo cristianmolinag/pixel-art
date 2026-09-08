@@ -13,7 +13,6 @@ beforeEach(async () => {
   editor.undoStack = [];
   editor.redoStack = [];
   gallery.visible = false;
-  gallery.focusSave = false;
   gallery.drawings = [];
   gallery.error = "";
   gallery.saving = false;
@@ -106,11 +105,7 @@ describe("gallery store (F05/FR-008)", () => {
 
     gallery.open();
     expect(gallery.visible).toBe(true);
-    expect(gallery.focusSave).toBe(false);
     expect(gallery.drawings).toHaveLength(1);
-
-    gallery.open({ focusSave: true });
-    expect(gallery.focusSave).toBe(true);
 
     gallery.close();
     expect(gallery.visible).toBe(false);

@@ -1,10 +1,12 @@
 <script>
   import { gallery } from "../stores/gallery.svelte.js";
+  import SaveModal from "./SaveModal.svelte";
   import FilePlus2 from "@lucide/svelte/icons/file-plus-2";
   import Save from "@lucide/svelte/icons/save";
   import Images from "@lucide/svelte/icons/images";
 
   let confirmingNew = $state(false);
+  let saveOpen = $state(false);
 
   const ACCIONES = [
     {
@@ -13,7 +15,7 @@
       icon: FilePlus2,
       fn: () => (confirmingNew = true),
     },
-    { id: "save", label: "Save", icon: Save, fn: () => gallery.open({ focusSave: true }) },
+    { id: "save", label: "Save", icon: Save, fn: () => (saveOpen = true) },
     { id: "gallery", label: "Gallery", icon: Images, fn: () => gallery.open() },
   ];
 </script>
@@ -33,6 +35,8 @@
     </button>
   {/each}
 </div>
+
+<SaveModal open={saveOpen} onClose={() => (saveOpen = false)} />
 
 {#if confirmingNew}
   <div
