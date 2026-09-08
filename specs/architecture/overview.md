@@ -47,7 +47,7 @@ This keeps the architecture unidirectional: there is no direct DOM access, only 
 - At zoom levels above 100%, a brief auto-hiding hint explains touch and desktop pan/zoom controls.
 - On desktop, `Ctrl + wheel` over the canvas reuses `editor.zoomIn()` and `editor.zoomOut()`; browser page zoom is prevented for that canvas interaction. The zoom is centered on the cursor position by adjusting the pan to keep the pixel under the cursor fixed.
 - Painting coordinates invert the zoom and pan transform so input maps to the correct model cell.
-- The palette footer uses `env(safe-area-inset-bottom)` so iOS home-indicator space does not cover the controls.
+- The viewport uses `viewport-fit=cover` so iOS safe-area environment variables resolve correctly. The root layout uses `100dvh` and `overflow: hidden` on `html`/`body` to prevent unwanted scroll. The palette footer uses `env(safe-area-inset-bottom)` so iOS home-indicator space does not cover the controls, and mobile swatches are sized to avoid accidental app-switch gestures.
 
 ## Tests
 
