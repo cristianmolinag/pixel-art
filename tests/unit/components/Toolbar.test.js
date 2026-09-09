@@ -38,6 +38,8 @@ describe("Toolbar (F03)", () => {
       "Brush",
       "Eraser",
       "Line",
+      "Rectangle",
+      "Circle",
       "Fill",
       "Eyedropper",
       "Horizontal mirror",
@@ -248,5 +250,57 @@ describe("Toolbar — mirror symmetry (F15)", () => {
     await fireEvent.click(button);
     expect(editor.mirrorY).toBe(true);
     expect(button.getAttribute("aria-pressed")).toBe("true");
+  });
+});
+
+describe("Toolbar — shape tools (F17)", () => {
+  beforeEach(() => {
+    editor.tool = "brush";
+    editor.shapeMode = "outline";
+  });
+
+  it("shows Rectangle and Circle tools", () => {
+    const { container } = render(Toolbar);
+    expect(buttonByLabel(container, "Rectangle")).toBeTruthy();
+    expect(buttonByLabel(container, "Circle")).toBeTruthy();
+  });
+
+  it("selecting the rectangle tool activates it", async () => {
+    const { container } = render(Toolbar);
+    const button = buttonByLabel(container, "Rectangle");
+    await fireEvent.click(button);
+    expect(editor.tool).toBe("rectangle");
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("selecting the circle tool activates it", async () => {
+    const { container } = render(Toolbar);
+    const button = buttonByLabel(container, "Circle");
+    await fireEvent.click(button);
+    expect(editor.tool).toBe("circle");
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("does not show shape mode controls for non-shape tools", () => {
+    const { container } = render(Toolbar);
+    expect(buttonByLabel(container, "Outline mode")).toBeUndefined();
+    expect(buttonByLabel(container, "Fill mode")).toBeUndefined();
+  });
+
+  it("shows shape mode controls when a shape tool is active", async () => {
+    const { container } = render(Toolbar);
+    await fireEvent.click(buttonByLabel(container, "Rectangle"));
+    expect(buttonByLabel(container, "Outline mode")).toBeTruthy();
+    expect(buttonByLabel(container, "Fill mode")).toBeTruthy();
+  });
+
+  it("toggles shape mode to fill and marks it pressed", async () => {
+    const { container } = render(Toolbar);
+    await fireEvent.click(buttonByLabel(container, "Circle"));
+    const fillButton = buttonByLabel(container, "Fill mode");
+    expect(fillButton.getAttribute("aria-pressed")).toBe("false");
+    await fireEvent.click(fillButton);
+    expect(editor.shapeMode).toBe("fill");
+    expect(fillButton.getAttribute("aria-pressed")).toBe("true");
   });
 });

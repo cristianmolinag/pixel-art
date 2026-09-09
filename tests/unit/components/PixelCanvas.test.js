@@ -356,3 +356,62 @@ describe("PixelCanvas (F03 eyedropper extension #40)", () => {
     expect(editor.lastDrawingTool).toBe("line");
   });
 });
+
+describe("PixelCanvas (F17 shape tools #42)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.shapeMode = "outline";
+    editor.version = 0;
+    editor.zoom = 1;
+    editor.panX = 0;
+    editor.panY = 0;
+  });
+
+  it("dragging with the rectangle tool paints a rectangle", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("rectangle");
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 80, clientY: 80 });
+    await fireEvent.pointerMove(c, { pointerId: 1, clientX: 140, clientY: 120 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.model.getPixel(4, 4).r).toBe(255);
+    expect(editor.model.getPixel(7, 6).r).toBe(255);
+  });
+
+  it("dragging with the circle tool paints a circle", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("circle");
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 80, clientY: 80 });
+    await fireEvent.pointerMove(c, { pointerId: 1, clientX: 140, clientY: 140 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.model.getPixel(5, 4).r).toBe(255);
+  });
+
+  it("a single click with a shape tool paints one pixel", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("rectangle");
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    const painted = editor.model.snapshot().filter((v, i) => i % 4 === 3 && v > 0).length;
+    expect(painted).toBe(1);
+    expect(editor.model.getPixel(8, 8).r).toBe(255);
+  });
+
+  it("fill mode paints the shape interior", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("rectangle");
+    editor.shapeMode = "fill";
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 80, clientY: 80 });
+    await fireEvent.pointerMove(c, { pointerId: 1, clientX: 140, clientY: 120 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.model.getPixel(5, 5).r).toBe(255);
+  });
+});

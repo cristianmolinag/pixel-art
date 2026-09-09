@@ -555,3 +555,122 @@ describe("editor store (F15 mirror symmetry #41)", () => {
     expect(editor.model.getPixel(10, 4).a).toBe(0);
   });
 });
+
+describe("editor store (F17 shape tools #42)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.tool = "rectangle";
+    editor.shapeMode = "outline";
+    editor.mirrorX = false;
+    editor.mirrorY = false;
+    editor.version = 0;
+    editor.undoStack = [];
+    editor.redoStack = [];
+  });
+
+  it("starts with outline shape mode by default", () => {
+    expect(editor.shapeMode).toBe("outline");
+  });
+
+  it("setShapeMode changes the shape mode", () => {
+    editor.setShapeMode("fill");
+    expect(editor.shapeMode).toBe("fill");
+    editor.setShapeMode("invalid");
+    expect(editor.shapeMode).toBe("fill");
+  });
+
+  it("selectTool updates the last drawing tool for rectangle and circle", () => {
+    editor.selectTool("rectangle");
+    expect(editor.lastDrawingTool).toBe("rectangle");
+    editor.selectTool("circle");
+    expect(editor.lastDrawingTool).toBe("circle");
+  });
+
+  it("drawRect draws an outlined rectangle", () => {
+    editor.drawRect(1, 1, 4, 3);
+    expect(editor.model.getPixel(1, 1).r).toBe(255);
+    expect(editor.model.getPixel(4, 3).r).toBe(255);
+    expect(editor.model.getPixel(2, 2).a).toBe(0);
+  });
+
+  it("drawRect draws a filled rectangle", () => {
+    editor.shapeMode = "fill";
+    editor.drawRect(1, 1, 4, 3);
+    expect(editor.model.getPixel(2, 2).r).toBe(255);
+  });
+
+  it("drawRect paints a single pixel when both corners match", () => {
+    editor.drawRect(2, 2, 2, 2);
+    expect(editor.model.getPixel(2, 2).r).toBe(255);
+    const painted = editor.model.snapshot().filter((_, i) => i % 4 === 3 && _ > 0).length;
+    expect(painted).toBe(1);
+  });
+
+  it("drawCircle draws an outlined circle", () => {
+    editor.tool = "circle";
+    editor.drawCircle(2, 2, 6, 6);
+    expect(editor.model.getPixel(4, 6).r).toBe(255);
+    expect(editor.model.getPixel(4, 4).a).toBe(0);
+  });
+
+  it("drawCircle draws a filled circle", () => {
+    editor.tool = "circle";
+    editor.shapeMode = "fill";
+    editor.drawCircle(2, 2, 6, 6);
+    expect(editor.model.getPixel(4, 4).r).toBe(255);
+  });
+
+  it("drawCircle paints a single pixel when both corners match", () => {
+    editor.tool = "circle";
+    editor.drawCircle(3, 3, 3, 3);
+    expect(editor.model.getPixel(3, 3).r).toBe(255);
+    const painted = editor.model.snapshot().filter((_, i) => i % 4 === 3 && _ > 0).length;
+    expect(painted).toBe(1);
+  });
+
+  it("drawRect and drawCircle record the used color", () => {
+    editor.currentColor = "#147df5";
+    editor.drawRect(0, 0, 2, 2);
+    expect(editor.recentColors).toContain("#147DF5");
+
+    editor.recentColors = [];
+    editor.drawCircle(5, 5, 7, 7);
+    expect(editor.recentColors).toContain("#147DF5");
+  });
+
+  it("mirroredShapeBounds returns the original bounds when mirrors are off", () => {
+    expect(editor.mirroredShapeBounds(1, 1, 4, 3)).toEqual([
+      { x0: 1, y0: 1, x1: 4, y1: 3 },
+    ]);
+  });
+
+  it("drawRect with horizontal mirror draws the reflected rectangle", () => {
+    editor.mirrorX = true;
+    editor.drawRect(1, 1, 3, 3);
+    expect(editor.model.getPixel(1, 1).r).toBe(255);
+    expect(editor.model.getPixel(12, 1).r).toBe(255);
+    expect(editor.model.getPixel(14, 3).r).toBe(255);
+  });
+
+  it("drawCircle with both mirrors draws four reflected circles", () => {
+    editor.tool = "circle";
+    editor.mirrorX = true;
+    editor.mirrorY = true;
+    editor.drawCircle(1, 1, 3, 3);
+    expect(editor.model.getPixel(2, 3).r).toBe(255);
+    expect(editor.model.getPixel(13, 3).r).toBe(255);
+    expect(editor.model.getPixel(2, 12).r).toBe(255);
+    expect(editor.model.getPixel(13, 12).r).toBe(255);
+  });
+
+  it("the entire shape is undone as one step", () => {
+    editor.beginAction();
+    editor.drawRect(1, 1, 4, 4);
+    editor.endAction();
+    expect(editor.undoStack.length).toBe(1);
+    editor.undo();
+    expect(editor.model.getPixel(1, 1).a).toBe(0);
+    expect(editor.model.getPixel(4, 4).a).toBe(0);
+  });
+});

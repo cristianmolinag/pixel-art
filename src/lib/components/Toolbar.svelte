@@ -4,6 +4,8 @@
   import Eraser from "@lucide/svelte/icons/eraser";
   import Slash from "@lucide/svelte/icons/slash";
   import PaintBucket from "@lucide/svelte/icons/paint-bucket";
+  import Square from "@lucide/svelte/icons/square";
+  import Circle from "@lucide/svelte/icons/circle";
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Redo2 from "@lucide/svelte/icons/redo-2";
   import Grid3x3 from "@lucide/svelte/icons/grid-3x3";
@@ -20,6 +22,8 @@
     { id: "brush", label: "Brush", icon: Brush },
     { id: "eraser", label: "Eraser", icon: Eraser },
     { id: "line", label: "Line", icon: Slash },
+    { id: "rectangle", label: "Rectangle", icon: Square },
+    { id: "circle", label: "Circle", icon: Circle },
     { id: "fill", label: "Fill", icon: PaintBucket },
     { id: "eyedropper", label: "Eyedropper", icon: Pipette },
   ];
@@ -96,6 +100,41 @@
       <Icone size={20} />
     </button>
   {/each}
+
+  {#if editor.tool === "rectangle" || editor.tool === "circle"}
+    <div
+      class="mx-1 flex items-center gap-0.5 rounded-md bg-white/10 p-0.5"
+      role="group"
+      aria-label="Shape mode"
+    >
+      <button
+        type="button"
+        aria-label="Outline mode"
+        title="Outline"
+        aria-pressed={editor.shapeMode === "outline"}
+        class="rounded px-2 py-1 text-xs font-medium transition
+          {editor.shapeMode === 'outline'
+            ? 'bg-white text-black shadow'
+            : 'text-white hover:bg-white/10'}"
+        onclick={() => editor.setShapeMode("outline")}
+      >
+        Outline
+      </button>
+      <button
+        type="button"
+        aria-label="Fill mode"
+        title="Fill"
+        aria-pressed={editor.shapeMode === "fill"}
+        class="rounded px-2 py-1 text-xs font-medium transition
+          {editor.shapeMode === 'fill'
+            ? 'bg-white text-black shadow'
+            : 'text-white hover:bg-white/10'}"
+        onclick={() => editor.setShapeMode("fill")}
+      >
+        Fill
+      </button>
+    </div>
+  {/if}
 
   <button
     type="button"

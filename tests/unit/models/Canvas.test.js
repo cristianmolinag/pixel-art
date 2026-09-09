@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { Canvas, hexToRgba, linePoints } from "../../../src/lib/models/Canvas.js";
+import {
+  Canvas,
+  hexToRgba,
+  linePoints,
+  rectPoints,
+  circlePoints,
+} from "../../../src/lib/models/Canvas.js";
 
 describe("Canvas", () => {
   it("creates a default 16x16 grid (FR-001)", () => {
@@ -199,5 +205,107 @@ describe("Canvas.snapshot/restore (F04/FR-002)", () => {
     expect(canvas.equals(snap)).toBe(true);
     canvas.setPixel(0, 0, "#ff0000");
     expect(canvas.equals(snap)).toBe(false);
+  });
+});
+
+describe("rectPoints (F17)", () => {
+  it("returns a single pixel for collapsed bounds", () => {
+    expect(rectPoints(3, 3, 3, 3, "outline")).toEqual([[3, 3]]);
+    expect(rectPoints(3, 3, 3, 3, "fill")).toEqual([[3, 3]]);
+  });
+
+  it("returns the perimeter in outline mode", () => {
+    const points = rectPoints(1, 1, 3, 3, "outline");
+    expect(points).toEqual([
+      [1, 1], [1, 3],
+      [2, 1], [2, 3],
+      [3, 1], [3, 3],
+      [1, 2], [3, 2],
+    ]);
+  });
+
+  it("returns all interior pixels in fill mode", () => {
+    const points = rectPoints(1, 1, 3, 3, "fill");
+    expect(points).toEqual(expect.arrayContaining([
+      [1, 1], [2, 1], [3, 1],
+      [1, 2], [2, 2], [3, 2],
+      [1, 3], [2, 3], [3, 3],
+    ]));
+    expect(points.length).toBe(9);
+  });
+});
+
+describe("circlePoints (F17)", () => {
+  it("returns a single pixel for collapsed bounds", () => {
+    expect(circlePoints(3, 3, 3, 3)).toEqual([[3, 3]]);
+  });
+
+  it("returns a pixel-perfect outline", () => {
+    const points = circlePoints(2, 2, 6, 6, "outline");
+    const set = new Set(points.map(([x, y]) => `${x},${y}`));
+    // Radius 2 circle centered at (4, 4)
+    expect(set.has("4,6")).toBe(true);
+    expect(set.has("6,4")).toBe(true);
+    expect(set.has("4,2")).toBe(true);
+    expect(set.has("2,4")).toBe(true);
+    expect(points.length).toBeGreaterThan(4);
+  });
+
+  it("fills the circle interior", () => {
+    const points = circlePoints(2, 2, 6, 6, "fill");
+    const set = new Set(points.map(([x, y]) => `${x},${y}`));
+    expect(set.has("4,4")).toBe(true);
+    expect(set.has("4,6")).toBe(true);
+    expect(points.length).toBeGreaterThan(5);
+  });
+});
+
+describe("Canvas.drawRect (F17)", () => {
+  it("draws an outlined rectangle", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.drawRect(1, 1, 4, 3, "#ff0000", "outline");
+    expect(canvas.getPixel(1, 1).r).toBe(255);
+    expect(canvas.getPixel(4, 3).r).toBe(255);
+    expect(canvas.getPixel(2, 2).a).toBe(0);
+  });
+
+  it("draws a filled rectangle", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.drawRect(1, 1, 4, 3, "#00ff00", "fill");
+    expect(canvas.getPixel(2, 2).g).toBe(255);
+    expect(canvas.getPixel(3, 2).g).toBe(255);
+  });
+
+  it("draws a single pixel when both corners match", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.drawRect(2, 2, 2, 2, "#0000ff");
+    expect(canvas.getPixel(2, 2).b).toBe(255);
+    expect(canvas.getPixel(2, 2).a).toBe(255);
+    const painted = canvas.snapshot().filter((_, i) => i % 4 === 3 && _ > 0).length;
+    expect(painted).toBe(1);
+  });
+});
+
+describe("Canvas.drawCircle (F17)", () => {
+  it("draws an outlined circle", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.drawCircle(2, 2, 6, 6, "#ff0000", "outline");
+    expect(canvas.getPixel(4, 6).r).toBe(255);
+    expect(canvas.getPixel(4, 4).a).toBe(0);
+  });
+
+  it("draws a filled circle", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.drawCircle(2, 2, 6, 6, "#00ff00", "fill");
+    expect(canvas.getPixel(4, 4).g).toBe(255);
+    expect(canvas.getPixel(4, 6).g).toBe(255);
+  });
+
+  it("draws a single pixel when both corners match", () => {
+    const canvas = new Canvas(16, 16);
+    canvas.drawCircle(3, 3, 3, 3, "#0000ff");
+    expect(canvas.getPixel(3, 3).b).toBe(255);
+    const painted = canvas.snapshot().filter((_, i) => i % 4 === 3 && _ > 0).length;
+    expect(painted).toBe(1);
   });
 });
