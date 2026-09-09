@@ -444,3 +444,114 @@ describe("editor store (F10 zoom)", () => {
     expect(editor.panY).toBe(-50);
   });
 });
+
+describe("editor store (F15 mirror symmetry #41)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.tool = "brush";
+    editor.mirrorX = false;
+    editor.mirrorY = false;
+    editor.version = 0;
+  });
+
+  it("starts with both mirror toggles disabled", () => {
+    expect(editor.mirrorX).toBe(false);
+    expect(editor.mirrorY).toBe(false);
+  });
+
+  it("toggleMirrorX and toggleMirrorY flip their state", () => {
+    editor.toggleMirrorX();
+    expect(editor.mirrorX).toBe(true);
+    editor.toggleMirrorX();
+    expect(editor.mirrorX).toBe(false);
+
+    editor.toggleMirrorY();
+    expect(editor.mirrorY).toBe(true);
+    editor.toggleMirrorY();
+    expect(editor.mirrorY).toBe(false);
+  });
+
+  it("mirroredCells returns only the original cell when both toggles are off", () => {
+    expect(editor.mirroredCells(2, 3)).toEqual([{ x: 2, y: 3 }]);
+  });
+
+  it("paintPixel with horizontal mirror paints the reflected cell", () => {
+    editor.mirrorX = true;
+    editor.paintPixel(2, 3);
+    expect(editor.model.getPixel(2, 3).r).toBe(255);
+    expect(editor.model.getPixel(13, 3).r).toBe(255);
+  });
+
+  it("paintPixel with vertical mirror paints the reflected cell", () => {
+    editor.mirrorY = true;
+    editor.paintPixel(2, 3);
+    expect(editor.model.getPixel(2, 3).r).toBe(255);
+    expect(editor.model.getPixel(2, 12).r).toBe(255);
+  });
+
+  it("paintPixel with both mirrors paints up to four cells", () => {
+    editor.mirrorX = true;
+    editor.mirrorY = true;
+    editor.paintPixel(2, 3);
+    expect(editor.model.getPixel(2, 3).r).toBe(255);
+    expect(editor.model.getPixel(13, 3).r).toBe(255);
+    expect(editor.model.getPixel(2, 12).r).toBe(255);
+    expect(editor.model.getPixel(13, 12).r).toBe(255);
+  });
+
+  it("mirroredCells avoids duplicates when the original cell lies on the center line", () => {
+    editor.model = new Canvas(17, 17);
+    editor.mirrorX = true;
+    editor.mirrorY = true;
+    expect(editor.mirroredCells(8, 8)).toEqual([{ x: 8, y: 8 }]);
+  });
+
+  it("erasePixel with both mirrors clears all reflected cells", () => {
+    editor.model.setPixel(2, 3, "#00ff00");
+    editor.model.setPixel(13, 3, "#00ff00");
+    editor.model.setPixel(2, 12, "#00ff00");
+    editor.model.setPixel(13, 12, "#00ff00");
+    editor.mirrorX = true;
+    editor.mirrorY = true;
+    editor.erasePixel(2, 3);
+    expect(editor.model.getPixel(2, 3).a).toBe(0);
+    expect(editor.model.getPixel(13, 3).a).toBe(0);
+    expect(editor.model.getPixel(2, 12).a).toBe(0);
+    expect(editor.model.getPixel(13, 12).a).toBe(0);
+  });
+
+  it("drawLine with horizontal mirror draws the reflected line", () => {
+    editor.mirrorX = true;
+    editor.drawLine(1, 4, 5, 4);
+    for (let x = 1; x <= 5; x++) {
+      expect(editor.model.getPixel(x, 4).r).toBe(255);
+    }
+    for (let x = 10; x <= 14; x++) {
+      expect(editor.model.getPixel(x, 4).r).toBe(255);
+    }
+  });
+
+  it("drawLine with both mirrors draws four reflected lines", () => {
+    editor.mirrorX = true;
+    editor.mirrorY = true;
+    editor.drawLine(1, 4, 5, 4);
+    for (let x = 1; x <= 5; x++) {
+      expect(editor.model.getPixel(x, 4).r).toBe(255);
+      expect(editor.model.getPixel(x, 11).r).toBe(255);
+    }
+    for (let x = 10; x <= 14; x++) {
+      expect(editor.model.getPixel(x, 4).r).toBe(255);
+      expect(editor.model.getPixel(x, 11).r).toBe(255);
+    }
+  });
+
+  it("drawing without mirrors behaves as before", () => {
+    editor.paintPixel(2, 3);
+    expect(editor.model.getPixel(2, 3).r).toBe(255);
+    expect(editor.model.getPixel(13, 3).a).toBe(0);
+
+    editor.drawLine(1, 4, 5, 4);
+    expect(editor.model.getPixel(10, 4).a).toBe(0);
+  });
+});

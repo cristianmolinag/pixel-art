@@ -34,6 +34,7 @@ in complexity and verifying each feature before moving on:
 12. **UX and release workflow polish** - pointer-centered desktop zoom, iOS safe-area support, and protected deployment workflow -> **#24**.
 13. **Issue-driven agent workflow** - plan, spec, sub-issues, Orca worktree, and PR delivery -> **#26**.
 14. **Scaled PNG export** - export drawings as crisp PNGs at 1x/2x/4x/8x with nearest-neighbor scaling -> **#44**.
+15. **Mirror symmetry** - draw with horizontal and/or vertical mirror symmetry for brush, eraser, and line preview -> **#41**.
 
 Each feature maps to a GitHub issue and a spec in `specs/features/`.
 
@@ -72,5 +73,5 @@ GitHub issues are the live work tracker.
 ## Project status
 
 - **Active branch**: `feat/sdd-rewrite` until the pending squash merge into `develop`.
-- **Recent implementation**: responsive menu, mobile zoom expander, fluid toolbar sizing, grid guide overlay, zoom/pan-aware painting, desktop `Ctrl + wheel` zoom, iOS footer safe-area padding, protected release workflow, auto-hiding pan/zoom hint, custom confirmation modals, and gallery list-only scrolling.
+- **Recent implementation**: responsive menu, mobile zoom expander, fluid toolbar sizing, grid guide overlay, zoom/pan-aware painting, desktop `Ctrl + wheel` zoom, iOS footer safe-area padding, protected release workflow, auto-hiding pan/zoom hint, custom confirmation modals, gallery list-only scrolling, scaled PNG export, and mirror symmetry drawing mode.
 - **Remaining backlog**: #1 PWA icons, #8 mobile/UX improvements, and #10 keyboard shortcuts.
