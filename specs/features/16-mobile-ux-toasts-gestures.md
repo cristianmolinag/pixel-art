@@ -47,7 +47,7 @@ Touching and dragging the canvas MUST NOT trigger the browser's pull-to-refresh.
 - **FR-007:** Cancelled Web Share MUST NOT show an export toast.
 - **FR-008:** Completed paint strokes MUST trigger haptic feedback.
 - **FR-009:** Tool changes MUST trigger haptic feedback.
-- **FR-010:** The haptic utility MUST check `navigator.vibrate` availability and fail silently.
+- **FR-010:** The haptic utility MUST check `navigator.vibrate` availability and fail silently on unsupported platforms.
 - **FR-011:** The canvas container and main editor container MUST use `touch-action: none` and `overscroll-behavior: none`.
 - **FR-012:** The existing pointer-based pinch zoom MUST remain functional.
 
@@ -74,8 +74,9 @@ Touching and dragging the canvas MUST NOT trigger the browser's pull-to-refresh.
 - Haptics live in `src/lib/utils/haptics.js` as a small `vibrate(ms)` wrapper.
 - `editor.selectTool()` calls `vibrate(15)` so every tool change path (toolbar click, keyboard shortcut, eyedropper return) is covered.
 - `PixelCanvas` calls `vibrate(15)` in `onPointerUp` when a real painting action completes.
-- `SaveModal` calls the toast store and `vibrate(15)` after `gallery.save()` or `gallery.updateCurrent()` succeeds.
-- `ExportModal` calls the toast store and `vibrate(15)` after `downloadBlob()` returns a non-aborted result.
+- `SaveModal` calls `vibrate(15)` at the start of `handleSave` and `handleUpdate`, before the async `gallery.save()` / `gallery.updateCurrent()` call, so the vibration stays inside the user-gesture context in Chromium.
+- `ExportModal` calls `vibrate(15)` at the start of `handleExport`, before the async export/download operations, for the same gesture-context reason.
+- Haptic feedback is supported only on Chromium/Android devices with vibration hardware. iOS/iPadOS (Safari, Edge iOS, and all PWAs on iOS) and desktop browsers silently skip vibration by design; no toggle, sound, or visual fallback is provided.
 - `downloadBlob()` in `src/lib/services/export.js` returns `{ shared: boolean, aborted: boolean }` so callers can distinguish a completed share/download from a cancelled share.
 - Gesture protection is applied with Tailwind utilities `touch-none` and `overscroll-none` on the `<main>` element in `App.svelte` and on the canvas wrapper in `PixelCanvas.svelte`.
 - The existing viewport meta tag (`user-scalable=no`) remains in place.

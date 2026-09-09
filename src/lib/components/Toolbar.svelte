@@ -18,6 +18,8 @@
   import Pipette from "@lucide/svelte/icons/pipette";
   import Matrix from "./Matrix.svelte";
 
+  let { mode } = $props();
+
   const TOOLS = [
     { id: "brush", label: "Brush", icon: Brush },
     { id: "eraser", label: "Eraser", icon: Eraser },
@@ -29,19 +31,10 @@
   ];
 
   let zoomOpen = $state(false);
-
-  function closePanelOnSelect(node) {
-    const zoomButton = node.querySelector('[aria-label="Zoom"]');
-    node.addEventListener("click", (e) => {
-      if (zoomButton && zoomButton.contains(e.target)) return;
-      if (e.target.closest("[data-zoom-panel]")) return;
-      if (zoomOpen) zoomOpen = false;
-    });
-  }
 </script>
 
 {#snippet zoomGroup()}
-  <span class="mx-1 h-6 w-px bg-white/20 lg:mx-0 lg:my-1 lg:h-px lg:w-6" aria-hidden="true"></span>
+  <span class="toolbar-separator" aria-hidden="true"></span>
 
   <button
     type="button"
@@ -76,162 +69,134 @@
     <Maximize size={20} />
   </button>
 
-  <span class="mx-1 h-6 w-px bg-white/20 lg:mx-0 lg:my-1 lg:h-px lg:w-6" aria-hidden="true"></span>
+  <span class="toolbar-separator" aria-hidden="true"></span>
 {/snippet}
 
-<div
-  role="group"
-  use:closePanelOnSelect
-  class="toolbar-row flex flex-wrap items-center justify-center lg:items-center lg:justify-start lg:flex-col lg:gap-0"
->
-  {#each TOOLS as { id, label, icon } (id)}
-    {@const Icone = icon}
+{#if mode === "tools"}
+  <div role="group" aria-label="Drawing tools" class="toolbar-container">
+    {#each TOOLS as { id, label, icon } (id)}
+      {@const Icone = icon}
+      <button
+        type="button"
+        aria-label={label}
+        title={label}
+        aria-pressed={editor.tool === id}
+        class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
+          {editor.tool === id
+            ? 'bg-white text-black shadow'
+            : 'text-white hover:bg-white/10'}"
+        onclick={() => editor.selectTool(id)}
+      >
+        <Icone size={20} />
+      </button>
+    {/each}
+  </div>
+{:else if mode === "controls"}
+  <div role="group" aria-label="Tool controls" class="toolbar-container">
+    <span class="toolbar-separator toolbar-section-separator" aria-hidden="true"></span>
+
     <button
       type="button"
-      aria-label={label}
-      title={label}
-      aria-pressed={editor.tool === id}
+      aria-label="Undo"
+      title="Undo"
+      disabled={!editor.canUndo}
+      class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
+        hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+      onclick={() => editor.undo()}
+    >
+      <Undo2 size={20} />
+    </button>
+    <button
+      type="button"
+      aria-label="Redo"
+      title="Redo"
+      disabled={!editor.canRedo}
+      class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
+        hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+      onclick={() => editor.redo()}
+    >
+      <Redo2 size={20} />
+    </button>
+
+    <button
+      type="button"
+      aria-label="Horizontal mirror"
+      title="Horizontal mirror"
+      aria-pressed={editor.mirrorX}
       class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
-        {editor.tool === id
+        {editor.mirrorX
           ? 'bg-white text-black shadow'
           : 'text-white hover:bg-white/10'}"
-      onclick={() => editor.selectTool(id)}
+      onclick={() => editor.toggleMirrorX()}
     >
-      <Icone size={20} />
+      <FlipHorizontal size={20} />
     </button>
-  {/each}
 
-  {#if editor.tool === "rectangle" || editor.tool === "circle"}
-    <div
-      class="mx-1 flex items-center gap-0.5 rounded-md bg-white/10 p-0.5"
-      role="group"
-      aria-label="Shape mode"
+    <button
+      type="button"
+      aria-label="Vertical mirror"
+      title="Vertical mirror"
+      aria-pressed={editor.mirrorY}
+      class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
+        {editor.mirrorY
+          ? 'bg-white text-black shadow'
+          : 'text-white hover:bg-white/10'}"
+      onclick={() => editor.toggleMirrorY()}
     >
-      <button
-        type="button"
-        aria-label="Outline mode"
-        title="Outline"
-        aria-pressed={editor.shapeMode === "outline"}
-        class="rounded px-2 py-1 text-xs font-medium transition
-          {editor.shapeMode === 'outline'
-            ? 'bg-white text-black shadow'
-            : 'text-white hover:bg-white/10'}"
-        onclick={() => editor.setShapeMode("outline")}
-      >
-        Outline
-      </button>
-      <button
-        type="button"
-        aria-label="Fill mode"
-        title="Fill"
-        aria-pressed={editor.shapeMode === "fill"}
-        class="rounded px-2 py-1 text-xs font-medium transition
-          {editor.shapeMode === 'fill'
-            ? 'bg-white text-black shadow'
-            : 'text-white hover:bg-white/10'}"
-        onclick={() => editor.setShapeMode("fill")}
-      >
-        Fill
-      </button>
-    </div>
-  {/if}
+      <FlipVertical size={20} />
+    </button>
 
-  <button
-    type="button"
-    aria-label="Horizontal mirror"
-    title="Horizontal mirror"
-    aria-pressed={editor.mirrorX}
-    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
-      {editor.mirrorX
-        ? 'bg-white text-black shadow'
-        : 'text-white hover:bg-white/10'}"
-    onclick={() => editor.toggleMirrorX()}
-  >
-    <FlipHorizontal size={20} />
-  </button>
+    <button
+      type="button"
+      aria-label={editor.showGrid ? "Hide grid" : "Show grid"}
+      title={editor.showGrid ? "Hide grid" : "Show grid"}
+      aria-pressed={editor.showGrid}
+      class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
+        {editor.showGrid
+          ? 'bg-white text-black shadow'
+          : 'text-white hover:bg-white/10'}"
+      onclick={() => editor.toggleGrid()}
+    >
+      <Grid3x3 size={20} />
+    </button>
 
-  <button
-    type="button"
-    aria-label="Vertical mirror"
-    title="Vertical mirror"
-    aria-pressed={editor.mirrorY}
-    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
-      {editor.mirrorY
-        ? 'bg-white text-black shadow'
-        : 'text-white hover:bg-white/10'}"
-    onclick={() => editor.toggleMirrorY()}
-  >
-    <FlipVertical size={20} />
-  </button>
+    <Matrix />
 
-  <button
-    type="button"
-    aria-label={editor.showGrid ? "Hide grid" : "Show grid"}
-    title={editor.showGrid ? "Hide grid" : "Show grid"}
-    aria-pressed={editor.showGrid}
-    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
-      {editor.showGrid
-        ? 'bg-white text-black shadow'
-        : 'text-white hover:bg-white/10'}"
-    onclick={() => editor.toggleGrid()}
-  >
-    <Grid3x3 size={20} />
-  </button>
-
-  <Matrix />
-
-  <div class="hidden lg:flex lg:flex-col lg:items-center">
-    {@render zoomGroup()}
-  </div>
-
-  <button
-    type="button"
-    aria-label="Undo"
-    title="Undo"
-    disabled={!editor.canUndo}
-    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
-      hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-    onclick={() => editor.undo()}
-  >
-    <Undo2 size={20} />
-  </button>
-  <button
-    type="button"
-    aria-label="Redo"
-    title="Redo"
-    disabled={!editor.canRedo}
-    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
-      hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-    onclick={() => editor.redo()}
-  >
-    <Redo2 size={20} />
-  </button>
-
-  <button
-    type="button"
-    aria-label="Zoom"
-    title="Zoom"
-    aria-expanded={zoomOpen}
-    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition lg:hidden
-      {zoomOpen ? 'bg-white text-black shadow' : 'text-white hover:bg-white/10'}"
-    onclick={(e) => {
-      e.stopPropagation();
-      zoomOpen = !zoomOpen;
-    }}
-  >
-    <ZoomIn size={20} />
-  </button>
-
-  {#if zoomOpen}
-    <div data-zoom-panel class="toolbar-row flex w-full flex-wrap items-center lg:hidden">
+    <div class="toolbar-zoom-inline">
       {@render zoomGroup()}
     </div>
-  {/if}
-</div>
+
+    <button
+      type="button"
+      aria-label="Zoom"
+      title="Zoom"
+      aria-expanded={zoomOpen}
+      data-zoom-toggle
+      class="toolbar-icon toolbar-zoom-toggle flex cursor-pointer items-center justify-center rounded-md transition
+        {zoomOpen ? 'bg-white text-black shadow' : 'text-white hover:bg-white/10'}"
+      onclick={(e) => {
+        e.stopPropagation();
+        zoomOpen = !zoomOpen;
+      }}
+    >
+      <ZoomIn size={20} />
+    </button>
+
+    {#if zoomOpen}
+      <div data-zoom-panel class="toolbar-row toolbar-zoom-panel flex w-full flex-wrap items-center">
+        {@render zoomGroup()}
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === "Escape") zoomOpen = false;
+    if (mode === "controls" && e.key === "Escape") {
+      zoomOpen = false;
+      return;
+    }
+    if (mode !== "tools") return;
     if (e.key !== "i" && e.key !== "I") return;
     if (e.ctrlKey || e.altKey || e.metaKey) return;
     const target = e.target;
@@ -245,5 +210,11 @@
     }
     e.preventDefault();
     editor.selectTool("eyedropper");
+  }}
+  onclick={(e) => {
+    if (mode !== "controls" || !zoomOpen) return;
+    const target = e.target;
+    if (target.closest?.("[data-zoom-toggle]") || target.closest?.("[data-zoom-panel]")) return;
+    zoomOpen = false;
   }}
 />

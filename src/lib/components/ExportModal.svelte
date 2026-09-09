@@ -25,11 +25,11 @@
     exporting = true;
     error = "";
     try {
+      vibrate(15);
       const blob = await exportPng(editor.model, scale);
       const result = await downloadBlob(blob, suggestedExportName(scale));
       if (!result.aborted) {
         toasts.show("Image exported.");
-        vibrate(15);
       }
       onClose?.();
     } catch (err) {
