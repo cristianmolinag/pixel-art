@@ -52,7 +52,7 @@ mise exec -- pnpm check
 - Development is simple and incremental, aligned with `specs/project/objective.md`:
   - F01 Canvas -> **#11** (implemented; spec: `specs/features/01-canvas.md`)
   - F02 Colors and painting -> **#12**
-  - F03 Drawing tools -> **#5**
+  - F03 Drawing tools -> **#5** (eyedropper extension: **#40**)
   - F04 Undo/Redo -> **#13**
   - F05 Gallery and persistence -> **#6** (extended by **#28** update/save-as-new)
   - F07 Menu layout -> **#15** (implemented and closed)

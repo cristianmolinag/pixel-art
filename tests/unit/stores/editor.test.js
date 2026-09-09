@@ -333,6 +333,58 @@ describe("editor store (F09 matrix)", () => {
   });
 });
 
+describe("editor store (F03 eyedropper extension #40)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.tool = "brush";
+    editor.lastDrawingTool = "brush";
+    editor.version = 0;
+  });
+
+  it("selectTool sets eyedropper without changing the last drawing tool", () => {
+    editor.selectTool("line");
+    expect(editor.lastDrawingTool).toBe("line");
+    editor.selectTool("eyedropper");
+    expect(editor.tool).toBe("eyedropper");
+    expect(editor.lastDrawingTool).toBe("line");
+  });
+
+  it("selectTool updates the last drawing tool for brush, eraser, line, and fill", () => {
+    editor.selectTool("eraser");
+    expect(editor.lastDrawingTool).toBe("eraser");
+    editor.selectTool("fill");
+    expect(editor.lastDrawingTool).toBe("fill");
+    editor.selectTool("brush");
+    expect(editor.lastDrawingTool).toBe("brush");
+  });
+
+  it("pickColor samples a painted pixel and returns to the last drawing tool", () => {
+    editor.model.setPixel(2, 2, "#147df5");
+    editor.selectTool("line");
+    editor.selectTool("eyedropper");
+    editor.pickColor(2, 2);
+    expect(editor.currentColor).toBe("#147DF5");
+    expect(editor.tool).toBe("line");
+  });
+
+  it("pickColor on a transparent pixel switches to the eraser gracefully", () => {
+    editor.selectTool("line");
+    editor.selectTool("eyedropper");
+    editor.pickColor(2, 2);
+    expect(editor.tool).toBe("eraser");
+    expect(editor.lastDrawingTool).toBe("line");
+  });
+
+  it("pickColor out of range does nothing", () => {
+    editor.selectTool("eyedropper");
+    const beforeColor = editor.currentColor;
+    editor.pickColor(50, 50);
+    expect(editor.currentColor).toBe(beforeColor);
+    expect(editor.tool).toBe("eyedropper");
+  });
+});
+
 describe("editor store (F10 zoom)", () => {
   beforeEach(() => {
     editor.zoom = 1;

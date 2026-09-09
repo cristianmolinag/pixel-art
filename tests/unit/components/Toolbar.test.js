@@ -39,6 +39,7 @@ describe("Toolbar (F03)", () => {
       "Eraser",
       "Line",
       "Fill",
+      "Eyedropper",
       "Hide grid",
       "Change canvas matrix",
       "Zoom out",
@@ -48,7 +49,7 @@ describe("Toolbar (F03)", () => {
       "Redo",
       "Zoom",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(12);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(13);
   });
 
   it("selecting a tool activates it and marks it (US1/FR-002)", async () => {
@@ -57,6 +58,31 @@ describe("Toolbar (F03)", () => {
     await fireEvent.click(fillButton);
     expect(editor.tool).toBe("fill");
     expect(fillButton.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("selecting the eyedropper activates it and marks it (#40)", async () => {
+    const { container } = render(Toolbar);
+    const eyedropperButton = buttonByLabel(container, "Eyedropper");
+    await fireEvent.click(eyedropperButton);
+    expect(editor.tool).toBe("eyedropper");
+    expect(eyedropperButton.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("pressing I selects the eyedropper (#40)", async () => {
+    render(Toolbar);
+    editor.tool = "brush";
+    await fireEvent.keyDown(window, { key: "i" });
+    expect(editor.tool).toBe("eyedropper");
+  });
+
+  it("pressing I inside an input does not select the eyedropper (#40)", async () => {
+    const { container } = render(Toolbar);
+    const input = document.createElement("input");
+    container.appendChild(input);
+    input.focus();
+    editor.tool = "brush";
+    await fireEvent.keyDown(input, { key: "i" });
+    expect(editor.tool).toBe("brush");
   });
 });
 

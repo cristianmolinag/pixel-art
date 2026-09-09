@@ -3,6 +3,7 @@ import {
   loadRecentColors,
   saveRecentColors,
   normalizeHex,
+  rgbaToHex,
   RECENT_LIMIT,
 } from "../services/colors.js";
 
@@ -71,6 +72,7 @@ class EditorStore {
   model = $state(new Canvas(16, 16));
   currentColor = $state("#000000");
   tool = $state("brush");
+  lastDrawingTool = $state("brush");
   version = $state(0);
   recentColors = $state(loadRecentColors());
   showGrid = $state(loadGridVisibility());
@@ -149,7 +151,22 @@ class EditorStore {
   }
 
   selectTool(tool) {
+    if (tool !== "eyedropper") {
+      this.lastDrawingTool = tool;
+    }
     this.tool = tool;
+  }
+
+  pickColor(x, y) {
+    const pixel = this.model.getPixel(x, y);
+    if (!pixel) return;
+    if (pixel.a === 0) {
+      this.tool = "eraser";
+      return;
+    }
+    const color = rgbaToHex(pixel.r, pixel.g, pixel.b);
+    this.selectColor(color);
+    this.selectTool(this.lastDrawingTool);
   }
 
   toggleGrid() {

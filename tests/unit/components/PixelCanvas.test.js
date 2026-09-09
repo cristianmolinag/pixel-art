@@ -292,3 +292,67 @@ describe("PixelCanvas (F10 zoom/pan in the draw)", () => {
     vi.useRealTimers();
   });
 });
+
+describe("PixelCanvas (F03 eyedropper extension #40)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.tool = "brush";
+    editor.lastDrawingTool = "brush";
+    editor.version = 0;
+    editor.zoom = 1;
+    editor.panX = 0;
+    editor.panY = 0;
+  });
+
+  it("clicking a painted pixel with the eyedropper sets the current color and returns to brush", async () => {
+    installCanvas();
+    editor.model.setPixel(8, 8, "#147df5");
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("eyedropper");
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.currentColor).toBe("#147DF5");
+    expect(editor.tool).toBe("brush");
+  });
+
+  it("the eyedropper does not paint pixels", async () => {
+    installCanvas();
+    editor.model.setPixel(8, 8, "#147df5");
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("eyedropper");
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    // Only the original sampled pixel is painted; the click did not add new paint.
+    expect(editor.model.getPixel(8, 8).b).toBe(245);
+    expect(editor.model.getPixel(8, 8).a).toBe(255);
+    const paintedCount = editor.model.snapshot().filter((_, i) => i % 4 === 3 && _ > 0).length;
+    expect(paintedCount).toBe(1);
+  });
+
+  it("a touch tap with the eyedropper samples the pixel", async () => {
+    installCanvas();
+    editor.model.setPixel(8, 8, "#0aefff");
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("eyedropper");
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160, pointerType: "touch" });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.currentColor).toBe("#0AEFFF");
+    expect(editor.tool).toBe("brush");
+  });
+
+  it("sampling a transparent pixel with the eyedropper switches to the eraser", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.selectTool("line");
+    editor.selectTool("eyedropper");
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.tool).toBe("eraser");
+    expect(editor.lastDrawingTool).toBe("line");
+  });
+});

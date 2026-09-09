@@ -11,6 +11,7 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Maximize from "@lucide/svelte/icons/maximize";
   import ZoomIn from "@lucide/svelte/icons/zoom-in";
+  import Pipette from "@lucide/svelte/icons/pipette";
   import Matrix from "./Matrix.svelte";
 
   const TOOLS = [
@@ -18,6 +19,7 @@
     { id: "eraser", label: "Eraser", icon: Eraser },
     { id: "line", label: "Line", icon: Slash },
     { id: "fill", label: "Fill", icon: PaintBucket },
+    { id: "eyedropper", label: "Eyedropper", icon: Pipette },
   ];
 
   let zoomOpen = $state(false);
@@ -161,5 +163,18 @@
 <svelte:window
   onkeydown={(e) => {
     if (e.key === "Escape") zoomOpen = false;
+    if (e.key !== "i" && e.key !== "I") return;
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    const target = e.target;
+    if (
+      target instanceof HTMLElement &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable)
+    ) {
+      return;
+    }
+    e.preventDefault();
+    editor.selectTool("eyedropper");
   }}
 />
