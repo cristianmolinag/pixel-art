@@ -234,6 +234,12 @@ function onPointerDown(event) {
     return;
   }
 
+  if (editor.tool === "eyedropper") {
+    const cell = cellFromEvent(event);
+    if (cell) editor.pickColor(cell.x, cell.y);
+    return;
+  }
+
   pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
   if (pointers.size === 2) {
@@ -423,7 +429,7 @@ function onWheel(event) {
 >
   <canvas
     bind:this={canvasEl}
-    class="block h-full w-full select-none touch-none"
+    class="block h-full w-full select-none touch-none {editor.tool === 'eyedropper' ? 'cursor-crosshair' : 'cursor-default'}"
     style:background-color="#ffffff"
     onpointerdown={onPointerDown}
     onpointermove={onPointerMove}

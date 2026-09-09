@@ -52,6 +52,11 @@ export function hexToRgb(hex) {
   };
 }
 
+export function rgbaToHex(r, g, b) {
+  const byte = (value) => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, "0");
+  return `#${byte(r)}${byte(g)}${byte(b)}`.toUpperCase();
+}
+
 export function hexToHsv(hex) {
   const rgb = hexToRgb(hex);
   if (!rgb) return null;
