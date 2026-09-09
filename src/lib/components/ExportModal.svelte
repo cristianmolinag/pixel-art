@@ -1,6 +1,8 @@
 <script>
   import { exportPng, downloadBlob, suggestedExportName, EXPORT_SCALES, DEFAULT_EXPORT_SCALE } from "../services/export.js";
   import { editor } from "../stores/editor.svelte.js";
+  import { toasts } from "../stores/toasts.svelte.js";
+  import { vibrate } from "../utils/haptics.js";
   import X from "@lucide/svelte/icons/x";
   import Download from "@lucide/svelte/icons/download";
 
@@ -24,7 +26,11 @@
     error = "";
     try {
       const blob = await exportPng(editor.model, scale);
-      await downloadBlob(blob, suggestedExportName(scale));
+      const result = await downloadBlob(blob, suggestedExportName(scale));
+      if (!result.aborted) {
+        toasts.show("Image exported.");
+        vibrate(15);
+      }
       onClose?.();
     } catch (err) {
       error = err instanceof Error ? err.message : "Export failed";

@@ -52,7 +52,7 @@ export function suggestedExportName(scale = DEFAULT_EXPORT_SCALE) {
  *
  * @param {Blob} blob
  * @param {string} filename
- * @returns {Promise<void>}
+ * @returns {Promise<{ shared: boolean, aborted: boolean }>}
  */
 export async function downloadBlob(blob, filename) {
   if (typeof navigator !== "undefined" && navigator.canShare && navigator.share) {
@@ -61,10 +61,10 @@ export async function downloadBlob(blob, filename) {
     if (navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
-        return;
+        return { shared: true, aborted: false };
       } catch (err) {
         if (err && err.name === "AbortError") {
-          return;
+          return { shared: false, aborted: true };
         }
         // Fall through to anchor download on any other error.
       }
@@ -79,4 +79,6 @@ export async function downloadBlob(blob, filename) {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+
+  return { shared: false, aborted: false };
 }

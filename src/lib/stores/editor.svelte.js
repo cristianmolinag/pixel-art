@@ -6,6 +6,7 @@ import {
   rgbaToHex,
   RECENT_LIMIT,
 } from "../services/colors.js";
+import { vibrate } from "../utils/haptics.js";
 
 const GRID_STORAGE_KEY = "pixel-art-studio:show-grid";
 
@@ -157,6 +158,7 @@ class EditorStore {
       this.lastDrawingTool = tool;
     }
     this.tool = tool;
+    vibrate(15);
   }
 
   pickColor(x, y) {
