@@ -25,11 +25,36 @@ afterEach(() => {
 });
 
 describe("FileActions (F05/FR-001/FR-003)", () => {
-  it("offers the New, Save and Gallery actions", () => {
+  it("offers the New, Save, Export and Gallery actions", () => {
     const { container } = render(FileActions);
     expect(buttonByLabel(container, "New drawing")).toBeTruthy();
     expect(buttonByLabel(container, "Save")).toBeTruthy();
+    expect(buttonByLabel(container, "Export")).toBeTruthy();
     expect(buttonByLabel(container, "Gallery")).toBeTruthy();
+  });
+
+  it("Export opens the export modal", async () => {
+    const { container } = render(FileActions);
+    await fireEvent.click(buttonByLabel(container, "Export"));
+    expect(container.querySelector('[aria-label="Export drawing"]')).not.toBeNull();
+  });
+
+  it("Export modal shows all scale options and defaults to 4x", async () => {
+    const { container } = render(FileActions);
+    await fireEvent.click(buttonByLabel(container, "Export"));
+
+    expect(buttonByLabel(container, "Export at 1x")).toBeTruthy();
+    expect(buttonByLabel(container, "Export at 2x")).toBeTruthy();
+    expect(buttonByLabel(container, "Export at 4x")).toBeTruthy();
+    expect(buttonByLabel(container, "Export at 8x")).toBeTruthy();
+    expect(buttonByLabel(container, "Export at 4x").getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("Export modal previews scaled dimensions", async () => {
+    const { container } = render(FileActions);
+    await fireEvent.click(buttonByLabel(container, "Export"));
+
+    expect(container.textContent).toContain("16×16 → 64×64");
   });
 
   it("Gallery opens the modal", async () => {

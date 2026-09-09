@@ -13,6 +13,7 @@ class MockOffscreenCanvas {
       strokeStyle: "#000000",
       lineWidth: 1,
       globalAlpha: 1,
+      imageSmoothingEnabled: true,
       drawImage: vi.fn(),
       clearRect: (x, y, w, h) => {
         for (let j = y; j < y + h; j++) {
@@ -67,6 +68,14 @@ class MockOffscreenCanvas {
 
   getContext() {
     return this.ctx;
+  }
+
+  convertToBlob(options = {}) {
+    const type = options.type || "image/png";
+    const data = this.ctx
+      ? new Uint8ClampedArray(this.data).buffer
+      : new ArrayBuffer(0);
+    return Promise.resolve(new Blob([data], { type }));
   }
 }
 
