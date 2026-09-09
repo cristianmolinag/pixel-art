@@ -25,17 +25,17 @@
   });
 
   async function handleSave() {
+    vibrate(15);
     if (await gallery.save(name)) {
       toasts.show("Drawing saved.");
-      vibrate(15);
       onClose?.();
     }
   }
 
   async function handleUpdate() {
+    vibrate(15);
     if (await gallery.updateCurrent(name)) {
       toasts.show("Drawing updated.");
-      vibrate(15);
       onClose?.();
     }
   }

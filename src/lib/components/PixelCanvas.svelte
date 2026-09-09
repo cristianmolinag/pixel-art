@@ -499,7 +499,7 @@ function onWheel(event) {
 <div
   bind:this={container}
   class="relative w-full touch-none overscroll-none overflow-hidden"
-  style:max-width="min(100%, 512px)"
+  style:width="min(100%, 512px, 100cqh)"
   style:aspect-ratio="1 / 1"
 >
   <canvas

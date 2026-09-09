@@ -68,3 +68,271 @@ canvas {
 * {
   box-sizing: border-box;
 }
+
+/* Editor layout grid.
+   Portrait mobile: controls row below the header, canvas in the middle, tools
+   row in the thumb zone directly above the palette.
+   Landscape mobile: tools sidebar on the left, canvas in the middle, controls
+   sidebar on the right.
+   Desktop: single left sidebar with the tools group above the controls group. */
+.editor-layout {
+  display: grid;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "controls"
+    "canvas"
+    "tools"
+    "palette";
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .editor-layout {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "tools canvas controls"
+      "tools palette controls";
+  }
+}
+
+@media (min-width: 1024px) {
+  .editor-layout {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "tools canvas"
+      "controls canvas"
+      "palette palette";
+  }
+}
+
+/* Canvas viewport: establishes a size container so the square canvas can be
+   constrained by both width and height. In portrait mobile this prevents the
+   canvas from overflowing vertically when the toolbar moves to the thumb zone. */
+.canvas-viewport {
+  grid-area: canvas;
+  container-type: size;
+}
+
+/* Toolbar sidebars/rows: horizontal centered rows on portrait mobile,
+   vertical scrollable sidebars on landscape mobile and desktop. */
+.toolbar-tools,
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  background-color: var(--color-surface-light);
+  padding: 0.5rem;
+}
+
+.toolbar-tools {
+  grid-area: tools;
+}
+
+.toolbar-controls {
+  grid-area: controls;
+}
+
+.palette-footer {
+  grid-area: palette;
+}
+
+/* In landscape the palette sits between the two sidebars, so its upward
+   shadow would cast visible halos over them; drop it there. */
+@media (orientation: landscape) and (max-width: 1023px) {
+  .palette-footer {
+    box-shadow: none;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .toolbar-tools,
+  .toolbar-controls {
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toolbar-tools,
+  .toolbar-controls {
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: 0.75rem;
+  }
+
+  /* Both sections share the same background, so the divider only needs its
+     own breathing room instead of double side paddings. */
+  .toolbar-tools {
+    padding-bottom: 0;
+  }
+
+  .toolbar-controls {
+    padding-top: 0;
+  }
+}
+
+/* Section divider between the stacked tools and controls sidebar sections on
+   desktop. Extends .toolbar-separator, so it inherits the exact same thin-line
+   look; it only toggles visibility and centers itself in the gap. */
+.toolbar-section-separator {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .toolbar-section-separator {
+    display: block;
+  }
+
+  .toolbar-container .toolbar-section-separator {
+    margin: 0.5rem 0;
+  }
+}
+
+.toolbar-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2px, 0.8vw, 4px);
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .toolbar-container {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toolbar-container {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+  }
+}
+
+.toolbar-separator {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  height: 1.5rem;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .toolbar-separator {
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    height: 1px;
+    width: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toolbar-separator {
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    height: 1px;
+    width: 1.5rem;
+  }
+}
+
+.toolbar-zoom-inline {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .toolbar-zoom-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toolbar-zoom-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.toolbar-zoom-toggle {
+  display: flex;
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .toolbar-zoom-toggle {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toolbar-zoom-toggle {
+    display: none;
+  }
+}
+
+.toolbar-zoom-panel {
+  display: flex;
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .toolbar-zoom-panel {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toolbar-zoom-panel {
+    display: none;
+  }
+}
+
+/* Shape mode pill: floats inside the canvas viewport. In portrait mobile and
+   desktop it sits at the bottom edge, where the square canvas leaves vertical
+   dead space. In landscape mobile it moves to the left edge, vertically
+   centered, because the canvas fills the viewport height there and the free
+   space is on the sides instead. */
+.shape-pill {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  border-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .shape-pill {
+    bottom: auto;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+  }
+}

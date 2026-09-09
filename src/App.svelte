@@ -2,6 +2,7 @@
   import PixelCanvas from "./lib/components/PixelCanvas.svelte";
   import Palette from "./lib/components/Palette.svelte";
   import Toolbar from "./lib/components/Toolbar.svelte";
+  import ShapeModePill from "./lib/components/ShapeModePill.svelte";
   import FileActions from "./lib/components/FileActions.svelte";
   import Gallery from "./lib/components/Gallery.svelte";
   import Toast from "./lib/components/Toast.svelte";
@@ -22,24 +23,27 @@
     </div>
   </header>
 
-  <div class="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-    <aside
-      class="flex items-center justify-center bg-surface-light p-2 lg:w-auto lg:shrink-0 lg:items-start lg:overflow-y-auto lg:p-3"
-    >
-      <Toolbar />
+  <div class="editor-layout">
+    <aside class="toolbar-tools">
+      <Toolbar mode="tools" />
     </aside>
 
-    <main class="flex min-h-0 flex-1 touch-none overscroll-none items-center justify-center overflow-hidden p-4">
+    <main class="canvas-viewport relative flex min-h-0 touch-none overscroll-none items-center justify-center overflow-hidden p-4">
       <PixelCanvas />
+      <ShapeModePill />
     </main>
-  </div>
 
-  <footer
-    class="bg-surface-light px-4 pt-3 shadow-[0_-4px_6px_rgba(0,0,0,0.25)]"
-    style:padding-bottom="max(0.75rem, env(safe-area-inset-bottom))"
-  >
-    <Palette />
-  </footer>
+    <aside class="toolbar-controls">
+      <Toolbar mode="controls" />
+    </aside>
+
+    <footer
+      class="palette-footer bg-surface-light px-4 pt-3 shadow-[0_-4px_6px_rgba(0,0,0,0.25)]"
+      style:padding-bottom="max(0.75rem, env(safe-area-inset-bottom))"
+    >
+      <Palette />
+    </footer>
+  </div>
 </div>
 
 <Gallery />
