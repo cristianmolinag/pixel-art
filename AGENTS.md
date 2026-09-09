@@ -63,4 +63,5 @@ mise exec -- pnpm check
   - F14 Scaled PNG export -> **#44** (spec: `specs/features/14-export.md`)
   - F15 Mirror symmetry -> **#41** (spec: `specs/features/15-mirror-symmetry.md`)
   - F16 Mobile UX: toasts and gesture prevention -> **#51/#49** (spec: `specs/features/16-mobile-ux-toasts-gestures.md`)
+  - F17 Shape tools (rectangle and circle with outline and fill) -> **#42** (spec: `specs/features/17-shape-tools.md`)
 - Review open issues before implementing new work.

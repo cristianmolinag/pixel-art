@@ -1,7 +1,7 @@
 <script>
   import { GRID_COLOR, GRID_ALPHA } from "../canvas/draw.js";
   import { editor } from "../stores/editor.svelte.js";
-  import { linePoints } from "../models/Canvas.js";
+  import { linePoints, rectPoints, circlePoints } from "../models/Canvas.js";
   import { vibrate } from "../utils/haptics.js";
 
   let canvasEl = $state();
@@ -9,6 +9,8 @@
   let painting = $state(false);
   let lineStart = $state(null);
   let lineEnd = $state(null);
+  let shapeStart = $state(null);
+  let shapeEnd = $state(null);
   let previewing = $state(false);
   let touchStartCell = $state(null);
   let touchStartTime = $state(0);
@@ -122,6 +124,34 @@
       }
       ctx.globalAlpha = 1;
     }
+
+    if (
+      (editor.tool === "rectangle" || editor.tool === "circle") &&
+      previewing &&
+      shapeStart &&
+      shapeEnd
+    ) {
+      ctx.fillStyle = editor.currentColor;
+      ctx.globalAlpha = 0.5;
+      const points = editor.tool === "rectangle" ? rectPoints : circlePoints;
+      for (const { x0, y0, x1, y1 } of editor.mirroredShapeBounds(
+        shapeStart.x,
+        shapeStart.y,
+        shapeEnd.x,
+        shapeEnd.y,
+      )) {
+        for (const [x, y] of points(x0, y0, x1, y1, editor.shapeMode)) {
+          if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+          ctx.fillRect(
+            aX(x),
+            aY(y),
+            Math.max(1, aX(x + 1) - aX(x)),
+            Math.max(1, aY(y + 1) - aY(y)),
+          );
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
   }
 
   $effect(() => {
@@ -185,6 +215,10 @@ function applyToolToCell(cell) {
   }
 }
 
+function isShapeTool(tool) {
+  return tool === "rectangle" || tool === "circle";
+}
+
 function clearTouchDelay() {
   clearTimeout(touchDelayTimer);
   touchDelayTimer = undefined;
@@ -197,6 +231,10 @@ function startTouchAction() {
   if (editor.tool === "line") {
     lineStart = touchStartCell;
     lineEnd = touchStartCell;
+    previewing = true;
+  } else if (isShapeTool(editor.tool)) {
+    shapeStart = touchStartCell;
+    shapeEnd = touchStartCell;
     previewing = true;
   } else {
     applyToolToCell(touchStartCell);
@@ -257,6 +295,8 @@ function onPointerDown(event) {
       previewing = false;
       lineStart = null;
       lineEnd = null;
+      shapeStart = null;
+      shapeEnd = null;
     }
     clearTouchDelay();
     touchStartCell = null;
@@ -291,6 +331,12 @@ function onPointerDown(event) {
     case "line":
       lineStart = cell;
       lineEnd = cell;
+      previewing = true;
+      break;
+    case "rectangle":
+    case "circle":
+      shapeStart = cell;
+      shapeEnd = cell;
       previewing = true;
       break;
     default:
@@ -329,6 +375,10 @@ function onPointerMove(event) {
     case "line":
       lineEnd = cell;
       break;
+    case "rectangle":
+    case "circle":
+      shapeEnd = cell;
+      break;
     default:
       applyToolToCell(cell);
   }
@@ -358,6 +408,8 @@ function onPointerUp(event) {
       previewing = false;
       lineStart = null;
       lineEnd = null;
+      shapeStart = null;
+      shapeEnd = null;
       touchStartCell = null;
       touchStartTime = 0;
       touchStartPos = null;
@@ -371,6 +423,10 @@ function onPointerUp(event) {
     editor.beginAction();
     if (editor.tool === "line") {
       editor.drawLine(touchStartCell.x, touchStartCell.y, touchStartCell.x, touchStartCell.y);
+    } else if (editor.tool === "rectangle") {
+      editor.drawRect(touchStartCell.x, touchStartCell.y, touchStartCell.x, touchStartCell.y);
+    } else if (editor.tool === "circle") {
+      editor.drawCircle(touchStartCell.x, touchStartCell.y, touchStartCell.x, touchStartCell.y);
     } else {
       applyToolToCell(touchStartCell);
     }
@@ -386,6 +442,10 @@ function onPointerUp(event) {
   painting = false;
   if (editor.tool === "line" && previewing && lineStart && lineEnd) {
     editor.drawLine(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y);
+  } else if (editor.tool === "rectangle" && previewing && shapeStart && shapeEnd) {
+    editor.drawRect(shapeStart.x, shapeStart.y, shapeEnd.x, shapeEnd.y);
+  } else if (editor.tool === "circle" && previewing && shapeStart && shapeEnd) {
+    editor.drawCircle(shapeStart.x, shapeStart.y, shapeEnd.x, shapeEnd.y);
   }
   editor.endAction();
   if (completedPainting) {
@@ -394,6 +454,8 @@ function onPointerUp(event) {
   previewing = false;
   lineStart = null;
   lineEnd = null;
+  shapeStart = null;
+  shapeEnd = null;
 }
 
 function onWheel(event) {

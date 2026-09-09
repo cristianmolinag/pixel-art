@@ -35,6 +35,83 @@ export function linePoints(x0, y0, x1, y1) {
   return puntos;
 }
 
+export function rectPoints(x0, y0, x1, y1, mode = "outline") {
+  const xmin = Math.min(x0, x1);
+  const xmax = Math.max(x0, x1);
+  const ymin = Math.min(y0, y1);
+  const ymax = Math.max(y0, y1);
+  const points = [];
+  if (mode === "outline") {
+    for (let x = xmin; x <= xmax; x++) {
+      points.push([x, ymin]);
+      if (ymax !== ymin) points.push([x, ymax]);
+    }
+    for (let y = ymin + 1; y <= ymax - 1; y++) {
+      points.push([xmin, y]);
+      if (xmax !== xmin) points.push([xmax, y]);
+    }
+  } else {
+    for (let y = ymin; y <= ymax; y++) {
+      for (let x = xmin; x <= xmax; x++) {
+        points.push([x, y]);
+      }
+    }
+  }
+  return points;
+}
+
+function midpointCirclePoints(cx, cy, r) {
+  const set = new Set();
+  const add = (x, y) => set.add(`${x},${y}`);
+  let x = 0;
+  let y = r;
+  let d = 1 - r;
+  while (x <= y) {
+    add(cx + x, cy + y);
+    add(cx - x, cy + y);
+    add(cx + x, cy - y);
+    add(cx - x, cy - y);
+    add(cx + y, cy + x);
+    add(cx - y, cy + x);
+    add(cx + y, cy - x);
+    add(cx - y, cy - x);
+    x += 1;
+    if (d < 0) {
+      d += 2 * x + 1;
+    } else {
+      y -= 1;
+      d += 2 * (x - y) + 1;
+    }
+  }
+  return [...set].map((key) => key.split(",").map(Number));
+}
+
+function filledCirclePoints(cx, cy, r) {
+  const points = [];
+  for (let y = cy - r; y <= cy + r; y++) {
+    const dy = y - cy;
+    const dx = Math.floor(Math.sqrt(r * r - dy * dy));
+    for (let x = cx - dx; x <= cx + dx; x++) {
+      points.push([x, y]);
+    }
+  }
+  return points;
+}
+
+export function circlePoints(x0, y0, x1, y1, mode = "outline") {
+  const xmin = Math.min(x0, x1);
+  const xmax = Math.max(x0, x1);
+  const ymin = Math.min(y0, y1);
+  const ymax = Math.max(y0, y1);
+  const cx = Math.round((xmin + xmax) / 2);
+  const cy = Math.round((ymin + ymax) / 2);
+  const r = Math.round(Math.max(xmax - xmin, ymax - ymin) / 2);
+  if (r <= 0) return [[cx, cy]];
+  return mode === "outline"
+    ? midpointCirclePoints(cx, cy, r)
+    : filledCirclePoints(cx, cy, r);
+}
+
 function samePosition(puntos, x, y) {
   return puntos.some(([px, py]) => px === x && py === y);
 }
@@ -91,6 +168,26 @@ export class Canvas {
   drawLine(x0, y0, x1, y1, color) {
     let changed = false;
     for (const [x, y] of linePoints(x0, y0, x1, y1)) {
+      if (x < 0 || y < 0 || x >= this.cols || y >= this.rows) continue;
+      this.setPixel(x, y, color);
+      changed = true;
+    }
+    return changed;
+  }
+
+  drawRect(x0, y0, x1, y1, color, mode = "outline") {
+    let changed = false;
+    for (const [x, y] of rectPoints(x0, y0, x1, y1, mode)) {
+      if (x < 0 || y < 0 || x >= this.cols || y >= this.rows) continue;
+      this.setPixel(x, y, color);
+      changed = true;
+    }
+    return changed;
+  }
+
+  drawCircle(x0, y0, x1, y1, color, mode = "outline") {
+    let changed = false;
+    for (const [x, y] of circlePoints(x0, y0, x1, y1, mode)) {
       if (x < 0 || y < 0 || x >= this.cols || y >= this.rows) continue;
       this.setPixel(x, y, color);
       changed = true;

@@ -83,6 +83,7 @@ class EditorStore {
   dirty = $state(false);
   mirrorX = $state(false);
   mirrorY = $state(false);
+  shapeMode = $state("outline");
 
   markDirty() {
     this.dirty = true;
@@ -186,6 +187,12 @@ class EditorStore {
     this.mirrorY = !this.mirrorY;
   }
 
+  setShapeMode(mode) {
+    if (mode === "outline" || mode === "fill") {
+      this.shapeMode = mode;
+    }
+  }
+
   mirroredCells(x, y) {
     const cells = new Set();
     const add = (cx, cy) => cells.add(`${cx},${cy}`);
@@ -214,6 +221,26 @@ class EditorStore {
       );
     }
     return [...endpoints].map((key) => {
+      const [a, b, c, d] = key.split(",").map(Number);
+      return { x0: a, y0: b, x1: c, y1: d };
+    });
+  }
+
+  mirroredShapeBounds(x0, y0, x1, y1) {
+    const bounds = new Set();
+    const add = (a, b, c, d) => bounds.add(`${a},${b},${c},${d}`);
+    add(x0, y0, x1, y1);
+    if (this.mirrorX) add(this.model.cols - 1 - x0, y0, this.model.cols - 1 - x1, y1);
+    if (this.mirrorY) add(x0, this.model.rows - 1 - y0, x1, this.model.rows - 1 - y1);
+    if (this.mirrorX && this.mirrorY) {
+      add(
+        this.model.cols - 1 - x0,
+        this.model.rows - 1 - y0,
+        this.model.cols - 1 - x1,
+        this.model.rows - 1 - y1,
+      );
+    }
+    return [...bounds].map((key) => {
       const [a, b, c, d] = key.split(",").map(Number);
       return { x0: a, y0: b, x1: c, y1: d };
     });
@@ -280,6 +307,30 @@ class EditorStore {
     let changed = false;
     for (const { x0: a, y0: b, x1: c, y1: d } of this.mirroredLineEndpoints(x0, y0, x1, y1)) {
       if (!this.model.drawLine(a, b, c, d, this.currentColor)) continue;
+      changed = true;
+      this._actionChanges += 1;
+      this.version += 1;
+      this.markDirty();
+    }
+    if (changed) this.trackColorUsage(this.currentColor);
+  }
+
+  drawRect(x0, y0, x1, y1) {
+    let changed = false;
+    for (const { x0: a, y0: b, x1: c, y1: d } of this.mirroredShapeBounds(x0, y0, x1, y1)) {
+      if (!this.model.drawRect(a, b, c, d, this.currentColor, this.shapeMode)) continue;
+      changed = true;
+      this._actionChanges += 1;
+      this.version += 1;
+      this.markDirty();
+    }
+    if (changed) this.trackColorUsage(this.currentColor);
+  }
+
+  drawCircle(x0, y0, x1, y1) {
+    let changed = false;
+    for (const { x0: a, y0: b, x1: c, y1: d } of this.mirroredShapeBounds(x0, y0, x1, y1)) {
+      if (!this.model.drawCircle(a, b, c, d, this.currentColor, this.shapeMode)) continue;
       changed = true;
       this._actionChanges += 1;
       this.version += 1;
