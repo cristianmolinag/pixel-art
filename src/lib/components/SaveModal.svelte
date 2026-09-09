@@ -1,5 +1,7 @@
 <script>
   import { gallery } from "../stores/gallery.svelte.js";
+  import { toasts } from "../stores/toasts.svelte.js";
+  import { vibrate } from "../utils/haptics.js";
   import { suggestedName } from "../models/Drawing.js";
   import Save from "@lucide/svelte/icons/save";
   import X from "@lucide/svelte/icons/x";
@@ -24,12 +26,16 @@
 
   async function handleSave() {
     if (await gallery.save(name)) {
+      toasts.show("Drawing saved.");
+      vibrate(15);
       onClose?.();
     }
   }
 
   async function handleUpdate() {
     if (await gallery.updateCurrent(name)) {
+      toasts.show("Drawing updated.");
+      vibrate(15);
       onClose?.();
     }
   }

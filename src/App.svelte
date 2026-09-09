@@ -4,6 +4,7 @@
   import Toolbar from "./lib/components/Toolbar.svelte";
   import FileActions from "./lib/components/FileActions.svelte";
   import Gallery from "./lib/components/Gallery.svelte";
+  import Toast from "./lib/components/Toast.svelte";
 </script>
 
 <div class="flex h-full flex-col bg-surface">
@@ -28,7 +29,7 @@
       <Toolbar />
     </aside>
 
-    <main class="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-4">
+    <main class="flex min-h-0 flex-1 touch-none overscroll-none items-center justify-center overflow-hidden p-4">
       <PixelCanvas />
     </main>
   </div>
@@ -42,3 +43,5 @@
 </div>
 
 <Gallery />
+
+<Toast />

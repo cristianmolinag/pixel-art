@@ -62,4 +62,5 @@ mise exec -- pnpm check
   - F13 Issue-driven agent workflow -> **#26** (implemented; spec: `specs/features/13-issue-driven-agent-workflow.md`)
   - F14 Scaled PNG export -> **#44** (spec: `specs/features/14-export.md`)
   - F15 Mirror symmetry -> **#41** (spec: `specs/features/15-mirror-symmetry.md`)
+  - F16 Mobile UX: toasts and gesture prevention -> **#51/#49** (spec: `specs/features/16-mobile-ux-toasts-gestures.md`)
 - Review open issues before implementing new work.

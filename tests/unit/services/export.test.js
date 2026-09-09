@@ -140,8 +140,9 @@ describe("export service", () => {
       });
       const revokeObjectURLSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
-      await downloadBlob(blob, "test.png");
+      const result = await downloadBlob(blob, "test.png");
 
+      expect(result).toEqual({ shared: false, aborted: false });
       expect(createElementSpy).toHaveBeenCalledWith("a");
       expect(revokeObjectURLSpy).toHaveBeenCalled();
 
@@ -158,13 +159,14 @@ describe("export service", () => {
       );
 
       const blob = new Blob(["png"], { type: "image/png" });
-      await downloadBlob(blob, "test.png");
+      const result = await downloadBlob(blob, "test.png");
 
+      expect(result).toEqual({ shared: true, aborted: false });
       expect(canShare).toHaveBeenCalled();
       expect(share).toHaveBeenCalled();
     });
 
-    it("does not create an anchor when share is aborted", async () => {
+    it("returns aborted when the share sheet is cancelled", async () => {
       const share = vi.fn().mockRejectedValue(new DOMException("Abort", "AbortError"));
       const canShare = vi.fn().mockReturnValue(true);
       vi.stubGlobal(
@@ -180,8 +182,9 @@ describe("export service", () => {
         return el;
       });
 
-      await downloadBlob(blob, "test.png");
+      const result = await downloadBlob(blob, "test.png");
 
+      expect(result).toEqual({ shared: false, aborted: true });
       expect(share).toHaveBeenCalled();
       expect(createElementSpy).not.toHaveBeenCalled();
 

@@ -2,6 +2,7 @@
   import { GRID_COLOR, GRID_ALPHA } from "../canvas/draw.js";
   import { editor } from "../stores/editor.svelte.js";
   import { linePoints } from "../models/Canvas.js";
+  import { vibrate } from "../utils/haptics.js";
 
   let canvasEl = $state();
   let container = $state();
@@ -374,17 +375,22 @@ function onPointerUp(event) {
       applyToolToCell(touchStartCell);
     }
     editor.endAction();
+    vibrate(15);
     touchStartCell = null;
     touchStartTime = 0;
     touchStartPos = null;
     return;
   }
 
+  const completedPainting = painting;
   painting = false;
   if (editor.tool === "line" && previewing && lineStart && lineEnd) {
     editor.drawLine(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y);
   }
   editor.endAction();
+  if (completedPainting) {
+    vibrate(15);
+  }
   previewing = false;
   lineStart = null;
   lineEnd = null;
@@ -430,7 +436,7 @@ function onWheel(event) {
 
 <div
   bind:this={container}
-  class="relative w-full overflow-hidden"
+  class="relative w-full touch-none overscroll-none overflow-hidden"
   style:max-width="min(100%, 512px)"
   style:aspect-ratio="1 / 1"
 >

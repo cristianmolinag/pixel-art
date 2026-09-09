@@ -35,6 +35,7 @@ in complexity and verifying each feature before moving on:
 13. **Issue-driven agent workflow** - plan, spec, sub-issues, Orca worktree, and PR delivery -> **#26**.
 14. **Scaled PNG export** - export drawings as crisp PNGs at 1x/2x/4x/8x with nearest-neighbor scaling -> **#44**.
 15. **Mirror symmetry** - draw with horizontal and/or vertical mirror symmetry for brush, eraser, and line preview -> **#41**.
+16. **Mobile UX: toasts and gesture prevention** - non-blocking toast feedback, haptic pulses, and disabled pull-to-refresh/browser zoom on the canvas -> **#51/#49**.
 
 Each feature maps to a GitHub issue and a spec in `specs/features/`.
 
