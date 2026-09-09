@@ -103,14 +103,21 @@
     ) {
       ctx.fillStyle = editor.currentColor;
       ctx.globalAlpha = 0.5;
-      for (const [x, y] of linePoints(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y)) {
-        if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
-        ctx.fillRect(
-          aX(x),
-          aY(y),
-          Math.max(1, aX(x + 1) - aX(x)),
-          Math.max(1, aY(y + 1) - aY(y)),
-        );
+      for (const { x0, y0, x1, y1 } of editor.mirroredLineEndpoints(
+        lineStart.x,
+        lineStart.y,
+        lineEnd.x,
+        lineEnd.y,
+      )) {
+        for (const [x, y] of linePoints(x0, y0, x1, y1)) {
+          if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+          ctx.fillRect(
+            aX(x),
+            aY(y),
+            Math.max(1, aX(x + 1) - aX(x)),
+            Math.max(1, aY(y + 1) - aY(y)),
+          );
+        }
       }
       ctx.globalAlpha = 1;
     }

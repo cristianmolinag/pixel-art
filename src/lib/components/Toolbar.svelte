@@ -7,6 +7,8 @@
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Redo2 from "@lucide/svelte/icons/redo-2";
   import Grid3x3 from "@lucide/svelte/icons/grid-3x3";
+  import FlipHorizontal from "@lucide/svelte/icons/flip-horizontal";
+  import FlipVertical from "@lucide/svelte/icons/flip-vertical";
   import Minus from "@lucide/svelte/icons/minus";
   import Plus from "@lucide/svelte/icons/plus";
   import Maximize from "@lucide/svelte/icons/maximize";
@@ -94,6 +96,34 @@
       <Icone size={20} />
     </button>
   {/each}
+
+  <button
+    type="button"
+    aria-label="Horizontal mirror"
+    title="Horizontal mirror"
+    aria-pressed={editor.mirrorX}
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
+      {editor.mirrorX
+        ? 'bg-white text-black shadow'
+        : 'text-white hover:bg-white/10'}"
+    onclick={() => editor.toggleMirrorX()}
+  >
+    <FlipHorizontal size={20} />
+  </button>
+
+  <button
+    type="button"
+    aria-label="Vertical mirror"
+    title="Vertical mirror"
+    aria-pressed={editor.mirrorY}
+    class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
+      {editor.mirrorY
+        ? 'bg-white text-black shadow'
+        : 'text-white hover:bg-white/10'}"
+    onclick={() => editor.toggleMirrorY()}
+  >
+    <FlipVertical size={20} />
+  </button>
 
   <button
     type="button"

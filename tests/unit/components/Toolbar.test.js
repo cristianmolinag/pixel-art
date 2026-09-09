@@ -40,6 +40,8 @@ describe("Toolbar (F03)", () => {
       "Line",
       "Fill",
       "Eyedropper",
+      "Horizontal mirror",
+      "Vertical mirror",
       "Hide grid",
       "Change canvas matrix",
       "Zoom out",
@@ -49,7 +51,7 @@ describe("Toolbar (F03)", () => {
       "Redo",
       "Zoom",
     ]);
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(13);
+    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(15);
   });
 
   it("selecting a tool activates it and marks it (US1/FR-002)", async () => {
@@ -215,5 +217,36 @@ it("+ disabled at maximum zoom (F10 limits)", () => {
     expect(container.querySelector("[data-zoom-panel]")).toBeTruthy();
     await fireEvent.click(buttonByLabel(container, "Eraser"));
     expect(container.querySelector("[data-zoom-panel]")).toBeNull();
+  });
+});
+
+describe("Toolbar — mirror symmetry (F15)", () => {
+  beforeEach(() => {
+    editor.mirrorX = false;
+    editor.mirrorY = false;
+  });
+
+  it("shows horizontal and vertical mirror toggles", () => {
+    const { container } = render(Toolbar);
+    expect(buttonByLabel(container, "Horizontal mirror")).toBeTruthy();
+    expect(buttonByLabel(container, "Vertical mirror")).toBeTruthy();
+  });
+
+  it("toggles horizontal mirror and marks it pressed", async () => {
+    const { container } = render(Toolbar);
+    const button = buttonByLabel(container, "Horizontal mirror");
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    await fireEvent.click(button);
+    expect(editor.mirrorX).toBe(true);
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("toggles vertical mirror and marks it pressed", async () => {
+    const { container } = render(Toolbar);
+    const button = buttonByLabel(container, "Vertical mirror");
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    await fireEvent.click(button);
+    expect(editor.mirrorY).toBe(true);
+    expect(button.getAttribute("aria-pressed")).toBe("true");
   });
 });

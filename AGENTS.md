@@ -61,4 +61,5 @@ mise exec -- pnpm check
   - F12 UX and release workflow polish -> **#24** (implemented; spec: `specs/features/12-ux-and-release-workflow.md`)
   - F13 Issue-driven agent workflow -> **#26** (implemented; spec: `specs/features/13-issue-driven-agent-workflow.md`)
   - F14 Scaled PNG export -> **#44** (spec: `specs/features/14-export.md`)
+  - F15 Mirror symmetry -> **#41** (spec: `specs/features/15-mirror-symmetry.md`)
 - Review open issues before implementing new work.

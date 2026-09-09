@@ -80,6 +80,8 @@ class EditorStore {
   panX = $state(0);
   panY = $state(0);
   dirty = $state(false);
+  mirrorX = $state(false);
+  mirrorY = $state(false);
 
   markDirty() {
     this.dirty = true;
@@ -174,6 +176,47 @@ class EditorStore {
     saveGridVisibility(this.showGrid);
   }
 
+  toggleMirrorX() {
+    this.mirrorX = !this.mirrorX;
+  }
+
+  toggleMirrorY() {
+    this.mirrorY = !this.mirrorY;
+  }
+
+  mirroredCells(x, y) {
+    const cells = new Set();
+    const add = (cx, cy) => cells.add(`${cx},${cy}`);
+    add(x, y);
+    if (this.mirrorX) add(this.model.cols - 1 - x, y);
+    if (this.mirrorY) add(x, this.model.rows - 1 - y);
+    if (this.mirrorX && this.mirrorY) add(this.model.cols - 1 - x, this.model.rows - 1 - y);
+    return [...cells].map((key) => {
+      const [cx, cy] = key.split(",").map(Number);
+      return { x: cx, y: cy };
+    });
+  }
+
+  mirroredLineEndpoints(x0, y0, x1, y1) {
+    const endpoints = new Set();
+    const add = (a, b, c, d) => endpoints.add(`${a},${b},${c},${d}`);
+    add(x0, y0, x1, y1);
+    if (this.mirrorX) add(this.model.cols - 1 - x0, y0, this.model.cols - 1 - x1, y1);
+    if (this.mirrorY) add(x0, this.model.rows - 1 - y0, x1, this.model.rows - 1 - y1);
+    if (this.mirrorX && this.mirrorY) {
+      add(
+        this.model.cols - 1 - x0,
+        this.model.rows - 1 - y0,
+        this.model.cols - 1 - x1,
+        this.model.rows - 1 - y1,
+      );
+    }
+    return [...endpoints].map((key) => {
+      const [a, b, c, d] = key.split(",").map(Number);
+      return { x0: a, y0: b, x1: c, y1: d };
+    });
+  }
+
   roundZoom(valor) {
     return Math.round(valor / ZOOM_STEP) * ZOOM_STEP;
   }
@@ -213,26 +256,34 @@ class EditorStore {
   }
 
   paintPixel(x, y) {
-    if (!this.model.setPixel(x, y, this.currentColor)) return;
-    this.trackColorUsage(this.currentColor);
-    this._actionChanges += 1;
-    this.version += 1;
-    this.markDirty();
+    for (const { x: cx, y: cy } of this.mirroredCells(x, y)) {
+      if (!this.model.setPixel(cx, cy, this.currentColor)) continue;
+      this.trackColorUsage(this.currentColor);
+      this._actionChanges += 1;
+      this.version += 1;
+      this.markDirty();
+    }
   }
 
   erasePixel(x, y) {
-    if (!this.model.erasePixel(x, y)) return;
-    this._actionChanges += 1;
-    this.version += 1;
-    this.markDirty();
+    for (const { x: cx, y: cy } of this.mirroredCells(x, y)) {
+      if (!this.model.erasePixel(cx, cy)) continue;
+      this._actionChanges += 1;
+      this.version += 1;
+      this.markDirty();
+    }
   }
 
   drawLine(x0, y0, x1, y1) {
-    if (!this.model.drawLine(x0, y0, x1, y1, this.currentColor)) return;
-    this.trackColorUsage(this.currentColor);
-    this._actionChanges += 1;
-    this.version += 1;
-    this.markDirty();
+    let changed = false;
+    for (const { x0: a, y0: b, x1: c, y1: d } of this.mirroredLineEndpoints(x0, y0, x1, y1)) {
+      if (!this.model.drawLine(a, b, c, d, this.currentColor)) continue;
+      changed = true;
+      this._actionChanges += 1;
+      this.version += 1;
+      this.markDirty();
+    }
+    if (changed) this.trackColorUsage(this.currentColor);
   }
 
   floodFill(x, y) {
