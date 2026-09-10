@@ -33,12 +33,31 @@ src/
 Each canvas cell represents one real pixel. The display is rendered at device resolution,
 with zoom and pan applied during drawing and rounded to device-pixel integers.
 
-**Rule:** do not use `document.querySelector` to access the canvas. Toolbar and other
-components communicate with the canvas through pending-action flags in the store
-(`pendingImageData`, `pendingClear`, `pendingExport`, `pendingComposite`). The canvas
-component observes those flags with `$effect` and performs the action.
+**Rule:** do not use `document.querySelector` to access the canvas or to trigger
+component behavior. Cross-component actions go through pending-action flags in the
+editor store (currently `pendingSave`/`pendingExport`); the owning component observes
+the flags with `$effect`, performs the action, and clears the flag. `FileActions.svelte`
+consumes them this way to open the save/export modals for the `Ctrl+S`/`Ctrl+E`
+keyboard shortcuts.
 
 This keeps the architecture unidirectional: there is no direct DOM access, only declared flows.
+
+## Keyboard shortcuts (desktop)
+
+- Key mapping logic lives in `src/lib/utils/shortcuts.js` (`handleKeydown`, `handleKeyup`,
+  `isEditableTarget`) as pure functions that map events to semantic actions.
+- `App.svelte` owns the single `svelte:window` keydown/keyup pair and maps each action to
+  store methods, so every shortcut is registered exactly once. `Toolbar.svelte` keeps only
+  its zoom-panel-specific window handlers (Escape, click-outside).
+- Shortcuts: tools `B`/`E`/`L`/`R`/`C`/`F`/`I`, grid toggle `G`, zoom `+`/`-`/`0` reusing
+  `zoomIn`/`zoomOut`/`resetZoom`, undo `Ctrl+Z`, redo `Ctrl+Shift+Z`/`Ctrl+Y`, save `Ctrl+S`,
+  export `Ctrl+E`. Unclaimed Ctrl/Meta/Alt combinations are never intercepted.
+- Shortcuts are ignored while the event target is an input, textarea, or contenteditable
+  element, so typing stays native.
+- Holding `Space` sets `editor.spaceHeld`; `PixelCanvas` pans on drag when `spaceHeld`
+  (same branch as `Ctrl`/`Meta` drag), the canvas shows a grab cursor, and the keydown is
+  prevented so the page does not scroll while the key is held. `window` blur clears the
+  flag.
 
 ## Responsive interaction
 

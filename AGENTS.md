@@ -42,7 +42,9 @@ mise exec -- pnpm check
 - Central editor state lives in `src/lib/stores/editor.svelte.js` and uses runes.
 - The canvas is redrawn at device resolution (DPR). Each cell is one model pixel; zoom and pan are applied during drawing with device-pixel integer rounding, without CSS transforms.
 - Desktop canvas zoom supports `Ctrl + wheel` and reuses the store's button actions (`zoomIn`/`zoomOut`) so `ZOOM_STEP`, `MIN_ZOOM`, and `MAX_ZOOM` remain consistent. The zoom is centered on the cursor position.
-- Toolbar actions communicate through pending-action flags in the store (`pendingImageData`, `pendingClear`, `pendingExport`).
+- Cross-component actions communicate through pending-action flags in the editor store and are consumed by the owning component with `$effect` (currently `pendingSave`/`pendingExport`, consumed by `FileActions.svelte`).
+- All desktop keyboard shortcuts are registered exactly once: key mapping logic lives in `src/lib/utils/shortcuts.js` and `App.svelte` owns the single `svelte:window` keydown/keyup pair. Tools `B/E/L/R/C/F/I`, grid `G`, zoom `+`/`-` (reuse `zoomIn`/`zoomOut`/`resetZoom`), undo `Ctrl+Z`, redo `Ctrl+Shift+Z`/`Ctrl+Y`, save `Ctrl+S`, export `Ctrl+E`. Shortcuts are ignored while typing in inputs/textareas/contenteditable.
+- Holding `Space` arms pan mode through `editor.spaceHeld`; `PixelCanvas` extends its `Ctrl/Meta`-drag pan branch to space-held drag, and the Space keydown is prevented so the page does not scroll.
 - Do not use `document.querySelector` to access the canvas. Use the pending-action pattern.
 - The responsive toolbar uses fluid icon and gap sizes through `clamp()` (`.toolbar-icon`, `.toolbar-row` in `src/app.css`). The editor layout is a CSS Grid with orientation-based areas: portrait mobile places the controls row below the header and the tools row in the thumb zone above the palette, landscape mobile splits tools (left) and controls (right) sidebars that reach the bottom of the screen with the palette centered under the canvas, and desktop keeps the single left sidebar with a thin-line section divider between tools and controls. The Outline/Fill shape pill floats inside the canvas viewport: bottom-centered in portrait and desktop, left-centered vertically in landscape mobile. On mobile, zoom is contained in its own expander; grid and matrix controls remain visible.
 - The palette footer accounts for iOS home-indicator safe area through `env(safe-area-inset-bottom)`.
@@ -56,7 +58,7 @@ mise exec -- pnpm check
   - F04 Undo/Redo -> **#13**
   - F05 Gallery and persistence -> **#6** (extended by **#28** update/save-as-new)
   - F07 Menu layout -> **#15** (implemented and closed)
-  - Cross-cutting backlog: **#1** PWA icons, **#8** mobile/UX improvements, **#10** keyboard shortcuts
+  - Cross-cutting backlog: **#1** PWA icons, **#8** mobile/UX improvements (keyboard shortcuts **#10** are complete)
   - v1.0 MVP item: **#19** grid guide overlay
   - F12 UX and release workflow polish -> **#24** (implemented; spec: `specs/features/12-ux-and-release-workflow.md`)
   - F13 Issue-driven agent workflow -> **#26** (implemented; spec: `specs/features/13-issue-driven-agent-workflow.md`)
@@ -65,4 +67,5 @@ mise exec -- pnpm check
   - F16 Mobile UX: toasts and gesture prevention -> **#51/#49** (spec: `specs/features/16-mobile-ux-toasts-gestures.md`)
   - F17 Shape tools (rectangle and circle with outline and fill) -> **#42** (spec: `specs/features/17-shape-tools.md`)
   - F18 Thumb-zone toolbar layout -> **#48** (spec: `specs/features/18-thumb-zone-toolbar.md`)
+  - F20 Complete desktop keyboard shortcuts -> **#50** (spec: `specs/features/20-keyboard-shortcuts.md`)
 - Review open issues before implementing new work.

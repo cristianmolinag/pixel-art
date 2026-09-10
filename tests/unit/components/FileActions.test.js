@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, cleanup, fireEvent } from "@testing-library/svelte";
+import { tick } from "svelte";
 import FileActions from "../../../src/lib/components/FileActions.svelte";
 import { editor } from "../../../src/lib/stores/editor.svelte.js";
 import { gallery } from "../../../src/lib/stores/gallery.svelte.js";
@@ -15,6 +16,8 @@ beforeEach(() => {
   editor.tool = "brush";
   editor.currentColor = "#ff0000";
   editor.model = new Canvas(16, 16);
+  editor.pendingSave = false;
+  editor.pendingExport = false;
   gallery.visible = false;
   gallery.drawings = [];
 });
@@ -68,6 +71,35 @@ describe("FileActions (F05/FR-001/FR-003)", () => {
     await fireEvent.click(buttonByLabel(container, "Save"));
     expect(gallery.visible).toBe(false);
     expect(container.querySelector('[aria-label="Save drawing"]')).not.toBeNull();
+  });
+
+  it("surfaces shortcut hints in Save and Export titles (F19)", () => {
+    const { container } = render(FileActions);
+    expect(buttonByLabel(container, "Save").getAttribute("title")).toBe("Save (Ctrl+S)");
+    expect(buttonByLabel(container, "Export").getAttribute("title")).toBe("Export (Ctrl+E)");
+  });
+
+  it("the pendingSave flag opens the save modal and is consumed (#50)", async () => {
+    const { container } = render(FileActions);
+    editor.pendingSave = true;
+    await tick();
+    expect(container.querySelector('[aria-label="Save drawing"]')).not.toBeNull();
+    expect(editor.pendingSave).toBe(false);
+  });
+
+  it("the pendingExport flag opens the export modal and is consumed (#50)", async () => {
+    const { container } = render(FileActions);
+    editor.pendingExport = true;
+    await tick();
+    expect(container.querySelector('[aria-label="Export drawing"]')).not.toBeNull();
+    expect(editor.pendingExport).toBe(false);
+  });
+
+  it("the pending flags do not open modals when already consumed (false)", async () => {
+    const { container } = render(FileActions);
+    await tick();
+    expect(container.querySelector('[aria-label="Save drawing"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Export drawing"]')).toBeNull();
   });
 
   it("New drawing opens a confirmation modal and, when accepted, clears the canvas (US4/FR-005)", async () => {

@@ -67,7 +67,7 @@ When a shape tool (rectangle or circle) is active, an Outline/Fill pill floats i
 - On desktop, the stacked tools and controls sections of the left sidebar are divided by a `.toolbar-section-separator` element reusing the same thin-line style as `.toolbar-separator`.
 - In landscape mobile, the palette footer spans only the center column so both sidebars reach the bottom of the screen.
 - The zoom panel closes on any click outside the zoom toggle/panel through a window click handler in the controls instance.
-- The eyedropper keyboard shortcut (`I`) lives in the tools instance so it is registered exactly once.
+- The eyedropper keyboard shortcut (`I`) was registered by the tools instance; F20 (#50) superseded this by consolidating it into the single global handler in `App.svelte` (see `specs/features/20-keyboard-shortcuts.md`).
 
 ## Related
 

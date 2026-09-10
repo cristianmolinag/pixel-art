@@ -84,6 +84,9 @@ class EditorStore {
   mirrorX = $state(false);
   mirrorY = $state(false);
   shapeMode = $state("outline");
+  spaceHeld = $state(false);
+  pendingSave = $state(false);
+  pendingExport = $state(false);
 
   markDirty() {
     this.dirty = true;

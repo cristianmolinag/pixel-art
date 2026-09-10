@@ -1,4 +1,5 @@
 <script>
+  import { editor } from "../stores/editor.svelte.js";
   import { gallery } from "../stores/gallery.svelte.js";
   import SaveModal from "./SaveModal.svelte";
   import ExportModal from "./ExportModal.svelte";
@@ -11,6 +12,17 @@
   let saveOpen = $state(false);
   let exportOpen = $state(false);
 
+  $effect(() => {
+    if (editor.pendingSave) {
+      editor.pendingSave = false;
+      saveOpen = true;
+    }
+    if (editor.pendingExport) {
+      editor.pendingExport = false;
+      exportOpen = true;
+    }
+  });
+
   const ACCIONES = [
     {
       id: "newDrawing",
@@ -18,19 +30,25 @@
       icon: FilePlus2,
       fn: () => (confirmingNew = true),
     },
-    { id: "save", label: "Save", icon: Save, fn: () => (saveOpen = true) },
-    { id: "export", label: "Export", icon: Download, fn: () => (exportOpen = true) },
+    { id: "save", label: "Save", title: "Save (Ctrl+S)", icon: Save, fn: () => (saveOpen = true) },
+    {
+      id: "export",
+      label: "Export",
+      title: "Export (Ctrl+E)",
+      icon: Download,
+      fn: () => (exportOpen = true),
+    },
     { id: "gallery", label: "Gallery", icon: Images, fn: () => gallery.open() },
   ];
 </script>
 
 <div class="flex flex-wrap items-center justify-center gap-1">
-  {#each ACCIONES as { id, label, icon, fn } (id)}
+  {#each ACCIONES as { id, label, title, icon, fn } (id)}
     {@const Icone = icon}
     <button
       type="button"
       aria-label={label}
-      title={label}
+      title={title ?? label}
       class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white transition
         hover:bg-white/10"
       onclick={fn}

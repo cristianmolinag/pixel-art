@@ -26,6 +26,7 @@ beforeEach(() => {
   editor.zoom = 1;
   editor.panX = 0;
   editor.panY = 0;
+  editor.spaceHeld = false;
 });
 
 afterEach(() => {
@@ -290,6 +291,65 @@ describe("PixelCanvas (F10 zoom/pan in the draw)", () => {
     await tick();
     expect(hint.getAttribute("aria-hidden")).toBe("true");
     vi.useRealTimers();
+  });
+});
+
+describe("PixelCanvas (F19 space pan #50)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.tool = "brush";
+    editor.spaceHeld = false;
+    editor.version = 0;
+    editor.zoom = 1;
+    editor.panX = 0;
+    editor.panY = 0;
+  });
+
+  it("Space + drag pans the view without painting (#50)", async () => {
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.spaceHeld = true;
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 10, clientY: 10 });
+    await fireEvent.pointerMove(c, { pointerId: 1, clientX: 40, clientY: 30 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    await tick();
+    expect(editor.panX).toBe(30);
+    expect(editor.panY).toBe(20);
+    const anyPainted = editor.model.snapshot().some((v, i) => v !== 0 && i % 4 === 3);
+    expect(anyPainted).toBe(false);
+  });
+
+  it("Space + click without drag paints nothing (#50)", async () => {
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.spaceHeld = true;
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.panX).toBe(0);
+    expect(editor.model.getPixel(8, 8).a).toBe(0);
+  });
+
+  it("painting works again after Space is released (#50)", async () => {
+    installCanvas();
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    editor.spaceHeld = true;
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 10, clientY: 10 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    editor.spaceHeld = false;
+    await fireEvent.pointerDown(c, { pointerId: 1, clientX: 160, clientY: 160 });
+    await fireEvent.pointerUp(c, { pointerId: 1 });
+    expect(editor.model.getPixel(8, 8).a).toBeGreaterThan(0);
+  });
+
+  it("shows the grab cursor while Space is held (#50)", async () => {
+    const { container } = render(PixelCanvas);
+    const c = getCanvas(container);
+    expect(c.className).toContain("cursor-default");
+    editor.spaceHeld = true;
+    await tick();
+    expect(c.className).toContain("cursor-grab");
   });
 });
 
