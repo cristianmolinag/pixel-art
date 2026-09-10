@@ -45,6 +45,7 @@ mise exec -- pnpm check
 - Toolbar actions communicate through pending-action flags in the store (`pendingImageData`, `pendingClear`, `pendingExport`).
 - Do not use `document.querySelector` to access the canvas. Use the pending-action pattern.
 - The responsive toolbar uses fluid icon and gap sizes through `clamp()` (`.toolbar-icon`, `.toolbar-row` in `src/app.css`). The editor layout is a CSS Grid with orientation-based areas: portrait mobile places the controls row below the header and the tools row in the thumb zone above the palette, landscape mobile splits tools (left) and controls (right) sidebars that reach the bottom of the screen with the palette centered under the canvas, and desktop keeps the single left sidebar with a thin-line section divider between tools and controls. The Outline/Fill shape pill floats inside the canvas viewport: bottom-centered in portrait and desktop, left-centered vertically in landscape mobile. On mobile, zoom is contained in its own expander; grid and matrix controls remain visible.
+- The tracing reference image overlay (F19) is a session-only layer in `editor.svelte.js`: the decoded image lives in a plain `_referenceImage` field and `referenceVersion` triggers redraws. `PixelCanvas` draws it stretched over the content rect in the order reference → pixels → grid → previews, so it never reaches `model.offscreen` or PNG exports. The Reference toggle lives in the controls group and the opacity/load/remove controls float in a `.reference-pill` inside the canvas viewport (top-centered in portrait/desktop, right-centered in landscape mobile, opposite the shape pill).
 - The palette footer accounts for iOS home-indicator safe area through `env(safe-area-inset-bottom)`.
 - Use custom confirmation modals (the `Matrix.svelte` pattern). Do not use `window.confirm` or `alert`.
 
@@ -65,4 +66,5 @@ mise exec -- pnpm check
   - F16 Mobile UX: toasts and gesture prevention -> **#51/#49** (spec: `specs/features/16-mobile-ux-toasts-gestures.md`)
   - F17 Shape tools (rectangle and circle with outline and fill) -> **#42** (spec: `specs/features/17-shape-tools.md`)
   - F18 Thumb-zone toolbar layout -> **#48** (spec: `specs/features/18-thumb-zone-toolbar.md`)
+  - F19 Tracing reference image overlay -> **#43** (spec: `specs/features/19-reference-overlay.md`)
 - Review open issues before implementing new work.

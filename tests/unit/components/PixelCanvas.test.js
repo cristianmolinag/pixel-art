@@ -26,6 +26,10 @@ beforeEach(() => {
   editor.zoom = 1;
   editor.panX = 0;
   editor.panY = 0;
+  editor.referenceVisible = false;
+  editor.referenceOpacity = 0.5;
+  editor.referenceVersion = 0;
+  editor._referenceImage = null;
 });
 
 afterEach(() => {
@@ -413,5 +417,108 @@ describe("PixelCanvas (F17 shape tools #42)", () => {
     await fireEvent.pointerMove(c, { pointerId: 1, clientX: 140, clientY: 120 });
     await fireEvent.pointerUp(c, { pointerId: 1 });
     expect(editor.model.getPixel(5, 5).r).toBe(255);
+  });
+});
+
+describe("PixelCanvas (F19 reference overlay #43)", () => {
+  const fakeImage = () => ({ width: 32, height: 32 });
+
+  it("draws the reference stretched over the full content rect before pixels and grid", async () => {
+    const { ctx, alphas } = installCanvas();
+    editor.setReferenceImage(fakeImage());
+    render(PixelCanvas);
+    await tick();
+
+    expect(ctx.drawImage).toHaveBeenCalledWith(fakeImage(), 0, 0, 320, 320);
+    // The reference is drawn first: after the draw's own reset (1), its opacity
+    // is the very next alpha set, before the grid's GRID_ALPHA and any pixel.
+    expect(alphas.slice(0, 2)).toEqual([1, 0.5]);
+    expect(alphas).toContain(GRID_ALPHA);
+  });
+
+  it("does not draw the reference when the layer is hidden", async () => {
+    const { ctx } = installCanvas();
+    editor.setReferenceImage(fakeImage());
+    editor.toggleReference();
+    render(PixelCanvas);
+    await tick();
+
+    expect(ctx.drawImage).not.toHaveBeenCalled();
+    expect(editor.hasReferenceImage).toBe(true);
+  });
+
+  it("does not draw anything without a loaded image", async () => {
+    const { ctx } = installCanvas();
+    editor.referenceVisible = true;
+    render(PixelCanvas);
+    await tick();
+
+    expect(ctx.drawImage).not.toHaveBeenCalled();
+  });
+
+  it("applies the opacity slider value to the reference alpha", async () => {
+    const { ctx, alphas } = installCanvas();
+    editor.setReferenceImage(fakeImage());
+    editor.setReferenceOpacity(0.25);
+    render(PixelCanvas);
+    await tick();
+
+    expect(ctx.drawImage).toHaveBeenCalledTimes(1);
+    expect(alphas[1]).toBe(0.25);
+  });
+
+  it("redraws when the opacity changes (real time)", async () => {
+    const { ctx, alphas } = installCanvas();
+    editor.setReferenceImage(fakeImage());
+    render(PixelCanvas);
+    await tick();
+    const firstDraws = ctx.drawImage.mock.calls.length;
+    const alphasAfterFirstDraw = alphas.length;
+
+    editor.setReferenceOpacity(0.1);
+    await tick();
+    expect(ctx.drawImage.mock.calls.length).toBe(firstDraws + 1);
+    expect(alphas.slice(alphasAfterFirstDraw)).toEqual([1, 0.1, 1, GRID_ALPHA, 1]);
+  });
+
+  it("toggling the layer off stops drawing it; toggling on redraws it", async () => {
+    const { ctx } = installCanvas();
+    editor.setReferenceImage(fakeImage());
+    render(PixelCanvas);
+    await tick();
+    const withReference = ctx.drawImage.mock.calls.length;
+
+    editor.toggleReference();
+    await tick();
+    expect(ctx.drawImage.mock.calls.length).toBe(withReference);
+
+    editor.toggleReference();
+    await tick();
+    expect(ctx.drawImage.mock.calls.length).toBe(withReference + 1);
+  });
+
+  it("removing the image stops drawing it", async () => {
+    const { ctx } = installCanvas();
+    editor.setReferenceImage(fakeImage());
+    render(PixelCanvas);
+    await tick();
+    const drawnBefore = ctx.drawImage.mock.calls.length;
+
+    editor.removeReferenceImage();
+    await tick();
+    expect(editor.hasReferenceImage).toBe(false);
+    expect(ctx.drawImage.mock.calls.length).toBe(drawnBefore);
+  });
+
+  it("loaded pixels keep painting above the reference", async () => {
+    installCanvas();
+    editor.setReferenceImage(fakeImage());
+    const { container } = render(PixelCanvas);
+    await tick();
+
+    editor.paintPixel(3, 3);
+    await tick();
+    expect(editor.model.getPixel(3, 3).r).toBe(255);
+    expect(container.querySelector("canvas")).toBeTruthy();
   });
 });
