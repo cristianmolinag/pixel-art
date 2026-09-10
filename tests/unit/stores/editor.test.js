@@ -674,3 +674,88 @@ describe("editor store (F17 shape tools #42)", () => {
     expect(editor.model.getPixel(4, 4).a).toBe(0);
   });
 });
+
+describe("editor store (F19 reference overlay #43)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.version = 0;
+    editor.referenceVisible = false;
+    editor.referenceOpacity = 0.5;
+    editor.referenceVersion = 0;
+    editor._referenceImage = null;
+    editor.hasReferenceImage = false;
+  });
+
+  const fakeImage = () => ({ width: 32, height: 32 });
+
+  it("starts hidden without an image and 50% opacity", () => {
+    expect(editor.referenceVisible).toBe(false);
+    expect(editor.hasReferenceImage).toBe(false);
+    expect(editor.referenceOpacity).toBe(0.5);
+  });
+
+  it("setReferenceImage stores the image, enables the layer and bumps version", () => {
+    const before = editor.referenceVersion;
+    editor.setReferenceImage(fakeImage());
+    expect(editor.hasReferenceImage).toBe(true);
+    expect(editor.referenceVisible).toBe(true);
+    expect(editor.referenceVersion).toBe(before + 1);
+  });
+
+  it("setReferenceImage ignores falsy images", () => {
+    editor.setReferenceImage(null);
+    editor.setReferenceImage(undefined);
+    expect(editor.hasReferenceImage).toBe(false);
+  });
+
+  it("toggleReference hides the layer but keeps the image", () => {
+    editor.setReferenceImage(fakeImage());
+    editor.toggleReference();
+    expect(editor.referenceVisible).toBe(false);
+    expect(editor.hasReferenceImage).toBe(true);
+    editor.toggleReference();
+    expect(editor.referenceVisible).toBe(true);
+    expect(editor.hasReferenceImage).toBe(true);
+  });
+
+  it("setReferenceOpacity clamps to the 0-1 range", () => {
+    editor.setReferenceOpacity(0.25);
+    expect(editor.referenceOpacity).toBe(0.25);
+    editor.setReferenceOpacity(2);
+    expect(editor.referenceOpacity).toBe(1);
+    editor.setReferenceOpacity(-1);
+    expect(editor.referenceOpacity).toBe(0);
+  });
+
+  it("setReferenceOpacity ignores non-numeric values", () => {
+    editor.setReferenceOpacity(0.3);
+    editor.setReferenceOpacity("abc");
+    editor.setReferenceOpacity(NaN);
+    expect(editor.referenceOpacity).toBe(0.3);
+  });
+
+  it("removeReferenceImage clears the image and bumps version", () => {
+    editor.setReferenceImage(fakeImage());
+    const before = editor.referenceVersion;
+    editor.removeReferenceImage();
+    expect(editor.hasReferenceImage).toBe(false);
+    expect(editor.referenceVersion).toBe(before + 1);
+  });
+
+  it("removeReferenceImage without an image is a no-op", () => {
+    const before = editor.referenceVersion;
+    editor.removeReferenceImage();
+    expect(editor.referenceVersion).toBe(before);
+  });
+
+  it("loading a reference never mutates the canvas model", () => {
+    const snapshot = editor.model.snapshot();
+    editor.setReferenceImage(fakeImage());
+    editor.setReferenceOpacity(0.9);
+    editor.toggleReference();
+    editor.removeReferenceImage();
+    expect(editor.model.snapshot()).toEqual(snapshot);
+    expect(editor.version).toBe(0);
+  });
+});
