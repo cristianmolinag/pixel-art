@@ -87,6 +87,14 @@ class EditorStore {
   spaceHeld = $state(false);
   pendingSave = $state(false);
   pendingExport = $state(false);
+  // Reference overlay (F19): session-only. The decoded image is not serializable
+  // state, so it lives in a plain field; referenceVersion triggers redraws and
+  // hasReferenceImage drives the pill UI reactively.
+  referenceVisible = $state(false);
+  referenceOpacity = $state(0.5);
+  referenceVersion = $state(0);
+  hasReferenceImage = $state(false);
+  _referenceImage = null;
 
   markDirty() {
     this.dirty = true;
@@ -194,6 +202,31 @@ class EditorStore {
     if (mode === "outline" || mode === "fill") {
       this.shapeMode = mode;
     }
+  }
+
+  setReferenceImage(image) {
+    if (!image) return;
+    this._referenceImage = image;
+    this.hasReferenceImage = true;
+    this.referenceVersion += 1;
+    this.referenceVisible = true;
+  }
+
+  toggleReference() {
+    this.referenceVisible = !this.referenceVisible;
+  }
+
+  setReferenceOpacity(value) {
+    const opacity = Number(value);
+    if (!Number.isFinite(opacity)) return;
+    this.referenceOpacity = Math.min(1, Math.max(0, opacity));
+  }
+
+  removeReferenceImage() {
+    if (this._referenceImage === null) return;
+    this._referenceImage = null;
+    this.hasReferenceImage = false;
+    this.referenceVersion += 1;
   }
 
   mirroredCells(x, y) {

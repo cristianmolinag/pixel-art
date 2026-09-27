@@ -31,6 +31,7 @@
 
   function draw() {
     void editor.version;
+    void editor.referenceVersion;
     const canvas = canvasEl;
     if (!canvas || !container) return;
     const rect = container.getBoundingClientRect();
@@ -59,6 +60,15 @@
     const aX = (i) => Math.round((left + i * stepCssX) * dpr);
     const aY = (j) => Math.round((top + j * stepCssY) * dpr);
     const isEmpty = (i, j) => data[(j * cols + i) * 4 + 3] === 0;
+
+    // Reference overlay (F19): drawn stretched over the full content rect,
+    // behind the pixels and the grid. Never touches model.offscreen, so it
+    // stays out of exports.
+    if (editor.referenceVisible && editor._referenceImage) {
+      ctx.globalAlpha = editor.referenceOpacity;
+      ctx.drawImage(editor._referenceImage, aX(0), aY(0), aX(cols) - aX(0), aY(rows) - aY(0));
+      ctx.globalAlpha = 1;
+    }
 
     for (let j = 0; j < rows; j++) {
       const y0 = aY(j);

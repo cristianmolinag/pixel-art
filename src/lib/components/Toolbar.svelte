@@ -16,6 +16,7 @@
   import Maximize from "@lucide/svelte/icons/maximize";
   import ZoomIn from "@lucide/svelte/icons/zoom-in";
   import Pipette from "@lucide/svelte/icons/pipette";
+  import ImageIcon from "@lucide/svelte/icons/image";
   import Matrix from "./Matrix.svelte";
 
   let { mode } = $props();
@@ -158,6 +159,20 @@
       onclick={() => editor.toggleGrid()}
     >
       <Grid3x3 size={20} />
+    </button>
+
+    <button
+      type="button"
+      aria-label={editor.referenceVisible ? "Hide reference" : "Show reference"}
+      title={editor.referenceVisible ? "Hide reference" : "Show reference"}
+      aria-pressed={editor.referenceVisible}
+      class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
+        {editor.referenceVisible
+          ? 'bg-white text-black shadow'
+          : 'text-white hover:bg-white/10'}"
+      onclick={() => editor.toggleReference()}
+    >
+      <ImageIcon size={20} />
     </button>
 
     <Matrix />

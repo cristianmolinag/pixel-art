@@ -22,6 +22,10 @@ beforeEach(() => {
   editor.mirrorX = false;
   editor.mirrorY = false;
   editor.shapeMode = "outline";
+  editor.referenceVisible = false;
+  editor.referenceOpacity = 0.5;
+  editor.referenceVersion = 0;
+  editor._referenceImage = null;
   gallery.visible = false;
   gallery.focusSave = false;
   gallery.drawings = [];
@@ -291,5 +295,32 @@ describe("Toolbar — mirror symmetry (F15)", () => {
     await fireEvent.click(button);
     expect(editor.mirrorY).toBe(true);
     expect(button.getAttribute("aria-pressed")).toBe("true");
+  });
+});
+
+describe("Toolbar — reference overlay (F19 #43)", () => {
+  it("offers the reference toggle only in the controls group", () => {
+    const controls = render(Toolbar, { props: { mode: "controls" } });
+    expect(buttonByLabel(controls.container, "Show reference")).toBeTruthy();
+    controls.unmount();
+    const tools = render(Toolbar, { props: { mode: "tools" } });
+    expect(buttonByLabel(tools.container, "Show reference")).toBeUndefined();
+  });
+
+  it("starts hidden and toggles to visible with pressed state", async () => {
+    const { container } = render(Toolbar, { props: { mode: "controls" } });
+    const button = buttonByLabel(container, "Show reference");
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    await fireEvent.click(button);
+    expect(editor.referenceVisible).toBe(true);
+    expect(buttonByLabel(container, "Hide reference").getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("toggles back to hidden while the image is remembered", async () => {
+    editor.setReferenceImage({ width: 16, height: 16 });
+    const { container } = render(Toolbar, { props: { mode: "controls" } });
+    await fireEvent.click(buttonByLabel(container, "Hide reference"));
+    expect(editor.referenceVisible).toBe(false);
+    expect(editor.hasReferenceImage).toBe(true);
   });
 });

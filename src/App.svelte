@@ -3,6 +3,7 @@
   import Palette from "./lib/components/Palette.svelte";
   import Toolbar from "./lib/components/Toolbar.svelte";
   import ShapeModePill from "./lib/components/ShapeModePill.svelte";
+  import ReferencePill from "./lib/components/ReferencePill.svelte";
   import FileActions from "./lib/components/FileActions.svelte";
   import Gallery from "./lib/components/Gallery.svelte";
   import Toast from "./lib/components/Toast.svelte";
@@ -47,6 +48,7 @@
     <main class="canvas-viewport relative flex min-h-0 touch-none overscroll-none items-center justify-center overflow-hidden p-4">
       <PixelCanvas />
       <ShapeModePill />
+      <ReferencePill />
     </main>
 
     <aside class="toolbar-controls">
