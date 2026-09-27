@@ -39,6 +39,7 @@ in complexity and verifying each feature before moving on:
 17. **Shape tools** - draw rectangles and circles with outline or fill, respecting mirror symmetry -> **#42**.
 18. **Thumb-zone toolbar layout** - portrait mobile toolbar placed directly above the palette for one-handed thumb reach, with landscape and desktop layouts preserved -> **#48**.
 19. **Reference image overlay** - a session-only tracing image behind the grid and pixels, with adjustable opacity and a visibility toggle -> **#43**.
+20. **Complete desktop keyboard shortcuts** - tool/grid/zoom/undo-redo/save-export shortcuts and Space-drag pan, registered once globally -> **#50**.
 
 Each feature maps to a GitHub issue and a spec in `specs/features/`.
 
@@ -77,5 +78,5 @@ GitHub issues are the live work tracker.
 ## Project status
 
 - **Active branch**: `feat/sdd-rewrite` until the pending squash merge into `develop`.
-- **Recent implementation**: responsive menu, mobile zoom expander, fluid toolbar sizing, grid guide overlay, zoom/pan-aware painting, desktop `Ctrl + wheel` zoom, iOS footer safe-area padding, protected release workflow, auto-hiding pan/zoom hint, custom confirmation modals, gallery list-only scrolling, scaled PNG export, mirror symmetry drawing mode, toast notifications and gesture prevention, shape tools (rectangle/circle with outline and fill), thumb-zone toolbar layout for portrait mobile, and the session-only tracing reference image overlay with adjustable opacity.
-- **Remaining backlog**: #1 PWA icons, #8 mobile/UX improvements, and #10 keyboard shortcuts.
+- **Recent implementation**: responsive menu, mobile zoom expander, fluid toolbar sizing, grid guide overlay, zoom/pan-aware painting, desktop `Ctrl + wheel` zoom, iOS footer safe-area padding, protected release workflow, auto-hiding pan/zoom hint, custom confirmation modals, gallery list-only scrolling, scaled PNG export, mirror symmetry drawing mode, toast notifications and gesture prevention, shape tools (rectangle/circle with outline and fill), thumb-zone toolbar layout for portrait mobile, the session-only tracing reference image overlay with adjustable opacity, and complete desktop keyboard shortcuts with Space-drag pan.
+- **Remaining backlog**: #1 PWA icons and #8 mobile/UX improvements (keyboard shortcuts are complete via #50).

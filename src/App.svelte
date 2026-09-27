@@ -7,6 +7,22 @@
   import FileActions from "./lib/components/FileActions.svelte";
   import Gallery from "./lib/components/Gallery.svelte";
   import Toast from "./lib/components/Toast.svelte";
+  import { editor } from "./lib/stores/editor.svelte.js";
+  import { handleKeydown, handleKeyup } from "./lib/utils/shortcuts.js";
+
+  const shortcutActions = {
+    onTool: (tool) => editor.selectTool(tool),
+    onGrid: () => editor.toggleGrid(),
+    onZoomIn: () => editor.zoomIn(),
+    onZoomOut: () => editor.zoomOut(),
+    onZoomReset: () => editor.resetZoom(),
+    onUndo: () => editor.undo(),
+    onRedo: () => editor.redo(),
+    onSave: () => (editor.pendingSave = true),
+    onExport: () => (editor.pendingExport = true),
+    onSpaceStart: () => (editor.spaceHeld = true),
+    onSpaceEnd: () => (editor.spaceHeld = false),
+  };
 </script>
 
 <div class="flex h-full flex-col bg-surface">
@@ -51,3 +67,9 @@
 <Gallery />
 
 <Toast />
+
+<svelte:window
+  onkeydown={(e) => handleKeydown(e, shortcutActions)}
+  onkeyup={(e) => handleKeyup(e, shortcutActions)}
+  onblur={() => (editor.spaceHeld = false)}
+/>

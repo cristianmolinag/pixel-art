@@ -22,13 +22,13 @@
   let { mode } = $props();
 
   const TOOLS = [
-    { id: "brush", label: "Brush", icon: Brush },
-    { id: "eraser", label: "Eraser", icon: Eraser },
-    { id: "line", label: "Line", icon: Slash },
-    { id: "rectangle", label: "Rectangle", icon: Square },
-    { id: "circle", label: "Circle", icon: Circle },
-    { id: "fill", label: "Fill", icon: PaintBucket },
-    { id: "eyedropper", label: "Eyedropper", icon: Pipette },
+    { id: "brush", label: "Brush", shortcut: "B", icon: Brush },
+    { id: "eraser", label: "Eraser", shortcut: "E", icon: Eraser },
+    { id: "line", label: "Line", shortcut: "L", icon: Slash },
+    { id: "rectangle", label: "Rectangle", shortcut: "R", icon: Square },
+    { id: "circle", label: "Circle", shortcut: "C", icon: Circle },
+    { id: "fill", label: "Fill", shortcut: "F", icon: PaintBucket },
+    { id: "eyedropper", label: "Eyedropper", shortcut: "I", icon: Pipette },
   ];
 
   let zoomOpen = $state(false);
@@ -40,7 +40,7 @@
   <button
     type="button"
     aria-label="Zoom out"
-    title="Zoom out (zoom −)"
+    title="Zoom out (−)"
     disabled={editor.zoom <= MIN_ZOOM}
     class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.zoomOut()}
@@ -53,7 +53,7 @@
   <button
     type="button"
     aria-label="Zoom in"
-    title="Zoom in (zoom +)"
+    title="Zoom in (+)"
     disabled={editor.zoom >= MAX_ZOOM}
     class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     onclick={() => editor.zoomIn()}
@@ -63,7 +63,7 @@
   <button
     type="button"
     aria-label="Reset zoom to 100%"
-    title="Reset zoom and pan"
+    title="Reset zoom and pan (0)"
     class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition hover:bg-white/10"
     onclick={() => editor.resetZoom()}
   >
@@ -75,12 +75,12 @@
 
 {#if mode === "tools"}
   <div role="group" aria-label="Drawing tools" class="toolbar-container">
-    {#each TOOLS as { id, label, icon } (id)}
+    {#each TOOLS as { id, label, shortcut, icon } (id)}
       {@const Icone = icon}
       <button
         type="button"
         aria-label={label}
-        title={label}
+        title="{label} ({shortcut})"
         aria-pressed={editor.tool === id}
         class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
           {editor.tool === id
@@ -99,7 +99,7 @@
     <button
       type="button"
       aria-label="Undo"
-      title="Undo"
+      title="Undo (Ctrl+Z)"
       disabled={!editor.canUndo}
       class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
         hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
@@ -110,7 +110,7 @@
     <button
       type="button"
       aria-label="Redo"
-      title="Redo"
+      title="Redo (Ctrl+Y)"
       disabled={!editor.canRedo}
       class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md text-white transition
         hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
@@ -150,7 +150,7 @@
     <button
       type="button"
       aria-label={editor.showGrid ? "Hide grid" : "Show grid"}
-      title={editor.showGrid ? "Hide grid" : "Show grid"}
+      title="{editor.showGrid ? 'Hide grid' : 'Show grid'} (G)"
       aria-pressed={editor.showGrid}
       class="toolbar-icon flex cursor-pointer items-center justify-center rounded-md transition
         {editor.showGrid
@@ -207,24 +207,7 @@
 
 <svelte:window
   onkeydown={(e) => {
-    if (mode === "controls" && e.key === "Escape") {
-      zoomOpen = false;
-      return;
-    }
-    if (mode !== "tools") return;
-    if (e.key !== "i" && e.key !== "I") return;
-    if (e.ctrlKey || e.altKey || e.metaKey) return;
-    const target = e.target;
-    if (
-      target instanceof HTMLElement &&
-      (target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable)
-    ) {
-      return;
-    }
-    e.preventDefault();
-    editor.selectTool("eyedropper");
+    if (mode === "controls" && e.key === "Escape") zoomOpen = false;
   }}
   onclick={(e) => {
     if (mode !== "controls" || !zoomOpen) return;

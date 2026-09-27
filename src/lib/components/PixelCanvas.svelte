@@ -277,7 +277,7 @@ function applyPinch() {
 }
 
 function onPointerDown(event) {
-  if (event.ctrlKey || event.metaKey) {
+  if (event.ctrlKey || event.metaKey || editor.spaceHeld) {
     panActive = true;
     lastPan = { x: event.clientX, y: event.clientY };
     if (canvasEl && canvasEl.setPointerCapture) {
@@ -514,7 +514,11 @@ function onWheel(event) {
 >
   <canvas
     bind:this={canvasEl}
-    class="block h-full w-full select-none touch-none {editor.tool === 'eyedropper' ? 'cursor-crosshair' : 'cursor-default'}"
+    class="block h-full w-full select-none touch-none {editor.spaceHeld
+      ? 'cursor-grab'
+      : editor.tool === 'eyedropper'
+        ? 'cursor-crosshair'
+        : 'cursor-default'}"
     style:background-color="#ffffff"
     onpointerdown={onPointerDown}
     onpointermove={onPointerMove}
@@ -529,6 +533,6 @@ function onWheel(event) {
     class="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-neutral-900/85 px-3 py-1.5 text-center text-xs text-white shadow transition-opacity duration-300
       {hintVisible ? 'opacity-100' : 'opacity-0'}"
   >
-    {isTouch ? "Pan with two fingers · Pinch to zoom" : "Move with Ctrl + drag · Zoom with Ctrl + wheel or + / −"}
+    {isTouch ? "Pan with two fingers · Pinch to zoom" : "Move with Ctrl or Space + drag · Zoom with Ctrl + wheel or + / −"}
   </div>
 </div>

@@ -84,6 +84,9 @@ class EditorStore {
   mirrorX = $state(false);
   mirrorY = $state(false);
   shapeMode = $state("outline");
+  spaceHeld = $state(false);
+  pendingSave = $state(false);
+  pendingExport = $state(false);
   // Reference overlay (F19): session-only. The decoded image is not serializable
   // state, so it lives in a plain field; referenceVersion triggers redraws and
   // hasReferenceImage drives the pill UI reactively.

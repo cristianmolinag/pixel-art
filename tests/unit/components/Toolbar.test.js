@@ -54,6 +54,13 @@ describe("Toolbar tools group (F03/F17/F18)", () => {
     expect(container.querySelectorAll("svg").length).toBe(7);
   });
 
+  it("surfaces shortcut hints in tool titles (F19)", () => {
+    const { container } = render(Toolbar, { props: { mode: "tools" } });
+    expect(buttonByLabel(container, "Brush").getAttribute("title")).toBe("Brush (B)");
+    expect(buttonByLabel(container, "Fill").getAttribute("title")).toBe("Fill (F)");
+    expect(buttonByLabel(container, "Eyedropper").getAttribute("title")).toBe("Eyedropper (I)");
+  });
+
   it("does not render control buttons in the tools group (FR-007)", () => {
     const { container } = render(Toolbar, { props: { mode: "tools" } });
     expect(buttonByLabel(container, "Undo")).toBeUndefined();
@@ -86,21 +93,20 @@ describe("Toolbar tools group (F03/F17/F18)", () => {
     expect(button.getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("pressing I selects the eyedropper (#40)", async () => {
+  it("pressing I does not select the eyedropper from the toolbar instance (#50)", async () => {
     render(Toolbar, { props: { mode: "tools" } });
     editor.tool = "brush";
     await fireEvent.keyDown(window, { key: "i" });
-    expect(editor.tool).toBe("eyedropper");
+    expect(editor.tool).toBe("brush");
   });
 
-  it("pressing I inside an input does not select the eyedropper (#40)", async () => {
+  it("does not register global tool shortcuts; they moved to App (#50)", async () => {
     const { container } = render(Toolbar, { props: { mode: "tools" } });
-    const input = document.createElement("input");
-    container.appendChild(input);
-    input.focus();
     editor.tool = "brush";
-    await fireEvent.keyDown(input, { key: "i" });
+    await fireEvent.keyDown(window, { key: "b" });
+    await fireEvent.keyDown(window, { key: "g" });
     expect(editor.tool).toBe("brush");
+    expect(container.querySelector("svg")).toBeTruthy();
   });
 });
 
@@ -115,6 +121,18 @@ describe("Toolbar controls group (F04/F08/F10/F15/F18)", () => {
     expect(buttonByLabel(container, "Vertical mirror")).toBeTruthy();
     expect(buttonByLabel(container, "Hide grid")).toBeTruthy();
     expect(buttonByLabel(container, "Change canvas matrix")).toBeTruthy();
+  });
+
+  it("surfaces shortcut hints in control titles (F19)", () => {
+    const { container } = render(Toolbar, { props: { mode: "controls" } });
+    expect(buttonByLabel(container, "Undo").getAttribute("title")).toBe("Undo (Ctrl+Z)");
+    expect(buttonByLabel(container, "Redo").getAttribute("title")).toBe("Redo (Ctrl+Y)");
+    expect(buttonByLabel(container, "Hide grid").getAttribute("title")).toBe("Hide grid (G)");
+    expect(buttonByLabel(container, "Zoom in").getAttribute("title")).toBe("Zoom in (+)");
+    expect(buttonByLabel(container, "Zoom out").getAttribute("title")).toBe("Zoom out (−)");
+    expect(buttonByLabel(container, "Reset zoom to 100%").getAttribute("title")).toBe(
+      "Reset zoom and pan (0)",
+    );
   });
 });
 
