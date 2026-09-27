@@ -4,7 +4,7 @@
 **Spec written:** 2026-09-04
 **Tests:** `tests/unit/models/Canvas.test.js`, `tests/unit/stores/editor.test.js`, `tests/unit/components/PixelCanvas.test.js`, `tests/unit/components/Toolbar.test.js`
 **Objective:** `specs/project/objective.md`
-**Related issue:** [#13](https://github.com/cristianmolinag/pixel-art/issues/13)
+**Related issue:** [#13](https://github.com/cristianmolinag/pixel-art/issues/13) (bounded history extension: [#46](https://github.com/cristianmolinag/pixel-art/issues/46))
 **Depends on:** F03 Tools (#5, implemented)
 
 ## User Story Summary
@@ -35,6 +35,7 @@ Brush/eraser drags, lines, and fills each create one undo step. A gesture that c
 - **FR-006:** A new drawing, erasing, or redo action MUST clear the redo stack.
 - **FR-007:** Undo/redo stacks and actions MUST live in `editor.svelte.js`.
 - **FR-008:** History MUST remain in memory for the session; cross-session persistence belongs to F05.
+- **FR-009:** Both history stacks MUST be bounded at `MAX_HISTORY` (50) snapshots; when the limit is reached, the oldest snapshot is dropped so memory stays roughly constant (#46).
 
 ## Success Criteria
 
@@ -54,4 +55,5 @@ Brush/eraser drags, lines, and fills each create one undo step. A gesture that c
 - `editor.svelte.js` owns `undoStack`, `redoStack`, `canUndo`, `canRedo`, and gesture boundaries `beginAction()`/`endAction()`.
 - `PixelCanvas` opens an action on pointer down and closes it on pointer up/leave, recording only real pixel changes.
 - Undo and redo move the current snapshot between the two stacks and increment `version`.
+- History is bounded by the exported `MAX_HISTORY = 50` in `editor.svelte.js`; `pushHistory()` drops the oldest snapshot when a stack exceeds the limit. At 128x128 this caps each stack at ~3.2 MB (#46).
 - Toolbar buttons use `lucide-svelte`, accessible labels, and `disabled` bindings.
