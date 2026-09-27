@@ -3,3 +3,4 @@ dist
 dev-dist
 .svelte-kit
 *.local
+.opencode/worktrees/
