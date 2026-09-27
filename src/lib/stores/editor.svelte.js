@@ -34,6 +34,16 @@ export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 4;
 export const ZOOM_STEP = 0.5;
 
+// Bound for the undo/redo history stacks (F04 extension, issue #46). Snapshots
+// are full canvas copies, so the cap keeps memory roughly constant during long
+// drawing sessions: 50 * 128 * 128 * 4 bytes is at most ~3.2 MB per stack.
+export const MAX_HISTORY = 50;
+
+function pushHistory(stack, snapshot) {
+  stack.push(snapshot);
+  if (stack.length > MAX_HISTORY) stack.shift();
+}
+
 export const PALETA = [
   "#000000",
   "#ffffff",
@@ -134,7 +144,7 @@ class EditorStore {
 
   endAction() {
     if (this._actionChanges > 0 && this._actionSnapshot && !this.model.equals(this._actionSnapshot)) {
-      this.undoStack.push(this._actionSnapshot);
+      pushHistory(this.undoStack, this._actionSnapshot);
       this.redoStack.length = 0;
     }
     this._actionSnapshot = null;
@@ -145,7 +155,7 @@ class EditorStore {
     while (this.undoStack.length > 0) {
       const snapshot = this.undoStack.pop();
       if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
-      this.redoStack.push(this.model.snapshot());
+      pushHistory(this.redoStack, this.model.snapshot());
       this.model.restore(snapshot);
       this.version += 1;
       this.markDirty();
@@ -157,7 +167,7 @@ class EditorStore {
     while (this.redoStack.length > 0) {
       const snapshot = this.redoStack.pop();
       if (snapshot.length !== this.model.cols * this.model.rows * 4) continue;
-      this.undoStack.push(this.model.snapshot());
+      pushHistory(this.undoStack, this.model.snapshot());
       this.model.restore(snapshot);
       this.version += 1;
       this.markDirty();

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { editor, PALETA } from "../../../src/lib/stores/editor.svelte.js";
+import { editor, PALETA, MAX_HISTORY } from "../../../src/lib/stores/editor.svelte.js";
 import { Canvas } from "../../../src/lib/models/Canvas.js";
 
 describe("editor store (F02/FR-008)", () => {
@@ -183,6 +183,57 @@ describe("editor store (F04/FR-007)", () => {
     editor.undo();
     editor.redo();
     expect(editor.version).toBe(before);
+  });
+});
+
+describe("editor store (F04 bounded history #46)", () => {
+  beforeEach(() => {
+    editor.model = new Canvas(16, 16);
+    editor.currentColor = "#ff0000";
+    editor.version = 0;
+    editor.undoStack = [];
+    editor.redoStack = [];
+  });
+
+  function actionAt(x) {
+    editor.beginAction();
+    editor.paintPixel(x % 16, (x / 16) | 0);
+    editor.endAction();
+  }
+
+  it("caps the undo stack at MAX_HISTORY dropping the oldest snapshots", () => {
+    for (let i = 0; i < MAX_HISTORY + 25; i += 1) actionAt(i);
+    expect(editor.undoStack.length).toBe(MAX_HISTORY);
+  });
+
+  it("undo stays available up to the cap after the oldest step is dropped", () => {
+    for (let i = 0; i < MAX_HISTORY + 25; i += 1) actionAt(i);
+    for (let i = 0; i < MAX_HISTORY; i += 1) editor.undo();
+    expect(editor.canUndo).toBe(false);
+    expect(editor.undoStack.length).toBe(0);
+  });
+
+  it("the newest action is always undoable once the cap is reached", () => {
+    for (let i = 0; i < MAX_HISTORY + 25; i += 1) actionAt(i);
+    editor.undo();
+    expect(editor.redoStack.length).toBe(1);
+    editor.redo();
+    expect(editor.undoStack.length).toBe(MAX_HISTORY);
+  });
+
+  it("the redo stack is also bounded at MAX_HISTORY", () => {
+    for (let i = 0; i < MAX_HISTORY + 10; i += 1) actionAt(i);
+    for (let i = 0; i < MAX_HISTORY; i += 1) editor.undo();
+    expect(editor.redoStack.length).toBe(MAX_HISTORY);
+  });
+
+  it("a new drawing action still clears the redo stack", () => {
+    actionAt(0);
+    actionAt(1);
+    editor.undo();
+    expect(editor.canRedo).toBe(true);
+    actionAt(2);
+    expect(editor.redoStack.length).toBe(0);
   });
 });
 
